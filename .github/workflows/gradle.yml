@@ -5,8 +5,6 @@ name: CI/CD
 on:
   push:
       branches: ["main", "develop"]
-  pull_request:
-      branches: ["main", "develop"]
 
 
 # 권한 설정하기
