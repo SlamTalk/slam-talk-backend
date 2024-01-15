@@ -1,0 +1,106 @@
+# github repository Actions 페이지에 나타낼 이름
+name: CI/CD
+
+# main, develop 브랜치에 push가 되었을 때 Workflow를 Trigger 실행
+on:
+  push:
+      branches: ["main", "develop"]
+
+
+# 권한 설정하기
+permissions:
+  contents: read
+
+# 실제 실행될 내용을 정의
+jobs:
+  CI-CD:
+    runs-on: ubuntu-latest # 실행 환경 지정 (ubuntu최신 버전에서 script를 실행)
+    steps: # 실행 스텝 지정
+
+    # 지정한 저장소(현재 레포지토리)에서 코드를 워크 플로우 환경으로 가져오도록 하는 github action
+    - uses: actions/checkout@v3
+    ## jdk setting
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    # applications.properties 설정하기 
+    # github secret 에서 설정해줘야한다.
+    - uses: actions/checkout@v3
+    - run: mkdir -p ./src/main/resources/
+    - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
+    - run: cat ./src/main/resources/application.properties
+
+
+    # gradle을 통해 소스를 빌드.
+    - name: Build with Gradle
+      run: |
+        chmod +x ./gradlew
+        ./gradlew clean build -x test
+
+    # dockerfile을 통해 이미지를 빌드하고, 이를 docker hub repo로 push
+    # 이때 사용되는 ${{ secrets.DOCER_REPO }}/directors-dev가 위에서 만든 도커 repository이다.
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}
+
+    ## deploy to production
+    - name: Deploy to server
+      uses: appleboy/ssh-action@master
+      with:
+          key: ${{ secrets.PRIVATE_KEY }}
+          host: ${{ secrets.HOST_PROD }}
+          username: ubuntu
+          port: 22
+          script: |
+              sudo docker rm -f $(docker ps -qa)
+              sudo docker pull ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}
+              docker-compose up -d
+              docker image prune -f
+
+
+  ## time
+  current-time:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Current Time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH:mm:ss
+          utcOffset: "+09:00" # 기준이 UTC이기 때문에 한국시간인 KST를 맞추기 위해 +9시간 추가
+
+      - name: Print Current Time
+        run: echo "Current Time=${{steps.current-time.outputs.formattedTime}}" # current-time 에서 지정한 포맷대로 현재 시간 출력
+        shell: bash
+
+  ## slack
+  action-slack:
+    needs: CI-CD
+    runs-on: ubuntu-latest
+    steps:
+        - name: Slack Alarm
+          uses: 8398a7/action-slack@v3
+          with:
+              status: ${{ job.status }}
+              author_name: GitHub-Actions CI/CD
+              fields: repo,message,commit,author,ref,job,took
+          env:
+              SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          if: always() # Pick up events even if the job fails or is canceled.
