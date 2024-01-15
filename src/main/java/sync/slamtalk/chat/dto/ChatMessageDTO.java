@@ -15,5 +15,5 @@ public class ChatMessageDTO implements Serializable {
     private String senderId; // 메세지를 보낸 사용자의 고유 식별자
     private String content; // 메세지 내용
     private LocalDateTime timestamp; // 메세지를 보낸 시간
-    private Boolean read; // 읽음 여부를 나타 내는 상태 필드
+    private Boolean read; // 읽음 여부를 나타내는 상태 필드
 }

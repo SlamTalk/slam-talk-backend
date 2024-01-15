@@ -42,5 +42,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureClientInboundChannel(ChannelRegistration registration) {
         // TODO
         // registration.interceptors(chatInboundInterceptor);
+
     }
 }

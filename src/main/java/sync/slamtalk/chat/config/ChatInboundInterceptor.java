@@ -10,4 +10,5 @@ import org.springframework.stereotype.Component;
 public class ChatInboundInterceptor implements ChannelInterceptor {
 
     //TODO
+
 }
