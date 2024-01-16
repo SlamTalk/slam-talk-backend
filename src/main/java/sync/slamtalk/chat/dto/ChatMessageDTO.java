@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder(access = AccessLevel.PUBLIC)
 public class ChatMessageDTO implements Serializable {
     private String roomId; // 채팅방 아이디(채팅방 식별자)
