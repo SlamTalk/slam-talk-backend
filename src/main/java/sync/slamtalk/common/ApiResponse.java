@@ -54,15 +54,15 @@ public class ApiResponse<T> {
     }
 
 
-    // 성공 응답
+    // 실패 응답
     public static <T>ApiResponse<T> fail(){
         return new ApiResponse<>(false,"요청에 실패했습니다",null);
     }
 
 
     // 실패 응답
-    public static <T>ApiResponse<T> fail(ResponseCode responseCode){
-        return new ApiResponse<>(responseCode.getStatus(), responseCode.getMessage());
+    public static <T>ApiResponse<T> fail(ErrorResponseCode errorResponseCode){
+        return new ApiResponse<>(errorResponseCode.getStatus(), errorResponseCode.getMessage());
     }
 
 

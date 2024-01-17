@@ -1,10 +1,8 @@
 package sync.slamtalk.common;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import static jakarta.servlet.http.HttpServletResponse.*;
 
-public enum ResponseCode {
+public enum ErrorResponseCode {
 
     OK(SC_OK, 200,"Request Success"),
     INVALID_TOKEN(SC_BAD_REQUEST,4001,"Token Invalid"),
@@ -36,7 +34,7 @@ public enum ResponseCode {
     private final String message;
 
 
-    ResponseCode(int code, int status, String message){
+    ErrorResponseCode(int code, int status, String message){
         this.code = code;
         this.status= status;
         this.message = message;
