@@ -31,7 +31,7 @@ public class StompChatController {
 
     // "/pub/chat/message" 로 날린 데이터에 대해서
     // "/sub/chat/room + roomId" 로 구독자들에게 해당 message를 전달
-    @MessageMapping("/chat/message")
+    @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO message(ChatMessageDTO message){
         return message;

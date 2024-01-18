@@ -17,6 +17,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ChatInboundInterceptor chatInboundInterceptor;
+    private final ChatErrorHandler chatErrorHandler;
 
     // webSocket 접속 경로 설정
     @Override
@@ -25,6 +26,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setAllowedOrigins("*");
 
                 //.withSockJS(); // 사용시 /websocket 붙여서 테스트
+        // TODO-> 에러핸들러
+        registry.setErrorHandler(chatErrorHandler);
     }
 
 
@@ -40,7 +43,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         // TODO
-        // registration.interceptors(chatInboundInterceptor);
+        registration.interceptors(chatInboundInterceptor);
 
     }
 }
