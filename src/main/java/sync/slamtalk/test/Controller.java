@@ -2,13 +2,16 @@ package sync.slamtalk.test;
 
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
 
 /**
 *   Swagger 사용 방법 및 테스트 기능
 * */
-@RestController("/api")
+
+@RestController
+@RequestMapping("/api")
 public class Controller {
     @GetMapping("/hello")
     @Operation( // Swagger 쓰는 이유!
