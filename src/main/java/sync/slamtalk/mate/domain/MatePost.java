@@ -5,22 +5,36 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import sync.slamtalk.common.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@Builder
+@Setter
 @AllArgsConstructor
 public class MatePost extends BaseEntity {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "mate_post_id")
-        private long id;
+        private long matePostId;
+
+//        @ManyToOne(fetch = FetchType.LAZY)
+//        @JoinColumn(nullable = false, name="user_id")
+        @Column(nullable = false, name="user_id")
+        private long userId; // 글 작성자 아이디 * 매핑 필요 (임시로 long으로 설정)
+
+        @Column(nullable = false, name="user_nickname")
+        private String userNickname; // 글 작성자 닉네임
+
+        @Column(nullable = true, name="user_location")
+        private String userLocation; // 글 작성자 지역
+
+        @Column(nullable = true, name="location_detail")
+        private String locationDetail; // 상세 시합 장소
 
         @Column(nullable = false)
         private String title; // 글 제목
@@ -29,13 +43,10 @@ public class MatePost extends BaseEntity {
         private String content; // 글 내용
 
         @Column(nullable = false, name="skill_level_wanted")
-        private String skill_level; // 원하는 스킬 레벨 "초보", "중수", "고수", "무관"
+        private String skillLevel; // 원하는 스킬 레벨 "초보", "중수", "고수", "무관"
 
         @Column(nullable = false, name="scheduled_time")
         private LocalDateTime scheduledTime; // 예정된 시간
-
-        @Column(nullable = false, name="location")
-        private String location; // 지역 * 추가적인 정의 필요. 서비스 지역을 어떻게 한정 지을지, 지역 단위를 어떻게 할지 등등...
 
         @Column(nullable = true, name="chat_room_id") // 채팅방 아이디 * 매핑 필요
         private long chatRoomId;
@@ -44,7 +55,7 @@ public class MatePost extends BaseEntity {
         private boolean softDelete; // 삭제 여부
 
         @Column(nullable = false, name="recruitment_status")
-        private boolean isClosed; // 모집 마감 여부
+        private String recruitmentStatus; // 모집 마감 여부 "모집중", "모집완료", "모집취소"
 
         @Column(nullable = false, name="max_participants")
         private int maxParticipants; // 최대 참여 인원
@@ -70,12 +81,43 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false, name="current_participants_guard")
         private int currentParticipantsGuards; // 가드 현재 참여 인원
 
-        @JsonIgnore
-        @OneToMany(mappedBy = "matePost", cascade = CascadeType.ALL)
-        private List<Participant> participants; // 참여자 목록
+        @Column(nullable = false, name="max_participants_others")
+        private int maxParticipantsOthers; // 모집 포지션 무관 최대 참여 인원
+
+        @Column(nullable = false, name="current_participants_others")
+        private int currentParticipantsOthers; // 모집 포지션 무관 현재 참여 인원
+
+//        @JsonIgnore
+//        @OneToMany(mappedBy = "matePost", cascade = CascadeType.ALL)
+//        private List<Participant> participants; // 참여자 목록
 
 
         public MatePost() {
 
+        }
+
+        @Builder
+        public MatePost(long userId, String userNickname, String userLocation, String title, String content, String skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, String recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
+                this.userId = userId;
+                this.userNickname = userNickname;
+                this.userLocation = userLocation;
+                this.title = title;
+                this.content = content;
+                this.skillLevel = skillLevel;
+                this.scheduledTime = scheduledTime;
+                this.locationDetail = locationDetail;
+                this.chatRoomId = chatRoomId;
+                this.softDelete = softDelete;
+                this.recruitmentStatus = recruitmentStatus;
+                this.maxParticipants = maxParticipants;
+                this.currentParticipants = 0;
+                this.maxParticipantsForwards = maxParticipantsForwards;
+                this.currentParticipantsForwards = 0;
+                this.maxParticipantsCenters = maxParticipantsCenters;
+                this.currentParticipantsCenters = 0;
+                this.maxParticipantsGuards = maxParticipantsGuards;
+                this.currentParticipantsGuards = 0;
+                this.maxParticipantsOthers = maxParticipantsOthers;
+                this.currentParticipantsOthers = 0;
         }
 }
