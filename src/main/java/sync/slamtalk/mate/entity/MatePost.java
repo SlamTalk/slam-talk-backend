@@ -1,19 +1,17 @@
-package sync.slamtalk.mate.domain;
+package sync.slamtalk.mate.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import sync.slamtalk.common.BaseEntity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Getter
 @AllArgsConstructor
+@Table(name = "matepost")
 public class MatePost extends BaseEntity {
 
         @Id
@@ -39,7 +37,7 @@ public class MatePost extends BaseEntity {
         private String content; // 글 내용
 
         @Column(nullable = false, name="skill_level_wanted")
-        private String skillLevel; // 원하는 스킬 레벨 "초보", "중수", "고수", "무관"
+        private SkillLevelType skillLevel; // 원하는 스킬 레벨 "BEGINNER", "INTERMEDIATE", "MASTER", "IRRELEVANT"
 
         @Column(nullable = false, name="scheduled_time")
         private LocalDateTime scheduledTime; // 예정된 시간
@@ -51,7 +49,7 @@ public class MatePost extends BaseEntity {
         private boolean softDelete; // 삭제 여부
 
         @Column(nullable = false, name="recruitment_status")
-        private String recruitmentStatus; // 모집 마감 여부 "모집중", "모집완료", "모집취소"
+        private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
 
         @Column(nullable = false, name="max_participants")
         private int maxParticipants; // 최대 참여 인원
@@ -93,7 +91,7 @@ public class MatePost extends BaseEntity {
         }
 
         @Builder
-        public MatePost(long userId, String userNickname, String title, String content, String skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, String recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
+        public MatePost(long userId, String userNickname, String title, String content, SkillLevelType skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, RecruitmentStatusType recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
                 this.userId = userId;
                 this.userNickname = userNickname;
                 this.title = title;

@@ -3,7 +3,7 @@ package sync.slamtalk.mate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.mate.domain.MatePost;
+import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.repository.MatePostRepository;
 
 @Service

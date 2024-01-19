@@ -3,7 +3,9 @@ package sync.slamtalk.mate.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import sync.slamtalk.mate.domain.MatePost;
+import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.time.LocalDateTime;
 
@@ -21,14 +23,13 @@ public class MateFormDTO {
     private int maxParticipantsGuards;
     private int maxParticipantsForwards;
     private int maxParticipantsOthers; // 모집 포지션 무관
-    private String skillLevel; // 원하는 스킬 레벨 "초보", "중수", "고수", "무관"
+    private SkillLevelType skillLevel; // 원하는 스킬 레벨 "BEGINNER", "INTERMEDIATE", "MASTER", "IRRELEVANT"
 
     @JsonIgnore
-    public MatePost toEntity(int userId, String userNickname, String userLocation) {
+    public MatePost toEntity(int userId, String userNickname) {
         return MatePost.builder()
                 .userId(userId)
                 .userNickname(userNickname)
-                .userLocation(userLocation)
                 .title(title)
                 .scheduledTime(scheduledTime)
                 .locationDetail(locationDetail)
@@ -39,7 +40,7 @@ public class MateFormDTO {
                 .maxParticipantsOthers(maxParticipantsOthers)
                 .skillLevel(skillLevel)
                 .softDelete(false)
-                .recruitmentStatus("모집중")
+                .recruitmentStatus(RecruitmentStatusType.RECRUITING)
                 .build();
     }
 
