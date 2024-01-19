@@ -13,7 +13,6 @@ import java.util.List;
 
 @Entity
 @Getter
-@Setter
 @AllArgsConstructor
 public class MatePost extends BaseEntity {
 
@@ -29,9 +28,6 @@ public class MatePost extends BaseEntity {
 
         @Column(nullable = false, name="user_nickname")
         private String userNickname; // 글 작성자 닉네임
-
-        @Column(nullable = true, name="user_location")
-        private String userLocation; // 글 작성자 지역
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -97,10 +93,9 @@ public class MatePost extends BaseEntity {
         }
 
         @Builder
-        public MatePost(long userId, String userNickname, String userLocation, String title, String content, String skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, String recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
+        public MatePost(long userId, String userNickname, String title, String content, String skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, String recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
                 this.userId = userId;
                 this.userNickname = userNickname;
-                this.userLocation = userLocation;
                 this.title = title;
                 this.content = content;
                 this.skillLevel = skillLevel;
