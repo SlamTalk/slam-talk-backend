@@ -61,8 +61,8 @@ public class ApiResponse<T> {
 
 
     // 실패 응답
-    public static <T>ApiResponse<T> fail(ErrorResponseCode errorResponseCode){
-        return new ApiResponse<>(errorResponseCode.getStatus(), errorResponseCode.getMessage());
+    public static <T>ApiResponse<T> fail(ResponseCodeDetails responseCodeInterface){
+        return new ApiResponse<>(responseCodeInterface.getStatus(), responseCodeInterface.getMessage());
     }
 
 
