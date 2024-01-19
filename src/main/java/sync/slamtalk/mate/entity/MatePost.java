@@ -36,7 +36,8 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false)
         private String content; // 글 내용
 
-        @Column(nullable = false, name="skill_level_wanted")
+        @Column(nullable = false, name="skill_level_type")
+        @Enumerated(EnumType.STRING)
         private SkillLevelType skillLevel; // 원하는 스킬 레벨 "BEGINNER", "INTERMEDIATE", "MASTER", "IRRELEVANT"
 
         @Column(nullable = false, name="scheduled_time")
@@ -48,7 +49,8 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false, name="soft_delete")
         private boolean softDelete; // 삭제 여부
 
-        @Column(nullable = false, name="recruitment_status")
+        @Column(nullable = false, name="recruitment_status_type")
+        @Enumerated(EnumType.STRING)
         private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
 
         @Column(nullable = false, name="max_participants")

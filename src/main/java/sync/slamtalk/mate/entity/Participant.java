@@ -1,4 +1,4 @@
-package sync.slamtalk.mate.domain;
+package sync.slamtalk.mate.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +9,7 @@ import sync.slamtalk.common.BaseEntity;
 
 @Getter
 @AllArgsConstructor
+@Table(name = "participant")
 public class Participant extends BaseEntity {
 
     @Id

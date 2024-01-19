@@ -22,7 +22,7 @@ public class RegisterMatePostController {
     @Operation(
             summary = "메이트 찾기 글 등록",
             description = "메이트 찾기 글쓰기 버튼을 누르고 글을 쓰는 폼을 작성하여 제출할때 접근하는 api 입니다. POST 요청 시 JSON 형식은 다음의 API 명세서를 참고해주세요. https://www.notion.so/6407bc994ee04e009bf22513119eb18a",
-            tags = {"유저"}
+            tags = {"메이트 찾기"}
     )
     @PostMapping("/api/mate/register")
     public ApiResponse registerMatePost(@RequestBody MateFormDTO mateFormDTO){

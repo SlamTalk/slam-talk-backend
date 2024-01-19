@@ -1,4 +1,4 @@
-package sync.slamtalk.mate.domain;
+package sync.slamtalk.mate.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,7 +7,7 @@ import java.util.List;
 
 
 @Getter
-public class User {   // 다른 엔터티의 생성을 위한 임시적인 목업 엔터티
+public class UserTeamMock {   // 다른 엔터티의 생성을 위한 임시적인 목업 엔터티
 
     @Id
     @GeneratedValue
@@ -16,16 +16,14 @@ public class User {   // 다른 엔터티의 생성을 위한 임시적인 목�
 
     private String userNickname;
 
-    private String userLocation;
 
     @OneToMany(mappedBy = "userId")
     private List<MatePost> matePostList;
 
-    public User() {
+    public UserTeamMock() {
     }
 
-    public User(String name, String location) {
+    public UserTeamMock(String name) {
         this.userNickname = name;
-        this.userLocation = location;
     }
 }

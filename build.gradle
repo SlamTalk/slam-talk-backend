@@ -28,7 +28,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	runtimeOnly "com.mysql:mysql-connector-j" // mysql
+    runtimeOnly "com.mysql:mysql-connector-j" // mysql
 	runtimeOnly 'com.h2database:h2' // h2
 
 	compileOnly 'org.projectlombok:lombok'
