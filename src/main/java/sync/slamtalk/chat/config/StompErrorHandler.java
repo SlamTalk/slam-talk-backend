@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Component
-public class ChatErrorHandler extends StompSubProtocolErrorHandler {
+public class StompErrorHandler extends StompSubProtocolErrorHandler {
 
 
     // WebSocket Exception 처리
@@ -27,9 +27,19 @@ public class ChatErrorHandler extends StompSubProtocolErrorHandler {
             return handleUnauthorizedException(clientMessage,ex);
         }
 
+        if(ex.getCause().getMessage().equals("NFR")){
+            return handleNotFoundException(clientMessage,ex);
+        }
+
         // 기본 에러 메세지 처리
         return super.handleClientMessageProcessingError(clientMessage,ex);
     }
+
+    // 생성된 방이 없는 경우 처리 하는 메소드
+    private Message<byte[]> handleNotFoundException(Message<byte[]> clientMessage,Throwable ex){
+        return prepareErrorMessage(RoomCode.NOT_FOUND_ROOM);
+    }
+
 
     // 방에 대한 권한이 없는 경우 처리 하는 메소드
     private Message<byte[]> handleUnauthorizedException(Message<byte[]> clientMessage, Throwable ex){
