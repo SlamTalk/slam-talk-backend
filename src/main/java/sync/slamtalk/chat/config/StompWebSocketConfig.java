@@ -45,7 +45,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 
 
-    // 활성화 시 메세지가 안보내짐 왜지..?
+    // WebSocket ErrorHandler -> WebSocket
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
         registry.addDecoratorFactory(webSocketHandler-> new CustomWebSocketHandler(webSocketHandler));
