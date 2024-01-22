@@ -1,20 +1,22 @@
-package sync.slamtalk.mate.domain;
+package sync.slamtalk.mate.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import sync.slamtalk.common.BaseEntity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
-@Setter
+@Table(name = "matepost")
+@Builder
 @AllArgsConstructor
+@NoArgsConstructor
 public class MatePost extends BaseEntity {
 
         @Id
@@ -22,16 +24,10 @@ public class MatePost extends BaseEntity {
         @Column(name = "mate_post_id")
         private long matePostId;
 
-//        @ManyToOne(fetch = FetchType.LAZY)
-//        @JoinColumn(nullable = false, name="user_id")
-        @Column(nullable = false, name="user_id")
-        private long userId; // 글 작성자 아이디 * 매핑 필요 (임시로 long으로 설정)
-
-        @Column(nullable = false, name="user_nickname")
-        private String userNickname; // 글 작성자 닉네임
-
-        @Column(nullable = true, name="user_location")
-        private String userLocation; // 글 작성자 지역
+        //@ManyToOne(fetch = FetchType.LAZY)
+        //@JoinColumn(nullable = false, name="writer_id")
+        @Column(nullable = false, name="writer_id")
+        private long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -42,8 +38,9 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false)
         private String content; // 글 내용
 
-        @Column(nullable = false, name="skill_level_wanted")
-        private String skillLevel; // 원하는 스킬 레벨 "초보", "중수", "고수", "무관"
+        @Column(nullable = false, name="skill_level_type")
+        @Enumerated(EnumType.STRING)
+        private SkillLevelType skillLevel; // 원하는 스킬 레벨 "BEGINNER", "INTERMEDIATE", "MASTER", "IRRELEVANT"
 
         @Column(nullable = false, name="scheduled_time")
         private LocalDateTime scheduledTime; // 예정된 시간
@@ -54,8 +51,9 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false, name="soft_delete")
         private boolean softDelete; // 삭제 여부
 
-        @Column(nullable = false, name="recruitment_status")
-        private String recruitmentStatus; // 모집 마감 여부 "모집중", "모집완료", "모집취소"
+        @Column(nullable = false, name="recruitment_status_type")
+        @Enumerated(EnumType.STRING)
+        private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
 
         @Column(nullable = false, name="max_participants")
         private int maxParticipants; // 최대 참여 인원
@@ -87,37 +85,78 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false, name="current_participants_others")
         private int currentParticipantsOthers; // 모집 포지션 무관 현재 참여 인원
 
-//        @JsonIgnore
-//        @OneToMany(mappedBy = "matePost", cascade = CascadeType.ALL)
-//        private List<Participant> participants; // 참여자 목록
+        @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL)
+        private List<Participant> participants = new ArrayList<>(); // 참여자 목록
 
-
-        public MatePost() {
-
+        public void addParticipant(Participant participant){
+                this.participants.add(participant);
         }
 
-        @Builder
-        public MatePost(long userId, String userNickname, String userLocation, String title, String content, String skillLevel, LocalDateTime scheduledTime, String locationDetail, long chatRoomId, boolean softDelete, String recruitmentStatus, int maxParticipants, int maxParticipantsForwards, int maxParticipantsCenters, int maxParticipantsGuards, int maxParticipantsOthers) {
-                this.userId = userId;
-                this.userNickname = userNickname;
-                this.userLocation = userLocation;
+        /**
+         * 메이트찾기 게시글 삭제
+         * soft delete
+         * @return 게시글을 삭제(soft delete)하는데 성공하면 true 반환
+         */
+        public boolean softDeleteMatePost(){
+                softDeleteParticipantAll();
+                this.softDelete = true;
+                return true;
+        }
+
+        /**
+         * 메이트찾기 게시글에 속한 참여자 목록 삭제한다.(글 작성자는 참여자 목록에 속하지 않음)
+         * soft delete
+         * @return soft delete 실패 시 false 반환
+         */
+        public boolean softDeleteParticipantAll(){
+                for(Participant participant : participants){
+                        if(!participant.softDeleteParticipant()){
+                                return false;
+                        }
+                }
+                return true;
+        }
+
+
+        public void updateTitle(String title){
                 this.title = title;
-                this.content = content;
-                this.skillLevel = skillLevel;
-                this.scheduledTime = scheduledTime;
-                this.locationDetail = locationDetail;
-                this.chatRoomId = chatRoomId;
-                this.softDelete = softDelete;
-                this.recruitmentStatus = recruitmentStatus;
-                this.maxParticipants = maxParticipants;
-                this.currentParticipants = 0;
-                this.maxParticipantsForwards = maxParticipantsForwards;
-                this.currentParticipantsForwards = 0;
-                this.maxParticipantsCenters = maxParticipantsCenters;
-                this.currentParticipantsCenters = 0;
-                this.maxParticipantsGuards = maxParticipantsGuards;
-                this.currentParticipantsGuards = 0;
-                this.maxParticipantsOthers = maxParticipantsOthers;
-                this.currentParticipantsOthers = 0;
         }
+
+        public void updateContent(String content){
+                this.content = content;
+        }
+
+        public void updateScheduledTime(LocalDateTime scheduledTime){
+                this.scheduledTime = scheduledTime;
+        }
+
+        public void updateLocationDetail(String locationDetail){
+                this.locationDetail = locationDetail;
+        }
+
+        public void updateSkillLevel(SkillLevelType skillLevel){
+                this.skillLevel = skillLevel;
+        }
+
+
+        public void updateMaxParticipants(int maxParticipants){
+                this.maxParticipants = maxParticipants;
+        }
+
+        public void updateMaxParticipantsForwards(int maxParticipantsForwards){
+                this.maxParticipantsForwards = maxParticipantsForwards;
+        }
+
+        public void updateMaxParticipantsCenters(int maxParticipantsCenters){
+                this.maxParticipantsCenters = maxParticipantsCenters;
+        }
+
+        public void updateMaxParticipantsGuards(int maxParticipantsGuards){
+                this.maxParticipantsGuards = maxParticipantsGuards;
+        }
+
+        public void updateMaxParticipantsOthers(int maxParticipantsOthers){
+                this.maxParticipantsOthers = maxParticipantsOthers;
+        }
+
 }
