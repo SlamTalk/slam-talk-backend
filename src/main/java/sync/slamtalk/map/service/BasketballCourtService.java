@@ -5,7 +5,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sync.slamtalk.common.BaseException;
+import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
@@ -26,10 +29,11 @@ public class BasketballCourtService {
     }
 
     //특정 농구장 전체 정보
-    public Optional<BasketballCourtDto> getCourtFullInfoById(Long courtId) {
+    public BasketballCourtDto getCourtFullInfoById(Long courtId) {
         return basketballCourtRepository.findById(courtId)
                 .filter(court -> court.getAdminStatus() == AdminStatus.ACCEPT) // ACCEPT 상태 필터링
-                .map(basketballCourtMapper::toFullDto); // dto 변환 mapper 호출
+                .map(basketballCourtMapper::toFullDto)
+                .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
 
 }

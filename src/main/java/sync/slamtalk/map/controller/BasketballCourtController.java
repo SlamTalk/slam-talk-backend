@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.map.dto.BasketballCourtDto;
 import sync.slamtalk.map.service.BasketballCourtService;
 
@@ -40,9 +41,10 @@ public class BasketballCourtController {
             tags = {"지도"}
     )
     public ApiResponse<BasketballCourtDto> getCourtFullInfoById(@PathVariable Long courtId) {
-        Optional<BasketballCourtDto> basketballCourtDto = basketballCourtService.getCourtFullInfoById(courtId);
-        return basketballCourtDto
-                .map(dto -> (ApiResponse.ok(dto, "농구장 상세 정보를 성공적으로 가져왔습니다.")))
-                .orElseGet(() -> (ApiResponse.fail("농구장 정보를 찾을 수 없습니다.")));
+
+            BasketballCourtDto basketballCourtDto = basketballCourtService.getCourtFullInfoById(courtId);
+            return ApiResponse.ok(basketballCourtDto, "농구장 상세 정보를 성공적으로 가져왔습니다.");
+
     }
+
 }
