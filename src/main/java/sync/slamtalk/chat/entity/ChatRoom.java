@@ -20,9 +20,9 @@ public class ChatRoom extends BaseEntity {
     private Long id;
 
     @Column(name = "chatroom_type",nullable = false)
-    private RoomType roomType; // 1:1, 단체방
+    private RoomType roomType; // 다이렉트메세지, 농구장, 같이해요, 팀매칭
 
-    @Column(name = "chatroom_name", nullable = false)
+    @Column(name = "chatroom_name",nullable = false)
     private String name; // 방 제목
 
 

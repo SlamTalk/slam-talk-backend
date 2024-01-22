@@ -1,5 +1,6 @@
 package sync.slamtalk.chat.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
@@ -19,6 +20,11 @@ public class Messages extends BaseEntity {
     // 메세지(내용)
     @Column(name = "content")
     private String content;
+
+    // 메세지(작성시간)
+    @Column(name = "creation_time",nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private String creation_time;
 
     // 채팅방
     @ManyToOne(fetch = FetchType.LAZY)

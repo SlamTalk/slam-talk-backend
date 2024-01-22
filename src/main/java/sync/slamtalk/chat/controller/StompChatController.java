@@ -6,7 +6,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import sync.slamtalk.chat.dto.ChatMessageDTO;
+import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
+import sync.slamtalk.chat.service.ChatServiceImpl;
 
 @Controller
 @RequiredArgsConstructor
@@ -14,6 +15,7 @@ public class StompChatController {
 
 
     private final SimpMessagingTemplate template; //특정 Broker로 메세지를 전달
+    private final ChatServiceImpl chatService;
 
     // Client 가 SEND 할 수 있는 경로
     /*stompConfig에서 설정한 applicationDestinationPrefixes와
@@ -30,10 +32,11 @@ public class StompChatController {
 
 
     // "/pub/chat/message" 로 날린 데이터에 대해서
-    // "/sub/chat/room + roomId" 로 구독자들에게 해당 message를 전달
+    // "/sub/chat/room/roomId" 로 구독자들에게 해당 message를 전달
     @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO message(ChatMessageDTO message){
+        System.out.println(message.getContent());
         return message;
     }
 

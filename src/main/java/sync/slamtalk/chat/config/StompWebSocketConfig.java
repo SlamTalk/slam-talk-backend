@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 
 
 @Slf4j
@@ -17,17 +18,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final ChatInboundInterceptor chatInboundInterceptor;
-    private final ChatErrorHandler chatErrorHandler;
+    private final StompErrorHandler stompErrorHandler;
 
     // webSocket 접속 경로 설정
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/slamtalk")
                 .setAllowedOrigins("*");
-
                 //.withSockJS(); // 사용시 /websocket 붙여서 테스트
-        // TODO-> 에러핸들러
-        registry.setErrorHandler(chatErrorHandler);
+        registry.setErrorHandler(stompErrorHandler);
     }
 
 
@@ -42,8 +41,13 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // client 요청 검증 수행
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        // TODO
         registration.interceptors(chatInboundInterceptor);
+    }
 
+
+    // WebSocket ErrorHandler -> WebSocket
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
+        registry.addDecoratorFactory(webSocketHandler-> new CustomWebSocketHandler(webSocketHandler));
     }
 }

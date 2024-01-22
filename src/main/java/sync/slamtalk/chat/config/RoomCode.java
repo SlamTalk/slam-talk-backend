@@ -19,11 +19,11 @@ public enum RoomCode implements ResponseCode {
 
     @Override
     public int getCode() {
-        return 0;
+        return code;
     }
 
     @Override
     public String getMessage() {
-        return null;
+        return message;
     }
 }
