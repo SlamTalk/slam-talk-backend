@@ -30,8 +30,12 @@ jobs:
     # github secret 에서 설정해줘야한다.
     - uses: actions/checkout@v3
     - run: mkdir -p ./src/main/resources/
-    - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.properties
-    - run: cat ./src/main/resources/application.properties
+    - run: echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+    - run: cat ./src/main/resources/application.yml
+
+    - run: mkdir -p ./src/main/resources/
+    - run: echo "${{ secrets.APPLICATION_JWT }}" > ./src/main/resources/application-jwt.yml
+    - run: cat ./src/main/resources/application-jwt.yml
 
 
     # gradle을 통해 소스를 빌드.
