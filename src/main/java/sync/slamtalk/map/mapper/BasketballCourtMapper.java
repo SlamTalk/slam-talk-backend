@@ -2,6 +2,7 @@ package sync.slamtalk.map.mapper;
 
 import org.springframework.stereotype.Component;
 import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
 
 @Component
@@ -40,5 +41,29 @@ public class BasketballCourtMapper {
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl()
         );
+    }
+
+    public BasketballCourt toEntity(BasketballCourtDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return BasketballCourt.builder()
+                .courtName((dto.getCourtName()))
+                .latitude(dto.getLatitude())
+                .longitude(dto.getLongitude())
+                .courtType(dto.getCourtType())
+                .indoorOutdoor(dto.getIndoorOutdoor())
+                .courtSize(dto.getCourtSize())
+                .hoopCount(dto.getHoopCount())
+                .nightLighting(dto.getNightLighting())
+                .openingHours(dto.getOpeningHours())
+                .fee(dto.getFee())
+                .parkingAvailable(dto.getParkingAvailable())
+                .additionalInfo(dto.getAdditionalInfo())
+                .photoUrl(dto.getPhotoUrl())
+                .adminStatus(AdminStatus.STAND)
+                .build();
+
     }
 }

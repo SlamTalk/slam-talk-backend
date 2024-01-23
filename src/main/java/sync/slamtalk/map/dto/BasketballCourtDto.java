@@ -50,6 +50,4 @@ public class BasketballCourtDto {
         this.latitude = latitude;
         this.longitude = longitude;
     }
-
-
 }
