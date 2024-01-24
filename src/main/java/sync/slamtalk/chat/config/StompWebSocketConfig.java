@@ -33,8 +33,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // 메세지 브로커 기반 통신 설정 -> STOMP Messaging protocol
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.setApplicationDestinationPrefixes("/pub");
-        registry.enableSimpleBroker("/sub");
+        registry.setApplicationDestinationPrefixes("/pub"); // "/pub" 가 경로상에 있으면 <<컨트롤러>> 호출
+        registry.enableSimpleBroker("/sub"); // "/subscribe" 가 경로상에 있으면 <<메세지브로커>> 호출
     }
 
 
