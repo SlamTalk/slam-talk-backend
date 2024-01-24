@@ -77,10 +77,11 @@ public class SecurityConfig {
                             request.requestMatchers(
                                     "/api/login",
                                     "/api/sign-up",
+                                    "/api/tokens/refresh",
+                                    "/ws/slamtalk/**",
                                     "/swagger-ui/**",
                                     "/v3/api-docs/**",
-                                    "/favicon.ico",
-                                    "/ws/slamtalk/**"
+                                    "/favicon.ico"
                             ).permitAll();
                             request.requestMatchers("/api/admin").hasRole(UserRole.ADMIN.toString());
                             request.anyRequest().authenticated();
