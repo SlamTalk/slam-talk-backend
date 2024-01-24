@@ -4,20 +4,29 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.entity.BasketballCourt;
+import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.service.BasketballCourtService;
+import sync.slamtalk.map.service.ReportBasketballCourtService;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/map")
 public class BasketballCourtController {
     private final BasketballCourtService basketballCourtService;
+    private final ReportBasketballCourtService reportBasketballCourtService;
+    private final BasketballCourtMapper basketballCourtMapper;
 
 
     //전체 농구장 간략 정보
@@ -42,9 +51,15 @@ public class BasketballCourtController {
     )
     public ApiResponse<BasketballCourtDto> getCourtFullInfoById(@PathVariable Long courtId) {
 
-            BasketballCourtDto basketballCourtDto = basketballCourtService.getCourtFullInfoById(courtId);
-            return ApiResponse.ok(basketballCourtDto, "농구장 상세 정보를 성공적으로 가져왔습니다.");
+        BasketballCourtDto basketballCourtDto = basketballCourtService.getCourtFullInfoById(courtId);
+        return ApiResponse.ok(basketballCourtDto, "농구장 상세 정보를 성공적으로 가져왔습니다.");
 
     }
 
+    // 농구장 제보
+    @PostMapping("/report")
+    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto) {
+        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto);
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
+    }
 }
