@@ -32,7 +32,7 @@ public class BasketballCourt extends BaseEntity {
     private Long courtId; // 농구장 ID
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatroom_id", nullable = false)
+    @JoinColumn(name = "chatroom_id")
     private ChatRoom chatroom; // 채팅방 ID
 
     @Column(name = "court_name", nullable = false, length = 50)
