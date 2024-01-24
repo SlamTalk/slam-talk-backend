@@ -1,12 +1,11 @@
 package sync.slamtalk.map.service;
 
 import java.util.List;
-import java.util.Optional;
+
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.map.dto.BasketballCourtDto;
 import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
 import sync.slamtalk.map.entity.AdminStatus;
