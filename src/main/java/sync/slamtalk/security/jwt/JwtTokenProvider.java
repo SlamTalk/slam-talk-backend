@@ -91,7 +91,7 @@ public class JwtTokenProvider implements InitializingBean {
         log.debug("authorities = {}", authorities);
 
         String accessToken = createAccessToken(user, authorities);
-        String refreshToken = createRefreshToken(user, authorities);
+        String refreshToken = createRefreshToken();
 
 
         user.updateRefreshToken(refreshToken);
@@ -123,7 +123,7 @@ public class JwtTokenProvider implements InitializingBean {
      *
      * @return refreshToken
      */
-    public String createRefreshToken(User user, String authorities) {
+    public String createRefreshToken() {
         long now = (new Date()).getTime();
         Date refreshTokenValidity = new Date(now + this.refreshTokenExpirationPeriod);
 
@@ -166,6 +166,29 @@ public class JwtTokenProvider implements InitializingBean {
 
 
         return new UsernamePasswordAuthenticationToken(user, accessToken, authorities);
+    }
+
+    /**
+     * 웹소켓 STOMP 사용시 accessToken에서 userId 추출하는 메서드
+     * @param accessToken
+     * @return long userid
+     * */
+    public Long stompExtractUserIdFromToken(String accessToken){
+        // Jwt 토큰 복호화
+        Jws<Claims> claimsJws = Jwts
+                .parser()
+                .verifyWith(key) // 서명 검증
+                .build()
+                .parseSignedClaims(accessToken);
+
+        Claims claims = claimsJws.getPayload();
+
+        if (claims.get(AUTHORITIES_KEY) == null) {
+            log.info("권한 정보가 없는 토큰입니다");
+            throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
+        }
+
+        return Long.valueOf(claims.getSubject());
     }
 
     /**
