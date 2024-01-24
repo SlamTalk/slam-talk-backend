@@ -3,6 +3,7 @@ package sync.slamtalk.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.user.entity.User;
 
 @Entity
 @Getter
@@ -41,6 +42,17 @@ public class UserChatRoom extends BaseEntity {
         }
     }
 
+    // TODO 봉승님 유저로 편의메서드 작성
+    // 생각해보니까 채팅방 리스트가 유저정보에서 관리가 되어야됨(양방향 매핑해야할듯)
+    // 봉승님 코드에서 cascade = CascadeType.ALL, orphanRemoval = true 추가 요청
+    public void setUsers(User user){
+//        this.user = user;
+//        if(!user.getUserChatRooms().contains(this)){
+//            user.getUserChatRooms().add(this);
+//        }
+    }
+
+
     // 채팅방 설정
     public void setChat(ChatRoom chat) {
         this.chat = chat;
@@ -50,6 +62,8 @@ public class UserChatRoom extends BaseEntity {
     }
 
 
-
-
+    // readIndex 값 업데이트하기
+    public void updateReadIndex(Long newReadIndex) {
+        this.readIndex = newReadIndex;
+    }
 }

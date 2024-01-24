@@ -22,6 +22,7 @@ public class UserMock {
 
 
     // UserChatRoom 추가를 위한 편의 메소드
+    // 굳이 필요 없겠다
     public void addUserChatRoom(UserChatRoom userchatRoom){
         // 사용자채팅방을 모아놓는 set 에 userchatRoom 추가
         userChats.add(userchatRoom);
