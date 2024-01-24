@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class ChatCreateDTO implements Serializable {
     private String roomType; // 1:1 이냐 단체방 이냐
-    private String name;
+    private String name; // 채팅방 이름
 }

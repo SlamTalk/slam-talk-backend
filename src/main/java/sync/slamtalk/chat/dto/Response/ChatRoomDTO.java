@@ -13,10 +13,11 @@ public class ChatRoomDTO implements Serializable {
     private String roomId;
     // 채팅방 이름
     private String name;
-    // 채팅방 마지막 메세지..?
+    // 채팅방 마지막 메세지
     private String last_message;
 
 
+    // 채팅방 마지막 메세지 업데이트
     public void setLast_message(String last_message) {
         this.last_message = last_message;
     }

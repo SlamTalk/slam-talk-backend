@@ -10,7 +10,7 @@ public enum ChatErrorResponseCode implements ResponseCodeDetails {
     // 채팅
     CHAT_FAIL(SC_BAD_REQUEST,4021,"Failed Chatting"),
     CHAT_LIST_NOT_FOUND(SC_NOT_FOUND,4022,"ChatList Not Found"),
-
+    CHAT_ROOM_NOT_FOUND(SC_NOT_FOUND,4023,"ChatRoom Not Found"),
     ;
 
 
