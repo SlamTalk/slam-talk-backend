@@ -62,7 +62,7 @@ public class BasketballCourtMapper {
                 .parkingAvailable(dto.getParkingAvailable())
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(dto.getPhotoUrl())
-                .adminStatus(AdminStatus.STAND)
+                .adminStatus(AdminStatus.STAND) // 대기 상태
                 .build();
 
     }
