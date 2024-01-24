@@ -56,6 +56,11 @@ public class BasketballCourtController {
 
     // 농구장 제보
     @PostMapping("/report")
+    @Operation(
+            summary = "제보 받은 농구장 정보 저장", // 기능 제목 입니다
+            description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
+            tags = {"지도"}
+    )
     public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto) {
         BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
