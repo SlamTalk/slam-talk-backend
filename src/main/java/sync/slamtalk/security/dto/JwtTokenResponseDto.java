@@ -13,4 +13,9 @@ public class JwtTokenResponseDto {
     private String grantType;
     private String accessToken;
     private String refreshToken;
+
+    /* refreshToken 초기화 메서드*/
+    public void clearRefreshToken(){
+        this.refreshToken = "";
+    }
 }

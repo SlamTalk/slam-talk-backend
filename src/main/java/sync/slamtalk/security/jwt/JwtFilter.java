@@ -2,7 +2,6 @@ package sync.slamtalk.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,11 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
-import sync.slamtalk.security.utils.CookieUtil;
 
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Jwt를 위한 커스텀 필터
@@ -30,13 +26,6 @@ public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // pe
    public String authorizationHeader;
    @Value("${jwt.refresh.header}")
    public String refreshAuthorizationHeader;
-   @Value("${jwt.access.expiration}")
-   private int accessTokenExpirationPeriod;
-   @Value("${jwt.refresh.expiration}")
-   private int refreshTokenExpirationPeriod;
-   @Value("${jwt.domain}")
-   private String domain;
-
    private final JwtTokenProvider tokenProvider;
 
    /**
@@ -50,42 +39,24 @@ public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // pe
            FilterChain filterChain
    ) throws ServletException, IOException {
 
-      String accessToken = resolveCookie(httpServletRequest, this.authorizationHeader);
-      String refreshToken = resolveCookie(httpServletRequest, this.refreshAuthorizationHeader);
+      String accessToken = tokenProvider.resolveAccessToken(httpServletRequest);
 
       String requestURI = httpServletRequest.getRequestURI();
 
-      // 1. Request Cookie accessToken 토큰 추출 및 유효성 검사
+      // 1. Request header accessToken 토큰 추출 및 유효성 검사
       if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {
          authenticateFromToken(accessToken, requestURI);
       }
 
-      // 2. Request Header에서 refreshToken 추출 및 유효성 검사
-      else if(StringUtils.hasText(refreshToken) && tokenProvider.validateToken(refreshToken)){
-         Optional<JwtTokenResponseDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
-         if(optionalJwtTokenResponseDto.isPresent()){
-            JwtTokenResponseDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
-
-            CookieUtil.addCookie(
-                    httpServletResponse,
-                    authorizationHeader,
-                    jwtTokenResponseDto.getAccessToken(),
-                    accessTokenExpirationPeriod,
-                    domain
-            );
-
-            CookieUtil.addCookie(
-                    httpServletResponse,
-                    refreshAuthorizationHeader,
-                    jwtTokenResponseDto.getRefreshToken(),
-                    refreshTokenExpirationPeriod,
-                    domain
-            );
-
-            log.debug("토큰이 재발급되었습니다.");
-
-            authenticateFromToken(jwtTokenResponseDto.getAccessToken(), requestURI);
-         }
+      // 2. Request header accessToken 토큰 추출 결과가 false 일 경우
+      // 엑세스 토큰이 만료되었다고 401 에러를 던져야 함.
+      else if(StringUtils.hasText(accessToken) && !tokenProvider.validateToken(accessToken)){
+         log.debug("토큰이 만료 되었습니다!");
+         httpServletResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 에러 설정
+         httpServletResponse.getWriter().write("Unauthorized: Access is denied due to invalid credentials");
+         httpServletResponse.getWriter().flush();
+         httpServletResponse.getWriter().close();
+         return;
       }
 
       filterChain.doFilter(httpServletRequest, httpServletResponse);
@@ -104,22 +75,4 @@ public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // pe
       SecurityContextHolder.getContext().setAuthentication(authentication);
       log.debug("Security Context에 '{}' 인증 정보를 저장했습니다, uri: {}", authentication.getName(), requestURI);
    }
-
-   /**
-    * request 쿠키에서 token 추출하는 메서드
-    * @param request
-    * @param cookieHeaderName
-    * @return String
-    * */
-   private String resolveCookie(HttpServletRequest request, String cookieHeaderName) {
-      /* Cookie 에서 Token 정보 가져오는 로직 */
-      Optional<Cookie> optionalAccessTokenCookie = CookieUtil.getCookie(request, cookieHeaderName);
-
-      if(optionalAccessTokenCookie.isPresent()){
-         return optionalAccessTokenCookie.get().getValue();
-      }
-
-      return "";
-   }
-
 }
