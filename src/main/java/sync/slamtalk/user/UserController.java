@@ -4,15 +4,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.security.dto.JwtTokenResponseDto;
-import sync.slamtalk.security.utils.CookieUtil;
-import sync.slamtalk.user.UserService;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 

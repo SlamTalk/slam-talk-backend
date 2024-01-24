@@ -1,6 +1,5 @@
 package sync.slamtalk.user;
 
-import com.fasterxml.jackson.databind.util.JSONWrappedObject;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +22,6 @@ import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.error.UserErrorResponseCode;
 
-import java.security.DrbgParameters;
 import java.util.Optional;
 
 @Slf4j

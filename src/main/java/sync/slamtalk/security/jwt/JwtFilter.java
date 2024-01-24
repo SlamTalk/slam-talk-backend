@@ -12,11 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
-import sync.slamtalk.security.utils.CookieUtil;
 
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * Jwt를 위한 커스텀 필터
