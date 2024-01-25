@@ -20,7 +20,7 @@ public class UserChatRoom extends BaseEntity {
     // 유저
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id",nullable = false)
-    private UserMock user;
+    private User user;
 
 
     // 채팅방
@@ -34,22 +34,16 @@ public class UserChatRoom extends BaseEntity {
     private Long readIndex;
 
 
-    // 유저 설정
-    public void setUser(UserMock user) {
-        this.user = user;
-        if (!user.getUserChats().contains(this)) {
-            user.getUserChats().add(this);
-        }
-    }
+    // 채팅방 입장 최초/재접속 판단
+    @Column(name="isFirst")
+    private Boolean isFirst;
 
-    // TODO 봉승님 유저로 편의메서드 작성
-    // 생각해보니까 채팅방 리스트가 유저정보에서 관리가 되어야됨(양방향 매핑해야할듯)
-    // 봉승님 코드에서 cascade = CascadeType.ALL, orphanRemoval = true 추가 요청
+
     public void setUsers(User user){
-//        this.user = user;
-//        if(!user.getUserChatRooms().contains(this)){
-//            user.getUserChatRooms().add(this);
-//        }
+        this.user = user;
+        if(!user.getUserChatRooms().contains(this)){
+            user.getUserChatRooms().add(this);
+        }
     }
 
 
