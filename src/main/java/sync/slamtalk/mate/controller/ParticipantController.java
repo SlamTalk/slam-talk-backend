@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.entity.ApplyStatusType;
-import sync.slamtalk.mate.error.UserErrorResponseCode;
+import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.service.ParticipantService;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class ParticipantController {
         long userId = 1;
         String userNickname = "testApplicant";
         if(matePostApplicantDTO.getApplyStatus() != ApplyStatusType.WAITING){
-            return ApiResponse.fail(UserErrorResponseCode.PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+            return ApiResponse.fail(MateErrorResponseCode.PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
         }
         // * 해당 글에 지원자의 신청 절차를 진행한다.
         MatePostApplicantDTO dto = participantService.addParticipant(matePostId, userId, userNickname, matePostApplicantDTO);

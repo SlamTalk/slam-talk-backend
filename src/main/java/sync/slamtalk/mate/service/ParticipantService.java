@@ -7,7 +7,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.entity.*;
-import sync.slamtalk.mate.error.UserErrorResponseCode;
+import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
 
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static sync.slamtalk.mate.error.UserErrorResponseCode.*;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +30,7 @@ public class ParticipantService {
     public MatePostApplicantDTO addParticipant(long matePostId, long participantId, String participantNIckname, MatePostApplicantDTO matePostApplicantDTO){
         Optional<MatePost> post = matePostRepository.findById(matePostId);
         if(!post.isPresent()){
-            throw new BaseException(UserErrorResponseCode.MATE_POST_NOT_FOUND);
+            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
 
 
@@ -50,7 +50,7 @@ public class ParticipantService {
     public List<MatePostApplicantDTO> getParticipants(long matePostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
         if(!optionalMatePost.isPresent()){
-            throw new BaseException(UserErrorResponseCode.MATE_POST_NOT_FOUND);
+            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
         MatePost post = optionalMatePost.get();
         List<Participant> participants = post.getParticipants();
@@ -77,7 +77,7 @@ public class ParticipantService {
     public ApiResponse acceptParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> OptionalMatePost = matePostRepository.findById(matePostId);
         if(!OptionalMatePost.isPresent()){
-            throw new BaseException(UserErrorResponseCode.MATE_POST_NOT_FOUND);
+            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
         MatePost matePost = OptionalMatePost.get();
         if(matePost.getWriterId() != hostId){ // 접근자가 게시글 작성자가 아닐 때
