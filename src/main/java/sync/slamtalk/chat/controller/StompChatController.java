@@ -23,11 +23,9 @@ public class StompChatController {
 
     // "/pub/chat/room" 로 날린 데이터에 대해서
     // "/pub/chat/room/roomId" 로 구독자들에게 해당 메세지 전달
-    // TODO 파라미터로 messageDTO 제거하고 Token 으로 userdb 접근 후 닉네임가져오자
     @MessageMapping(value = "/chat/enter/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO enter(ChatMessageDTO message){
-        message.setContent(message.getSenderId()+"님이 채팅방에 참여하였습니다.");
         return message;
     }
 
@@ -37,6 +35,21 @@ public class StompChatController {
     @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO message(ChatMessageDTO message){
+        return message;
+    }
+
+
+    // 뒤로가기
+    @MessageMapping("/chat/back/{roomId}")
+    @SendTo("/sub/chat/back/{roomId}")
+    public ChatMessageDTO back(ChatMessageDTO message){
+        return message;
+    }
+
+    // 나가기
+    @MessageMapping("/chat/exit/{roomId}")
+    @SendTo("/sub/chat/exit/{roomId}")
+    public ChatMessageDTO exit(ChatMessageDTO message){
         return message;
     }
 
