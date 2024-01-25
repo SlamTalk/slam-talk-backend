@@ -5,12 +5,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 
+import java.util.Objects;
+
 
 @Entity
 @Getter
 @AllArgsConstructor
 @Table(name = "participant")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Participant extends BaseEntity {
 
     @Id
@@ -23,7 +24,7 @@ public class Participant extends BaseEntity {
     @JoinColumn(name = "mate_post_id")
     private MatePost matePost; // 참여자가 참여한 글
 
-    @Column(nullable = false, name="participant_id")
+    @Column(nullable = false, name="participant_email")
     private long participantId; // 참여자 아이디 * 매핑 불필요
 
     @Column(nullable = false, name="participant_nickname")
@@ -31,26 +32,74 @@ public class Participant extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ApplyStatusType applyStatus; // 참여자 신청 상태 "APPLYING", "ACCEPTED", "REJECTED", "CANCEL"
+    private ApplyStatusType applyStatus; // 참여자 신청 상태 "WAITING", "ACCEPTED", "REJECTED", "CANCEL"
 
-    private PositionType position; // 포지션 "CENTER", "GUARD", "FORWARD", "OTHER", * 향후에 통일된 Enum으로 변경 예정
+    private PositionType position; // 포지션 "CENTER", "GUARD", "FORWARD", "UNSPECIFIED", * 향후에 통일된 Enum으로 변경 예정
 
-    private String skillLevel; // 스킬 레벨
+    private SkillLevelType skillLevel; // 스킬 레벨  HIGH, MIDDLE, LOW, BEGINNER
 
     private boolean softDelete; // 삭제 여부 * 향후에 BaseEntity에 softDelete 추가 시 삭제 예정
 
-    @Builder
-    public Participant(MatePost matePost, long participantId, String participantNickname, PositionType position, String skillLevel, ApplyStatusType applyStatus) {
-        this.matePost = matePost;
+    public Participant() {
+    }
+
+    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
+
         this.participantId = participantId;
         this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
+        this.applyStatus = ApplyStatusType.WAITING;
+        this.softDelete = false;
+        this.matePost = null;
+    }
+
+    public ApplyStatusType updateApplyStatus(ApplyStatusType applyStatus) {
         this.applyStatus = applyStatus;
+        return this.applyStatus;
     }
 
     public boolean softDeleteParticipant() {
         this.softDelete = true;
         return true;
+    }
+
+    public boolean connectParent(MatePost matePost) {
+        this.matePost = matePost;
+        matePost.getParticipants().add(this);
+        return true;
+
+    }
+
+    public boolean disconnectParent() {
+        this.matePost.getParticipants().remove(this);
+        this.matePost = null;
+        return true;
+    }
+
+    @Override
+    public String toString() { // 양방향 연관 관계로 인한 순환 참조 고려한 toString
+        return "Participant{" +
+                "participantTableId=" + participantTableId +
+                ", participantId='" + participantId + '\'' +
+                ", participantNickname='" + participantNickname + '\'' +
+                ", applyStatus=" + applyStatus +
+                ", position=" + position +
+                ", skillLevel=" + skillLevel +
+                ", softDelete=" + softDelete +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Participant that = (Participant) o;
+        return participantId == that.participantId && Objects.equals(matePost, that.matePost);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(participantNickname, participantId);
     }
 }

@@ -10,6 +10,7 @@ import sync.slamtalk.common.BaseEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -26,7 +27,7 @@ public class MatePost extends BaseEntity {
 
         //@ManyToOne(fetch = FetchType.LAZY)
         //@JoinColumn(nullable = false, name="writer_id")
-        @Column(nullable = false, name="writer_id")
+        @Column(name="writer_id")
         private long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
 
         @Column(nullable = true, name="location_detail")
@@ -40,26 +41,23 @@ public class MatePost extends BaseEntity {
 
         @Column(nullable = false, name="skill_level_type")
         @Enumerated(EnumType.STRING)
-        private SkillLevelType skillLevel; // 원하는 스킬 레벨 "BEGINNER", "INTERMEDIATE", "MASTER", "IRRELEVANT"
+        private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 범위 BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
 
-        @Column(nullable = false, name="scheduled_time")
-        private LocalDateTime scheduledTime; // 예정된 시간
+        @Column(nullable = false, name="start_scheduled_time")
+        private LocalDateTime startScheduledTime; // 예정된 시작 시간
+
+        @Column(nullable = false, name="end_scheduled_time")
+        private LocalDateTime endScheduledTime; // 예정된 종료 시간
 
         @Column(nullable = true, name="chat_room_id") // 채팅방 아이디 * 매핑 필요
         private long chatRoomId;
 
         @Column(nullable = false, name="soft_delete")
-        private boolean softDelete; // 삭제 여부
+        private boolean softDelete = false; // 삭제 여부
 
         @Column(nullable = false, name="recruitment_status_type")
         @Enumerated(EnumType.STRING)
         private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
-
-        @Column(nullable = false, name="max_participants")
-        private int maxParticipants; // 최대 참여 인원
-
-        @Column(nullable = false, name="current_participants")
-        private int currentParticipants; // 현재 참여 인원
 
         @Column(nullable = false, name="max_participants_forward")
         private int maxParticipantsForwards; // 포워드 최대 참여 인원
@@ -88,9 +86,6 @@ public class MatePost extends BaseEntity {
         @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL)
         private List<Participant> participants = new ArrayList<>(); // 참여자 목록
 
-        public void addParticipant(Participant participant){
-                this.participants.add(participant);
-        }
 
         /**
          * 메이트찾기 게시글 삭제
@@ -117,6 +112,17 @@ public class MatePost extends BaseEntity {
                 return true;
         }
 
+        //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요
+//        public boolean connectParent(User user){
+//                this.user = user;
+//                if(!user.getMatePosts().contains(this)){
+//                        user.getMatePosts().add(this);
+//                        return true;
+//                }
+//                return false;
+//        }
+
+        //todo : convertToSkillLevelList() 메서드 구현 필요
 
         public void updateTitle(String title){
                 this.title = title;
@@ -126,37 +132,158 @@ public class MatePost extends BaseEntity {
                 this.content = content;
         }
 
-        public void updateScheduledTime(LocalDateTime scheduledTime){
-                this.scheduledTime = scheduledTime;
+        public void updateStartScheduledTime(LocalDateTime scheduledTime){
+                this.startScheduledTime = scheduledTime;
+        }
+
+        public void updateEndScheduledTime(LocalDateTime scheduledTime){
+                this.endScheduledTime = scheduledTime;
         }
 
         public void updateLocationDetail(String locationDetail){
                 this.locationDetail = locationDetail;
         }
 
-        public void updateSkillLevel(SkillLevelType skillLevel){
+        public void updateSkillLevel(RecruitedSkillLevelType skillLevel){
                 this.skillLevel = skillLevel;
         }
 
 
-        public void updateMaxParticipants(int maxParticipants){
-                this.maxParticipants = maxParticipants;
-        }
-
         public void updateMaxParticipantsForwards(int maxParticipantsForwards){
                 this.maxParticipantsForwards = maxParticipantsForwards;
+        }
+
+        public void updateCurrentParticipantsForwards(int currentParticipantsForwards){
+                this.currentParticipantsForwards = currentParticipantsForwards;
         }
 
         public void updateMaxParticipantsCenters(int maxParticipantsCenters){
                 this.maxParticipantsCenters = maxParticipantsCenters;
         }
 
+        public void updateCurrentParticipantsCenters(int currentParticipantsCenters){
+                this.currentParticipantsCenters = currentParticipantsCenters;
+        }
+
         public void updateMaxParticipantsGuards(int maxParticipantsGuards){
                 this.maxParticipantsGuards = maxParticipantsGuards;
+        }
+
+        public void updateCurrentParticipantsGuards(int currentParticipantsGuards){
+                this.currentParticipantsGuards = currentParticipantsGuards;
         }
 
         public void updateMaxParticipantsOthers(int maxParticipantsOthers){
                 this.maxParticipantsOthers = maxParticipantsOthers;
         }
 
+        public void updateCurrentParticipantsOthers(int currentParticipantsOthers){
+                this.currentParticipantsOthers = currentParticipantsOthers;
+        }
+
+        public boolean increasePositionNumbers(PositionType position){
+                switch(position){
+                        case CENTER:
+                                if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
+                                        throw new IllegalArgumentException("센터 참여 인원이 모두 찼습니다.");
+                                }else{
+                                        updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
+                                }
+                                break;
+                        case GUARD:
+                                if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
+                                        throw new IllegalArgumentException("가드 참여 인원이 모두 찼습니다.");
+                                }else{
+                                        updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
+                                }
+                                break;
+                        case FORWARD:
+                                if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
+                                        throw new IllegalArgumentException("포워드 참여 인원이 모두 찼습니다.");
+                                }else{
+                                        updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
+                                }
+                                break;
+                        case UNSPECIFIED:
+                                if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
+                                        throw new IllegalArgumentException("모집 포지션 무관 참여 인원이 모두 찼습니다.");
+                                }else{
+                                        updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
+                                }
+                                break;
+                }
+                return true;
+        }
+
+
+        public boolean reducePositionNumbers(PositionType position){
+                switch(position){
+                        case CENTER:
+                                if(getCurrentParticipantsCenters() == 0){
+                                        throw new IllegalArgumentException("더 이상 센터 인원을 줄일 수 없습니다.");
+                                }else{
+                                        updateCurrentParticipantsCenters(getCurrentParticipantsCenters() - 1);
+                                }
+                                break;
+                        case GUARD:
+                                if(getCurrentParticipantsGuards() == 0){
+                                        throw new IllegalArgumentException("더 이상 가드 인원을 줄일 수 없습니다.");
+                                }else{
+                                        updateCurrentParticipantsGuards(getCurrentParticipantsGuards() - 1);
+                                }
+                                break;
+                        case FORWARD:
+                                if(getCurrentParticipantsForwards() == 0){
+                                        throw new IllegalArgumentException("더 이상 포워드 인원을 줄일 수 없습니다.");
+                                }else{
+                                        updateCurrentParticipantsForwards(getCurrentParticipantsForwards() - 1);
+                                }
+                                break;
+                        case UNSPECIFIED:
+                                if(getCurrentParticipantsOthers() == 0){
+                                        throw new IllegalArgumentException("더 이상 모집 포지션 무관 인원을 줄일 수 없습니다.");
+                                }else{
+                                        updateCurrentParticipantsOthers(getCurrentParticipantsOthers() - 1);
+                                }
+                                break;
+                }
+                return true;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                MatePost matePost = (MatePost) o;
+                return matePostId == matePost.matePostId && Objects.equals(title, matePost.title);
+        }
+
+        @Override
+        public int hashCode() {
+                return Objects.hash(matePostId, title);
+        }
+
+        @Override
+        public String toString() {
+                return "MatePost{" +
+                        "matePostId=" + matePostId +
+                        ", locationDetail='" + locationDetail + '\'' +
+                        ", title='" + title + '\'' +
+                        ", content='" + content + '\'' +
+                        ", skillLevel=" + skillLevel +
+                        ", startScheduledTime=" + startScheduledTime +
+                        ", endScheduledTime=" + endScheduledTime +
+                        ", chatRoomId=" + chatRoomId +
+                        ", softDelete=" + softDelete +
+                        ", recruitmentStatus=" + recruitmentStatus +
+                        ", maxParticipantsForwards=" + maxParticipantsForwards +
+                        ", currentParticipantsForwards=" + currentParticipantsForwards +
+                        ", maxParticipantsCenters=" + maxParticipantsCenters +
+                        ", currentParticipantsCenters=" + currentParticipantsCenters +
+                        ", maxParticipantsGuards=" + maxParticipantsGuards +
+                        ", currentParticipantsGuards=" + currentParticipantsGuards +
+                        ", maxParticipantsOthers=" + maxParticipantsOthers +
+                        ", currentParticipantsOthers=" + currentParticipantsOthers +
+                        '}';
+        }
 }

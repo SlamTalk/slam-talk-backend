@@ -3,17 +3,22 @@ package sync.slamtalk.mate.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.service.MatePostService;
 
+import java.net.URI;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/mate")
 @RequiredArgsConstructor
-public class MatepostController {
+public class MatePostController {
 
     private final MatePostService matePostService;
 
@@ -23,7 +28,7 @@ public class MatepostController {
             tags = {"메이트 찾기"}
     )
     @PostMapping("/register")
-    public ApiResponse registerMatePost(@RequestBody MateFormDTO mateFormDTO){
+    public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO){
 
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         int userId = 1;
@@ -31,13 +36,14 @@ public class MatepostController {
         // * 해당 게시글 등록 폼에 입력된 작성자 ID와 접속자 ID가 일치하는지 확인한다.
 
 
-        // * MateFormDTO를 MatePost로 변환한다.
+        // MateFormDTO를 MatePost로 변환한다.
         MatePost matePost = mateFormDTO.toEntity(userId);
 
-        // * MatePost를 저장한다.
-        matePostService.registerMatePost(matePost);
-
-        return ApiResponse.ok();
+        // MatePost를 저장한다.
+        long matePostId = matePostService.registerMatePost(matePost);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("/api/mate/" + matePostId));
+        return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
     @Operation(
@@ -87,26 +93,8 @@ public class MatepostController {
         matePostService.deleteMatePost(matePostId);
         return ApiResponse.ok();
     }
-    //
-//    @Operation(
-//            summary = "메이트 찾기 글에 참여하기",
-//            description = "글 아이디와 참여자 정보를 요청하면 글에 참여하는 api 입니다.",
-//            tags = {"메이트 찾기"}
-//    )
-//    @PostMapping("/{matePostId}/participant")
-//    public ApiResponse<MateFormDTO> addParticipant(long matePostId, MateFormDTO mateFormDTO){
-//        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-//        int userId = 1;
-//        String userNickname = "테스트";
-//
-//        // * MateFormDTO를 MatePost로 변환한다.
-//        MatePost matePost = mateFormDTO.toEntity(userId, userNickname);
-//
-//        // * MatePost에 참여자를 추가한다.
-//        MatePostService.addParticipant(matePostId, matePost.getParticipants().get(0));
-//
-//        return ApiResponse.ok();
-//    }
+
+
     @GetMapping("/test")
     public ApiResponse<MateFormDTO> test(){
         return ApiResponse.ok();
