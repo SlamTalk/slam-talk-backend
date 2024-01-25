@@ -2,25 +2,25 @@ package sync.slamtalk.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
 import sync.slamtalk.chat.dto.Response.ChatRoomDTO;
-import sync.slamtalk.chat.entity.*;
+import sync.slamtalk.chat.entity.ChatRoom;
+import sync.slamtalk.chat.entity.Messages;
+import sync.slamtalk.chat.entity.RoomType;
+import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
-import sync.slamtalk.chat.repository.UserMockRepository;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
+import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
-import java.awt.print.Pageable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +32,7 @@ public class ChatServiceImpl implements ChatService{
     private final ChatRoomRepository chatRoomRepository;
     private final MessagesRepository messagesRepository;
     private final UserChatRoomRepository userChatRoomRepository;
-    private final UserMockRepository userMockRepository;
+    private final UserRepository userRepository;
 
     // 채팅방 생성(농구장:미리해놓기, 그외 모두 SUBSCRIBE 시에)
     @Override
@@ -47,35 +47,39 @@ public class ChatServiceImpl implements ChatService{
     }
 
 
-    // 채팅방 입장(STOMP: SUBSCRIBE) ❗️최초 입장일때만 ==> Token 완료 시 테스트해야함
+    // 채팅방 입장(STOMP: SUBSCRIBE)
+    // 매 접속시 실행!
     @Override
-    public void setUserChatRoom(Long chatRoomId) {
-        // chatRoomId 로 ChatRoom 가져오기
-        Optional<ChatRoom> chatroom = chatRoomRepository.findById(chatRoomId);
+    public void setUserChatRoom(Long userId, Long chatRoomId) {
 
-        // Test : user
-        Optional<UserMock> userMock = userMockRepository.findById(1L);
-
-        // 만약 userchatRoom 에 해당 chatRoom 이 존재하지 않는다면
-        List<UserChatRoom> userChatList = userChatRoomRepository.findByUser_Id(1L);
-        for(UserChatRoom ucr: userChatList){
-            //userchatRoom 중 입장한 chatRoomId 와 일치한다면
-            if(ucr.getId().equals(chatRoomId)){
-                return; // 이미 userchatRoom 에 있으니 새로 넣어줄 필요 없음
-            }
+        // userChatRoom 에 이미 있으면 바로 종료
+        Optional<UserChatRoom> userChatRoomOptional = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
+        if(userChatRoomOptional.isPresent()){
+            return;
         }
-        // userChatRoom에 없다면 새로 생성해주기
-        UserChatRoom userChatRoom = UserChatRoom.builder()
-                .user(userMock.get())
-                .chat(chatroom.get())
-                .readIndex(0L)// 초기값 0
-                .build();
-        // UserchatRoom 저장하고
-        userChatRoomRepository.save(userChatRoom);
 
-        // ChatRoom 에도 userchatRoom 추가
-        ChatRoom chatRoom = chatroom.get();
-        chatRoom.addUserChatRoom(userChatRoom);
+        // user 가져오기
+        Optional<User> userOptional = userRepository.findById(userId);
+
+        // chatRoom 가져오기
+        // UserChatRoom 추가하기
+        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(chatRoomId);
+        if(chatRoomOptional.isPresent()) {
+            ChatRoom chatRoom = chatRoomOptional.get();
+
+            // UserChatRoom 생성
+            UserChatRoom userChatRoom = UserChatRoom.builder()
+                    .readIndex(0L) // 초기화
+                    .isFirst(true) // 초기화
+                    .chat(chatRoom)
+                    .user(userOptional.get())
+                    .build();
+            // 저장
+            userChatRoomRepository.save(userChatRoom);
+
+            // ChatRoom 에도 userchatRoom 추가
+            chatRoom.addUserChatRoom(userChatRoom);
+        }
     }
 
 
@@ -89,7 +93,7 @@ public class ChatServiceImpl implements ChatService{
             // Message create
             Messages messages = Messages.builder()
                     .chatRoom(Room)
-                    .writer(chatMessageDTO.getSenderId())
+                    .writer(chatMessageDTO.getSenderNickname())
                     .content(chatMessageDTO.getContent())
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
@@ -111,24 +115,25 @@ public class ChatServiceImpl implements ChatService{
 
     }
 
-    // 사용자 채팅방에 존재하는 방인지 확인
+    // 사용자 채팅방에 존재 하는 방인지 확인
     @Override
-    public Optional<UserChatRoom> isExistUserChatRoom(Long chatRoomId) {
-        Optional<UserChatRoom> chatRoom = userChatRoomRepository.findByChat_Id(chatRoomId);
-        if(chatRoom.isPresent()){
-            return chatRoom;
+    public Optional<UserChatRoom> isExistUserChatRoom(Long userId,Long chatRoomId) {
+
+        Optional<UserChatRoom> userChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
+        if(userChatRoom.isPresent()){
+            return userChatRoom;
         }
         return Optional.empty();
     }
 
 
-    // 채팅리스트 가져오기 ==> Token 완료 시 테스트해야함
+    // 채팅리스트 가져오기
     @Override
     public List<ChatRoomDTO> getChatLIst(Long userId) {
         List<ChatRoomDTO> AnsList = new ArrayList<>();
         //userChatRoomRepository.findByUser_Id(); // Token 에서 userId 추출
         // 테스트 용도로 넣어둠
-        List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(1L);
+        List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(userId);
 
         // 내역 없으면 예외 처리
         if(chatRoom.isEmpty()){
@@ -150,7 +155,7 @@ public class ChatServiceImpl implements ChatService{
     }
 
 
-    // TODO 특정 방에서 주고받은 모든 메세지 가져오기
+    // 특정 방에서 주고 받은 모든 메세지 가져오기
     @Override
     public List<ChatMessageDTO> getChatMessage(Long chatRoomId) {
         List<ChatMessageDTO> ansList = new ArrayList<>();
@@ -160,7 +165,7 @@ public class ChatServiceImpl implements ChatService{
         for(Messages m : byChatRoomId){
             ChatMessageDTO messageDTO = ChatMessageDTO.builder()
                     .roomId(m.getChatRoom().getId().toString())
-                    .senderId(m.getWriter())
+                    .senderNickname(m.getWriter())
                     .content(m.getContent())
                     .build();
             ansList.add(messageDTO);
@@ -169,8 +174,7 @@ public class ChatServiceImpl implements ChatService{
     }
 
 
-
-    // 특정 chatRoom id 로 저장된 메세지 중 가장 마지막 메세지 가져옴
+    // 특정 방에 저장된 메세지 중 가장 마지막 메세지 가져옴
     @Override
     public Messages getLastMessageFromChatRoom(Long chatRoomId) {
 
@@ -198,7 +202,6 @@ public class ChatServiceImpl implements ChatService{
         }
 
     }
-
 
 
 
