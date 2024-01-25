@@ -35,8 +35,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
      */
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider tokenProvider;
-
-
     private final UserRepository userRepository;
 
 
@@ -60,6 +58,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             }
             log.info("성공");
         }
+
 
 
 
@@ -88,6 +87,8 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
 
 
+
+
         // SEND
         /*
         1. 메세지를 보낼 수 있는(ChatRoom 에 존재하는) 채팅방인지 검증
@@ -111,12 +112,10 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);
-            log.info("성공 채팅방 존재 여부 검증");
 
             // client 가 destination 에 메세지를 보낼 수 있는지 검증(사용자 채팅방에 있는 채팅방인지)
             // Token 붙이기 전이면 이거 비활성화해주고 실행해야 제대로 테스트됨
             isExistUserChatRoom(headerAccessor);
-            log.info("성공 사용자가 채팅방에 있는거 확인");
 
 
             // destination 가져오기
@@ -142,7 +141,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 //TODO
 
             }
-            log.info("뒤로 가기 나가기 성공");
 
             // 일반 메세지
             if(destination.contains("message")) {
@@ -165,8 +163,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     chatService.saveMessage(chatMessageDTO);
                 }
             }
-            log.info("일반메세지 성공");
-//
             // 처음 입장 메세지
             if(destination.contains("enter")){
                 Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, roomId);
@@ -175,22 +171,16 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     // 본문 바디 가져오기
                     String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
 
-                    log.info("본문바지가져오기성공");
                     // 메시지 보낸 유저의 닉네임 추출
                     String nickname = extractNickname(messageContent);
-                    log.info("닉네임너가문제니?");
 
                     UserChatRoom userChatRoom = existUserChatRoom.get();
-                    log.info("userChatRoom 가져오기성공");
                     // 처음 입장
                 }else{
                     throw new RuntimeException("JWT");
                 }
             }
-            log.info("입장 구분 성공");
         }
-
-
 
 
 
