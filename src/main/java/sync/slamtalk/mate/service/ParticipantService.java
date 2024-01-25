@@ -27,7 +27,6 @@ public class ParticipantService {
 
     //
     //todo : post가 null이면 어떤 값을 반환할 지 결정해야 한다.
-    //todo : applyStatus가 AWAITING이 아니면 어떤 값을 반환할 지 결정해야 한다.
     public MatePostApplicantDTO addParticipant(long matePostId, long participantId, String participantNIckname, MatePostApplicantDTO matePostApplicantDTO){
         Optional<MatePost> post = matePostRepository.findById(matePostId);
         if(!post.isPresent()){
@@ -110,7 +109,6 @@ public class ParticipantService {
     // 참여자 목록의 해당 정보를 CANCEL로 변경한다.(연관관계는 그대로, softDelete는 false)
     // 참여자가 취소를 선택했을 때 참여자 목록에서 삭제하는 것이 아니라 취소 상태로 변경하는 이유는 완전히 삭제되지 않는다면 연결된 정보는 남겨놔야 할거 같아서
     // 취소를 눌러도 포지션별 인원의 변동은 없다.
-    // todo : 취소 로직을 수행한 후 성공 또는 실패 시 어떤 값을 프론트엔드에게 전달할 지 결정해야 한다.
     // todo : userId가 String으로 바뀐다면 == 이 아닌 equals()를 사용해야 한다.
     public ApiResponse cancelParticipant(long matePostId, long participantTableId, long writerId){
         Optional<Participant> OptionalParticipant = participantRepository.findById(participantTableId);
