@@ -10,12 +10,16 @@ import sync.slamtalk.common.BaseEntity;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor
-@Table(name = "message")
+@Table(name = "messages")
 public class Messages extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="message_id",nullable = false)
     private Long id; // 식별 아이디
+
+    // 작성자
+    @Column(name = "writer")
+    private String writer;
 
     // 메세지(내용)
     @Column(name = "content")

@@ -46,8 +46,8 @@ public class CookieUtil {
                 .path("/") // 쿠키 전체 도메인으로 경로 설정
                 .sameSite("None") // 쿠키가 같은 사이트 요청뿐만 아니라 크로스-사이트 요청에서도 전송될 수 있음
                 .httpOnly(true) // XSS 공격으로부터 쿠키를 보호
-                .secure(false) // HTTPS를 통해서만 전송
-//                .domain(domain) // 쿠키가 유효한 도메인을 지정
+                .secure(true) // HTTPS를 통해서만 전송
+                .domain(domain) // 쿠키가 유효한 도메인을 지정
                 .maxAge(maxAge) // 초단위로 쿠키 만료 지정
                 .build();
 
@@ -77,7 +77,7 @@ public class CookieUtil {
                             .maxAge(0)
                             .build();
 
-                    response.addHeader("Set-Cookie", rcookie.toString());
+                     response.addHeader("Set-Cookie", rcookie.toString());
                 }
             }
         }

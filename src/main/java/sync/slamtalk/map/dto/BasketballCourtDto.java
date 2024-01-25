@@ -2,9 +2,12 @@ package sync.slamtalk.map.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+
+@Data
+@NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 값이 있는 필드는 제외
 public class BasketballCourtDto {
     private Long courtId;

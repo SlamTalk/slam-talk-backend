@@ -26,11 +26,10 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
         if(ex.getCause().getMessage().equals("Auth")){
             return handleUnauthorizedException(clientMessage,ex);
         }
-
+        // NFR 이 메세지에 포함된 경우
         if(ex.getCause().getMessage().equals("NFR")){
             return handleNotFoundException(clientMessage,ex);
         }
-
         // 기본 에러 메세지 처리
         return super.handleClientMessageProcessingError(clientMessage,ex);
     }

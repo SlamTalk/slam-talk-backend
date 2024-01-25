@@ -10,6 +10,4 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
-    @Query("SELECT c FROM ChatRoom c JOIN c.userChats uc WHERE uc.user.id=:userId")
-    Optional<ChatRoom> findAllChatRoomsByUserId(@Param("userId")Long UserId);
 }

@@ -23,6 +23,7 @@ public class StompChatController {
 
     // "/pub/chat/room" 로 날린 데이터에 대해서
     // "/pub/chat/room/roomId" 로 구독자들에게 해당 메세지 전달
+    // TODO 파라미터로 messageDTO 제거하고 Token 으로 userdb 접근 후 닉네임가져오자
     @MessageMapping(value = "/chat/enter/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO enter(ChatMessageDTO message){
@@ -32,11 +33,10 @@ public class StompChatController {
 
 
     // "/pub/chat/message" 로 날린 데이터에 대해서
-    // "/sub/chat/room/roomId" 로 구독자들에게 해당 message를 전달
+    // "/sub/chat/room/roomId" 로 구독자들에게 해당 message 를 전달
     @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO message(ChatMessageDTO message){
-        System.out.println(message.getContent());
         return message;
     }
 

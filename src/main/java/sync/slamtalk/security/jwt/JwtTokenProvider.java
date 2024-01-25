@@ -3,6 +3,8 @@ package sync.slamtalk.security.jwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +14,10 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.security.dto.JwtTokenResponseDto;
+import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.error.UserErrorResponseCode;
@@ -34,19 +38,26 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider implements InitializingBean {
 
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String GRANT_TYPE = "Bearer ";
+    private static final String GRANT_TYPE = "Bearer";
     private final String secretKey;
     /* AccessToken 설정 */
-    private final Long accessTokenExpirationPeriod;
+    private final int accessTokenExpirationPeriod;
     /* RefreshToken 설정 */
-    private final Long refreshTokenExpirationPeriod;
+    private final int refreshTokenExpirationPeriod;
     private final UserRepository userRepository;
     private SecretKey key;
 
+    @Value("${jwt.access.header}")
+    public String accessAuthorizationHeader;
+    @Value("${jwt.refresh.header}")
+    public String refreshAuthorizationCookieName;
+    @Value("${jwt.domain}")
+    private String domain;
+
     public JwtTokenProvider(
             @Value("${jwt.secretKey}") String secretKey,
-            @Value("${jwt.access.expiration}") long accessTokenExpirationPeriod,
-            @Value("${jwt.refresh.expiration}") long refreshTokenExpirationPeriod,
+            @Value("${jwt.access.expiration}") int accessTokenExpirationPeriod,
+            @Value("${jwt.refresh.expiration}") int refreshTokenExpirationPeriod,
             UserRepository userRepository) {
         this.secretKey = secretKey;
         this.accessTokenExpirationPeriod = accessTokenExpirationPeriod * 1000;
@@ -80,11 +91,8 @@ public class JwtTokenProvider implements InitializingBean {
         log.debug("authorities = {}", authorities);
 
         String accessToken = createAccessToken(user, authorities);
-        String refreshToken = createRefreshToken(user, authorities);
+        String refreshToken = createRefreshToken();
 
-        // refreshToken db 에 저장
-/*        User userVO = userRepository.findById(user.getId())
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.LOGIN_FAIL));*/
 
         user.updateRefreshToken(refreshToken);
 
@@ -115,7 +123,7 @@ public class JwtTokenProvider implements InitializingBean {
      *
      * @return refreshToken
      */
-    public String createRefreshToken(User user, String authorities) {
+    public String createRefreshToken() {
         long now = (new Date()).getTime();
         Date refreshTokenValidity = new Date(now + this.refreshTokenExpirationPeriod);
 
@@ -158,6 +166,29 @@ public class JwtTokenProvider implements InitializingBean {
 
 
         return new UsernamePasswordAuthenticationToken(user, accessToken, authorities);
+    }
+
+    /**
+     * 웹소켓 STOMP 사용시 accessToken에서 userId 추출하는 메서드
+     * @param accessToken
+     * @return long userid
+     * */
+    public Long stompExtractUserIdFromToken(String accessToken){
+        // Jwt 토큰 복호화
+        Jws<Claims> claimsJws = Jwts
+                .parser()
+                .verifyWith(key) // 서명 검증
+                .build()
+                .parseSignedClaims(accessToken);
+
+        Claims claims = claimsJws.getPayload();
+
+        if (claims.get(AUTHORITIES_KEY) == null) {
+            log.info("권한 정보가 없는 토큰입니다");
+            throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
+        }
+
+        return Long.valueOf(claims.getSubject());
     }
 
     /**
@@ -204,5 +235,45 @@ public class JwtTokenProvider implements InitializingBean {
             return Optional.of(createToken(user));
         }
         return Optional.empty();
+    }
+
+    /**
+     * request 헤더에서 AccessToken 추출하는 메서드
+     * @param request
+     * @return String : AccessToken
+     * */
+    public String resolveAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader(accessAuthorizationHeader);
+
+        return resolveToken(bearerToken);
+    }
+
+    /**
+     * Token의 Bearer유형의 토큰 접두사 를 제거하는 메서드
+     * @param bearerToken
+     * @return String : RefreshToken
+     * */
+    private String resolveToken(String bearerToken) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        return null;
+    }
+
+    /**
+     * request 쿠키에서 RefreshToken 추출하는 메서드
+     * @param request
+     * @return String
+     * */
+    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+        /* Cookie 에서 Token 정보 가져오는 로직 */
+        Optional<Cookie> optionalAccessTokenCookie = CookieUtil.getCookie(request, refreshAuthorizationCookieName);
+
+        if(optionalAccessTokenCookie.isPresent()){
+            return optionalAccessTokenCookie.get().getValue();
+        }
+
+        return "";
     }
 }
