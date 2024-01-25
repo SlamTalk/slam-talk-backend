@@ -95,7 +95,7 @@ public class Participant extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Participant that = (Participant) o;
-        return participantId == that.participantId && Objects.equals(matePost, that.matePost);
+        return participantId == that.participantId && Objects.equals(participantTableId, that.participantTableId);
     }
 
     @Override

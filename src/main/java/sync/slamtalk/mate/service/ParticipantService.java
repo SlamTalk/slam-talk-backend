@@ -32,8 +32,6 @@ public class ParticipantService {
         if(!post.isPresent()){
             throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
-
-
         Participant participant = new Participant(participantId,
                 participantNIckname, matePostApplicantDTO.getPosition(),
                 matePostApplicantDTO.getSkillLevel());
@@ -46,7 +44,6 @@ public class ParticipantService {
 
     // 해당 글의 참여자 목록을 불러온다.
     // 참여자 목록은 참여자의 ID, 닉네임, 포지션, 실력, 신청 상태를 담고 있다.
-    // 취소하였거나 거절 당한 참여자는 제외한다.
     public List<MatePostApplicantDTO> getParticipants(long matePostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
         if(!optionalMatePost.isPresent()){
@@ -67,7 +64,7 @@ public class ParticipantService {
 
     /**
      *참여자의 신청 상태를 변경한다.
-     *참여자의 신청 상태는 ACCEPTED, REJECTED, CANCEL이 있다.
+     *참여자의 신청 상태는 ACCEPTED, REJECTED, CANCEL, WAITING(신청 시 기본 상태)이 있다.
      *ACCEPTED : 모집 글 게시자가 참여자(AWAITING)를 수락했을 때
      *REJECTED : 모집 글 게시자가 참여자(AWAITING)를 거절했을 때
      *CANCEL : 참여자(AWAITING)가 취소를 선택했을 때
@@ -105,11 +102,12 @@ public class ParticipantService {
 
 
     // 참여자가 취소를 선택했을 때
-    // 접속자와 ID와 참여자의 ID가 일치하는지 확인한다.
+    // 접속자 ID와 해당 신청자 ID가 일치하는지 확인한다.
     // 참여자 목록의 해당 정보를 CANCEL로 변경한다.(연관관계는 그대로, softDelete는 false)
     // 참여자가 취소를 선택했을 때 참여자 목록에서 삭제하는 것이 아니라 취소 상태로 변경하는 이유는 완전히 삭제되지 않는다면 연결된 정보는 남겨놔야 할거 같아서
     // 취소를 눌러도 포지션별 인원의 변동은 없다.
     // todo : userId가 String으로 바뀐다면 == 이 아닌 equals()를 사용해야 한다.
+    // todo : 현재 참여자 목록에서 완전히 삭제 하지 않았지만 재신청이 가능하다면 참여자 목록에서 삭제(hard delete)하는 것이 맞다고 생각한다.
     public ApiResponse cancelParticipant(long matePostId, long participantTableId, long writerId){
         Optional<Participant> OptionalParticipant = participantRepository.findById(participantTableId);
         Participant participant;
@@ -145,6 +143,7 @@ public class ParticipantService {
     // 접속자와 ID와 모집 글 작성자의 ID가 일치하는지 확인한다.
     // 승낙 전 참여자를 거절하기 때문에 포지션별 인원의 변동은 없다.
     // todo : 수락 전 대기 상태인 신청자를 모집 글의 포지션 별 현재 모집 인원 수에 반영해야 할지 논의해야 한다.
+    // todo : 현재 참여자 목록에서 완전히 삭제 하지 않았지만 재신청이 가능하다면 참여자 목록에서 삭제(hard delete)하는 것이 맞다고 생각한다.
     public ApiResponse rejectParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
         if(!optionalMatePost.isPresent()){

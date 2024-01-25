@@ -5,12 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static sync.slamtalk.mate.error.MateErrorResponseCode.DECREASE_POSITION_NOT_AVAILABLE;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.INCREASE_POSITION_NOT_AVAILABLE;
 
 @Entity
 @Getter
@@ -181,74 +185,79 @@ public class MatePost extends BaseEntity {
                 this.currentParticipantsOthers = currentParticipantsOthers;
         }
 
-        public boolean increasePositionNumbers(PositionType position){
+        public ApiResponse increasePositionNumbers(PositionType position){
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
-                                        throw new IllegalArgumentException("센터 참여 인원이 모두 찼습니다.");
+                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
-                                        throw new IllegalArgumentException("가드 참여 인원이 모두 찼습니다.");
+                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
-                                        throw new IllegalArgumentException("포워드 참여 인원이 모두 찼습니다.");
+                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
-                                        throw new IllegalArgumentException("모집 포지션 무관 참여 인원이 모두 찼습니다.");
+                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }
                                 break;
                 }
-                return true;
+                return ApiResponse.ok("성공적으로 인원을 늘렸습니다.");
         }
 
 
-        public boolean reducePositionNumbers(PositionType position){
+        public ApiResponse reducePositionNumbers(PositionType position){
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() == 0){
-                                        throw new IllegalArgumentException("더 이상 센터 인원을 줄일 수 없습니다.");
+                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() - 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() == 0){
-                                        throw new IllegalArgumentException("더 이상 가드 인원을 줄일 수 없습니다.");
+                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() - 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() == 0){
-                                        throw new IllegalArgumentException("더 이상 포워드 인원을 줄일 수 없습니다.");
+                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() - 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() == 0){
-                                        throw new IllegalArgumentException("더 이상 모집 포지션 무관 인원을 줄일 수 없습니다.");
+                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() - 1);
                                 }
                                 break;
                 }
-                return true;
+                return ApiResponse.ok("성공적으로 인원을 줄였습니다.");
         }
+
+        // todo : 참여자 목록의 최대 포지션 인원을 조정할 때 현재 인원보다 낮게 조정하지 못하도록 하는 기능 구현 필요
+        // todo : 참여자 목록의 최대 포지션 인원을 일정 수치 이상 올리지 못하도록 하는 기능 구현 필요
+
+        // todo : 해당 모집 글의 요구 실력에 미달하거나 초과할 경우 참여자 목록에 추가하지 못하도록 하는 기능 구현 필요
 
         @Override
         public boolean equals(Object o) {
