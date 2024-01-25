@@ -43,6 +43,8 @@ public class MatePostService {
         MatePost post = optionalPost.get();
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MateFormDTO mateFormDTO = MateFormDTO.builder()
+                .matePostId(post.getMatePostId())
+                .writerId(post.getWriterId())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .startScheduledTime(post.getStartScheduledTime())

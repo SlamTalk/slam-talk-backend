@@ -38,8 +38,6 @@ public class MatePostController {
 
         // MateFormDTO를 MatePost로 변환한다.
         MatePost matePost = mateFormDTO.toEntity(userId);
-
-        // MatePost를 저장한다.
         long matePostId = matePostService.registerMatePost(matePost);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("/api/mate/" + matePostId));
@@ -52,7 +50,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @GetMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> getMatePost(long matePostId){
+    public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
         MateFormDTO dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
     }
@@ -63,7 +61,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> updateMatePost(@PathVariable long matePostId, @RequestBody MateFormDTO mateFormDTO){
+    public ApiResponse<MateFormDTO> updateMatePost(@PathVariable("matePostId") long matePostId, @RequestBody MateFormDTO mateFormDTO){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         int userId = 1;
 
@@ -82,7 +80,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @DeleteMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> deleteMatePost(@PathVariable long matePostId){
+    public ApiResponse<MateFormDTO> deleteMatePost(@PathVariable("matePostId") long matePostId){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         int userId = 1;
 

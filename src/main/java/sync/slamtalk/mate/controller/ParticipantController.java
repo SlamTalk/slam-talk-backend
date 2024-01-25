@@ -24,13 +24,11 @@ public class ParticipantController {
             tags = {"메이트 찾기 / 참여자 목록"}
     )
     @PostMapping("/{matePostId}/participants/register")
-    public ApiResponse<MatePostApplicantDTO> addParticipant(@PathVariable long matePostId, @RequestBody MatePostApplicantDTO matePostApplicantDTO){
+    public ApiResponse<MatePostApplicantDTO> addParticipant(@PathVariable("matePostId") long matePostId, @RequestBody MatePostApplicantDTO matePostApplicantDTO){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = 1;
         String userNickname = "testApplicant";
-        if(matePostApplicantDTO.getApplyStatus() != ApplyStatusType.WAITING){
-            return ApiResponse.fail(MateErrorResponseCode.PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-        }
+
         // * 해당 글에 지원자의 신청 절차를 진행한다.
         MatePostApplicantDTO dto = participantService.addParticipant(matePostId, userId, userNickname, matePostApplicantDTO);
 
@@ -43,7 +41,7 @@ public class ParticipantController {
             tags = {"메이트 찾기 / 참여자 목록"}
     )
     @PatchMapping("/{matePostId}/participants/{participantTableId}")
-    public ApiResponse updateParticipant(@PathVariable long matePostId, @PathVariable long participantTableId, @RequestParam ApplyStatusType applyStatus){
+    public ApiResponse updateParticipant(@PathVariable("matePostId") long matePostId, @PathVariable("participantTableId") long participantTableId, @RequestParam("applyStatus") ApplyStatusType applyStatus){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long id = 1;
 
@@ -66,7 +64,7 @@ public class ParticipantController {
     )
     @GetMapping("/{matePostId}/participants")
     // todo : 프론트엔드에서 호출 할 경우가 없다면 삭제한다.
-    public ApiResponse<List<MatePostApplicantDTO>> getParticipants(@PathVariable long matePostId){
+    public ApiResponse<List<MatePostApplicantDTO>> getParticipants(@PathVariable("matePostId") long matePostId){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = 1;
 
