@@ -1,11 +1,11 @@
 package sync.slamtalk.mate.mapper;
 
 import lombok.NoArgsConstructor;
+import sync.slamtalk.mate.dto.MatePostListDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
-import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,5 +70,22 @@ public class MatePostEntityToDtoMapper {
         }
 
         return skillLevelTypeList;
+    }
+
+    public MatePostListDTO toMatePostListDto(MatePost matePost){
+        MatePostListDTO matePostListDTO = new MatePostListDTO();
+        matePostListDTO.setMatePostId(matePost.getMatePostId());
+        matePostListDTO.setWriterId(matePost.getWriterId());
+       // matePostListDTO.setWriterNickname(matePost.getWriterNickname());
+        matePostListDTO.setTitle(matePost.getTitle());
+        matePostListDTO.setContent(matePost.getContent());
+        matePostListDTO.setStartScheduledTime(matePost.getStartScheduledTime());
+        matePostListDTO.setEndScheduledTime(matePost.getEndScheduledTime());
+        matePostListDTO.setLocationDetail(matePost.getLocationDetail());
+        matePostListDTO.setPositionList(toPositionListDto(matePost));
+        matePostListDTO.setSkillList(toSkillLevelTypeList(matePost));
+        matePostListDTO.setParticipants(matePost.getParticipants());
+
+        return matePostListDTO;
     }
 }

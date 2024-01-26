@@ -10,6 +10,7 @@ import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
+import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class MateFormDTO {
 
     private int maxParticipantsOthers; // 모집 포지션 무관 최대 인원 수
     private int currentParticipantsOthers; // 모집 포지션 무관 현재 인원 수
+
+    private List<PositionListDTO> positionList = new ArrayList<>(); // 모집 포지션 목록 (프론트로 응답 시에만 사용)
 
     private List<MatePostApplicantDTO> participants = new ArrayList<>(); // 참여자 목록
 
