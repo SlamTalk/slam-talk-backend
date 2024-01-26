@@ -28,7 +28,6 @@ public class MatePostApplicantDTO {
     public MatePostApplicantDTO(PositionType position, SkillLevelType skillLevel) {
         this.skillLevel = skillLevel;
         this.position = position;
-        this.applyStatus = applyStatus;
     }
 
     public MatePostApplicantDTO(long participantTableId, String participantNickname, PositionType position, SkillLevelType skillLevel, ApplyStatusType applyStatus) {

@@ -34,7 +34,7 @@ public class MateFormDTO {
     private String locationDetail; // 상세 시합 장소
     @Enumerated(EnumType.STRING)
     private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 - BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
-    private List<SkillLevelType> skillLevelList; // 원하는 스킬 레벨 목록 (프론트로 응답 시에만 사용)
+    private List<String> skillLevelList; // 원하는 스킬 레벨 목록 (프론트로 응답 시에만 사용)
 
     private int maxParticipantsCenters; // 모집 포지션 센터 최대 인원 수
     private int currentParticipantsCenters; // 모집 포지션 센터 현재 인원 수

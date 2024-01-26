@@ -7,6 +7,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 
 import java.time.LocalDateTime;
@@ -41,7 +42,11 @@ public class MatePostService {
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
         MatePost post = optionalPost.get();
+
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
+        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
+        List<String> skillList = mapper.toSkillLevelTypeList(post);
+
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(post.getWriterId())
@@ -50,8 +55,7 @@ public class MatePostService {
                 .startScheduledTime(post.getStartScheduledTime())
                 .endScheduledTime(post.getEndScheduledTime())
                 .locationDetail(post.getLocationDetail())
-//                .skillLevelList(post.convertToSkillLevelList()) // todo : 스킬 레벨 목록을 반환하는 메소드를 만들어야 함.
-                .skillLevel(post.getSkillLevel()) // * 스킬 레벨 목록 생성 시 삭제.
+                .skillLevelList(skillList)
                 .maxParticipantsCenters(post.getMaxParticipantsCenters())
                 .currentParticipantsCenters(post.getCurrentParticipantsCenters())
                 .maxParticipantsGuards(post.getMaxParticipantsGuards())
