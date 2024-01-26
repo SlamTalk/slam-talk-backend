@@ -18,7 +18,7 @@ public interface ChatService {
 
 
     // 채팅방에 유저 추가
-    void setUserChatRoom(Long ChatRoomId);
+    void setUserChatRoom(Long userId, Long ChatRoomId);
 
 
     // 메세지 저장
@@ -30,7 +30,7 @@ public interface ChatService {
 
 
     // 사용자 채팅방에 있는 채팅방인지 확인(구독여부 확인)
-    Optional<UserChatRoom> isExistUserChatRoom(Long ChatRoomId);
+    Optional<UserChatRoom> isExistUserChatRoom(Long userId,Long ChatRoomId);
 
 
     // 채팅방 나갈때 readIndex 저장
@@ -50,6 +50,8 @@ public interface ChatService {
 
     // 특정방의 가장 마지막 메세지 가져오기
     Messages getLastMessageFromChatRoom(Long chatRoomId);
+
+
 
 
 

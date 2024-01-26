@@ -6,11 +6,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "users") // User가 예약어라서 users로 테이블이름 명시
@@ -64,11 +67,11 @@ public class User extends BaseEntity implements UserDetails {
     private Long levelScore = 0L;
 
     /* 연관 관계 매핑 */
-/*
+
     // todo : 예지님 연관관계 매핑 부분
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
-*/
+
 
 /*
     //todo : 동수님 연관관계 매핑 부분

@@ -3,7 +3,6 @@ package sync.slamtalk.chat.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskRejectedException;
-import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
@@ -50,7 +49,7 @@ public class CustomWebSocketHandler extends WebSocketHandlerDecorator {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         //super.afterConnectionClosed(session,closeStatus);
-        log.info("웹 소켓 연결 종료");
+        log.debug("웹 소켓 연결 종료");
 
 
 
