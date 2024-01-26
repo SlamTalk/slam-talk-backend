@@ -9,8 +9,6 @@ import org.springframework.data.repository.query.Param;
 import sync.slamtalk.chat.entity.Messages;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @EnableJpaRepositories
 public interface MessagesRepository extends JpaRepository<Messages,Long> {

@@ -18,6 +18,8 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
     // WebSocket Exception 처리
     @Override
     public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
+
+
         // JWT 가 메세지에 포함된 경우
         if(ex.getCause().getMessage().equals("JWT")){
             return handleJwtException(clientMessage,ex);

@@ -38,6 +38,9 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "court_name", nullable = false, length = 50)
     private String courtName; // 농구장 이름
 
+    @Column(name = "address", nullable = false, length = 50)
+    private String address; // 농구장 주소
+
     @Column(name = "latitude", precision = 13, scale = 10, nullable = false)
     private BigDecimal latitude; // 농구장 위도
 
@@ -60,13 +63,22 @@ public class BasketballCourt extends BaseEntity {
     private Boolean nightLighting; // 야간 조명 유무
 
     @Column(name = "opening_hours", length = 50)
-    private String openingHours; // 개방 시간
+    private Boolean openingHours; // 개방 시간
 
     @Column(name = "fee", length = 100)
-    private String fee; // 사용료
+    private Boolean fee; // 사용료
 
     @Column(name = "parking_available")
     private Boolean parkingAvailable; // 주차 가능 여부
+
+    @Column(name = "phone_num", nullable = false, length = 20)
+    private String phoneNum; // 전화번호
+
+    @Column(name = "website", nullable = false, length = 50)
+    private String website; // 홈페이지 링크
+
+    @Column(name = "convenience", nullable = false, length = 50)
+    private String convenience; // 편의 시설
 
     @Column(name = "additional_info", columnDefinition = "TEXT")
     private String additionalInfo; //기타 내용

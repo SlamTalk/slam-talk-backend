@@ -15,9 +15,13 @@ import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.service.ChatServiceImpl;
+import sync.slamtalk.security.jwt.JwtTokenProvider;
+import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -29,8 +33,10 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
      * 메세지 헤더에 존재하는 Authorization 으로 사용자 검증
      * 토큰 만료나 변조 시, 예외를 터트린다.
      */
-    private final StompErrorHandler stompErrorHandler;
     private final ChatServiceImpl chatService;
+    private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
+
 
     // 메세지가 전송되기 전에 실행
     @Override
@@ -41,13 +47,19 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         // CONNECT
         /*
         1. 토큰 검증
-        2. 최초 접속/재접속 read_index 로 검사 해주고 과거 내역 페이징
          */
         if(StompCommand.CONNECT.equals(headerAccessor.getCommand())){
-            log.info("===CONNECT===");
-            // TODO Token 검증
-            // TODO 과거 내역 페이징
+            log.debug("===CONNECT===");
+
+            Long authorization = tokenProvider.stompExtractUserIdFromToken(headerAccessor.getFirstNativeHeader("authorization").toString());
+            Optional<User> userOptional = userRepository.findById(authorization);
+            if(userOptional.isEmpty()){
+                throw new RuntimeException("JWT");
+            }
+            log.debug("성공");
         }
+
+
 
 
         // SUBSCRIBE
@@ -58,16 +70,23 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         if(StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())){
             log.debug("===SUBSCRIBE===");
 
+
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);
+            log.debug("성공");
+
 
             // RoomId 만 추출
             String destination = headerAccessor.getDestination();
-            Long roomId = extractLastNumber(destination);
+            Long roomId = extractRoomId(destination);
 
-            // TODO: Token 로직 추가 되면 특정 경로와 유저 정보를 '사용자채팅방' 테이블에 추가하기
-            chatService.setUserChatRoom(roomId);
+            //'사용자채팅방' 테이블에 추가하기
+            addUserChatRoom(headerAccessor);
+            log.debug("성공 사용자테이블");
         }
+
+
+
 
 
         // SEND
@@ -96,78 +115,108 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             // client 가 destination 에 메세지를 보낼 수 있는지 검증(사용자 채팅방에 있는 채팅방인지)
             // Token 붙이기 전이면 이거 비활성화해주고 실행해야 제대로 테스트됨
-            // isExistUserChatRoom(headerAccessor);
-
-            // 본문 바디 가져오기
-            String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
-
-                // 메서드의 페이로드(메세지 타입 추출)
-            String messageType = extractRoomMessageType(messageContent);
-            if(messageType!=null){
-                String msgType = messageType.replace("\"", "");
-                //log.debug("messageType:{}",msgType);
-                String dest = headerAccessor.getDestination().toString();
-                //log.debug("dest:{}",dest);
-                Long roomId = extractLastNumber(dest);
-                if(msgType.startsWith("b")){
-                    //log.debug(msgType,"same");
+            isExistUserChatRoom(headerAccessor);
 
 
-                    // 채팅방 마지막 메세지 저장 로직
-                    //TODO userid 수정해야됨 테스트용으로 임의로 1L 로 해둠
-                    Messages lastMessageFromChatRoom = chatService.getLastMessageFromChatRoom(roomId);
-                    //log.debug("아무것도안가져와짐:{}",lastMessageFromChatRoom);
-                    chatService.saveReadIndex(1L,roomId,lastMessageFromChatRoom.getId());
-                }else if(messageType.equals("out")){
-                    // TODO userChatRoom 삭제 -> chatRoom 에서 userChatrrom 삭제 cascade
+            // destination 가져오기
+            String destination = headerAccessor.getDestination();
+
+            // roomId 가져오기
+            Long roomId = extractRoomId(destination);
+
+            // userId 가져오기
+            Long userId = extractUserId(headerAccessor);
+
+
+            // 뒤로가기
+            // 채팅방의 마지막 메세지를 저장
+            if(destination.contains("back")){
+                Messages lastMessageFromChatRoom = chatService.getLastMessageFromChatRoom(roomId);
+                chatService.saveReadIndex(userId,roomId,lastMessageFromChatRoom.getId());
+            }
+
+            // 나가기
+            // softDelete
+            if(destination.contains("exit")){
+                //TODO
+
+            }
+
+            // 일반 메세지
+            if(destination.contains("message")) {
+                // 본문 바디 가져오기
+                String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
+
+                // 메시지의 페이로드(본문) 추출
+                String content = extractRoomContent(messageContent);
+
+                // 메시지 보낸 유저의 닉네임 추출
+                String nickname = extractNickname(messageContent);
+
+                if (content != null) {
+                    ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
+                            .roomId(roomId.toString())
+                            .content(content)
+                            .senderNickname(nickname)
+                            .timestamp(LocalDateTime.now())
+                            .build();
+                    chatService.saveMessage(chatMessageDTO);
                 }
             }
+            // 처음 입장 메세지
+            if(destination.contains("enter")){
+                Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, roomId);
+                if(existUserChatRoom.isPresent()){
 
-            // 메시지의 페이로드(본문) 추출
-            String content = extractRoomcontent(messageContent);
+                    // 본문 바디 가져오기
+                    String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
 
-                // RoomId 만 추출
-            String destination = headerAccessor.getDestination();
-            Long roomId = extractLastNumber(destination);
+                    // 메시지 보낸 유저의 닉네임 추출
+                    String nickname = extractNickname(messageContent);
 
-                // content 가 null 이 아닐때만 메세지저장
-            if(content != null){
-                ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
-                        .roomId(roomId.toString())
-                        .content(content)
-                        .senderId("yeji") // 테스트용..
-                        .timestamp(LocalDateTime.now())
-                        //.senderId() // TODO token 로직 완성되면 추가하기
-                        .build();
-                chatService.saveMessage(chatMessageDTO);
+                    UserChatRoom userChatRoom = existUserChatRoom.get();
+                    // 처음 입장
+                }else{
+                    throw new RuntimeException("JWT");
+                }
             }
         }
+
+
 
 
         if(StompCommand.DISCONNECT.equals(headerAccessor.getCommand())){
             log.debug("===DISCONNECT===");
         }
-
         return message;
     }
 
 
-    /*
-    * TODO
-    *
-    *
-    * */
 
 
 
 
 
+
+
+
+
+
+
+
+
+    // 토큰에서 아이디 추출
+    private Long extractUserId(StompHeaderAccessor accessor){
+        List<String> authorization = accessor.getNativeHeader("authorization");
+        String Token = authorization.get(0).toString();
+        return tokenProvider.stompExtractUserIdFromToken(Token);
+    }
 
 
     // 채팅방 존재하는지 검증하는 실질적인 메서드
     private void isExistChatRoom(StompHeaderAccessor accessor){
         String destination = accessor.getDestination();
-        Long RoomId = extractLastNumber(destination);
+        Long RoomId = extractRoomId(destination);
         Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(RoomId);
         // ChatRoom 이 존재하지 않는다면
         if(!existChatRoom.isPresent()){
@@ -178,19 +227,23 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
     // 사용자채팅방에 특정 채팅방이 존재하는지 검증하는 실질적인 메서드
     private void isExistUserChatRoom(StompHeaderAccessor accessor){
+
+        Long userId = extractUserId(accessor);
+
         String destination = accessor.getDestination();
-        Long RoomId = extractLastNumber(destination);
-        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(RoomId);
+        Long RoomId = extractRoomId(destination);
+
+        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId,RoomId);
         // UserChatRoom 이 존재하지 않는다면
         if(!existUserChatRoom.isPresent()){
-            throw  new RuntimeException("Auth");
+            throw new RuntimeException("Auth");
         }
     }
 
 
 
     // Destination 에서 채팅방 아이디 추출
-    private Long extractLastNumber(String path) {
+    private Long extractRoomId(String path) {
         String[] parts = path.split("/");
         if (parts.length > 0) {
             try {
@@ -207,7 +260,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
 
     // 채팅 콘텐츠 추출
-    private String extractRoomcontent(String json){
+    private String extractRoomContent(String json){
         try{
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(json);
@@ -220,21 +273,31 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         return null;
     }
 
-
-
-    // 채팅 메세지 타입  추출
-    private String extractRoomMessageType(String json){
+    // 채팅 닉네임 추출
+    private String extractNickname(String json){
         try{
             ObjectMapper mapper = new ObjectMapper();
             JsonNode rootNode = mapper.readTree(json);
-            if(rootNode.has("messageType")){
-                return rootNode.get("messageType").toString();
+            if(rootNode.has("senderNickname")){
+                return rootNode.get("senderNickname").toString();
             }
         }catch (Exception e){
-            log.debug("메세지 타입 파싱 에러");
-            throw new RuntimeException();
+            throw new RuntimeException(e.getMessage());
         }
         return null;
+    }
+
+
+
+
+    // 사용자 채팅방에 추가
+    public void addUserChatRoom(StompHeaderAccessor accessor){
+        Long userId = extractUserId(accessor);
+
+        String destination = accessor.getDestination();
+        Long roomId = extractRoomId(destination);
+
+        chatService.setUserChatRoom(userId,roomId);
     }
 
 
