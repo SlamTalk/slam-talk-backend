@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class BasketballCourtDto {
     private Long courtId;
     private String courtName;
+    private String address;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String courtType;
@@ -19,19 +20,26 @@ public class BasketballCourtDto {
     private String courtSize;
     private Integer hoopCount;
     private Boolean nightLighting;
-    private String openingHours;
-    private String fee;
+    private Boolean openingHours;
+    private Boolean fee;
     private Boolean parkingAvailable;
+    private String phoneNum;
+    private String website;
+    private String convenience;
     private String additionalInfo;
     private String photoUrl;
 
     //농구장 전체 정보 dto
-    public BasketballCourtDto(Long courtId, String courtName, BigDecimal latitude, BigDecimal longitude,
+    public BasketballCourtDto(Long courtId, String courtName, String address, BigDecimal latitude, BigDecimal longitude,
                               String courtType, String indoorOutdoor, String courtSize, Integer hoopCount,
-                              Boolean nightLighting, String openingHours, String fee, Boolean parkingAvailable,
+                              Boolean nightLighting, Boolean openingHours, Boolean fee, Boolean parkingAvailable,
+                              String phoneNum, String website,
+                              String convenience,
                               String additionalInfo, String photoUrl) {
+
         this.courtId = courtId;
         this.courtName = courtName;
+        this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
         this.courtType = courtType;
@@ -42,14 +50,18 @@ public class BasketballCourtDto {
         this.openingHours = openingHours;
         this.fee = fee;
         this.parkingAvailable = parkingAvailable;
+        this.phoneNum = phoneNum;
+        this.website = website;
+        this.convenience = convenience;
         this.additionalInfo = additionalInfo;
         this.photoUrl = photoUrl;
     }
 
     // 농구장 간략 정보 dto
-    public BasketballCourtDto(Long courtId, String courtName, BigDecimal latitude, BigDecimal longitude) {
+    public BasketballCourtDto(Long courtId, String courtName, String address, BigDecimal latitude, BigDecimal longitude) {
         this.courtId = courtId;
         this.courtName = courtName;
+        this.address = address;
         this.latitude = latitude;
         this.longitude = longitude;
     }

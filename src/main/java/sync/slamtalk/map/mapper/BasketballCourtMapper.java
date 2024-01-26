@@ -16,6 +16,7 @@ public class BasketballCourtMapper {
         return new BasketballCourtDto(
                 basketballCourt.getCourtId(),
                 basketballCourt.getCourtName(),
+                basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
                 basketballCourt.getLongitude()
         );
@@ -28,6 +29,7 @@ public class BasketballCourtMapper {
         return new BasketballCourtDto(
                 basketballCourt.getCourtId(),
                 basketballCourt.getCourtName(),
+                basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
                 basketballCourt.getLongitude(),
                 basketballCourt.getCourtType(),
@@ -38,6 +40,9 @@ public class BasketballCourtMapper {
                 basketballCourt.getOpeningHours(),
                 basketballCourt.getFee(),
                 basketballCourt.getParkingAvailable(),
+                basketballCourt.getPhoneNum(),
+                basketballCourt.getWebsite(),
+                basketballCourt.getConvenience(),
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl()
         );
@@ -50,6 +55,7 @@ public class BasketballCourtMapper {
 
         return BasketballCourt.builder()
                 .courtName((dto.getCourtName()))
+                .address((dto.getAddress()))
                 .latitude(dto.getLatitude())
                 .longitude(dto.getLongitude())
                 .courtType(dto.getCourtType())
@@ -60,6 +66,9 @@ public class BasketballCourtMapper {
                 .openingHours(dto.getOpeningHours())
                 .fee(dto.getFee())
                 .parkingAvailable(dto.getParkingAvailable())
+                .phoneNum((dto.getPhoneNum()))
+                .website((dto.getWebsite()))
+                .convenience((dto.getConvenience()))
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(dto.getPhotoUrl())
                 .adminStatus(AdminStatus.STAND) // 대기 상태
