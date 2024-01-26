@@ -3,15 +3,17 @@ package sync.slamtalk.mate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
-import sync.slamtalk.mate.entity.MatePost;
-import sync.slamtalk.mate.entity.Participant;
-import sync.slamtalk.mate.entity.SkillLevelType;
+import sync.slamtalk.mate.dto.MatePostApplicantDTO;
+import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.repository.MatePostRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import static sync.slamtalk.mate.error.MateErrorResponseCode.MATE_POST_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +21,7 @@ import java.util.List;
 public class MatePostService {
 
     private final MatePostRepository matePostRepository;
+    private final ParticipantService participantService;
 
     // * MatePost를 저장한다.
     public long registerMatePost(MatePost matePost){
@@ -33,16 +36,22 @@ public class MatePostService {
      */
     public MateFormDTO getMatePost(long matePostId){
 
-        MatePost post = matePostRepository.findById(matePostId).orElseThrow();
-        List<Participant> participants = post.getParticipants();
-        ArrayList<Participant> participantsToArrayList = new ArrayList<>(participants);
+        Optional<MatePost> optionalPost = matePostRepository.findById(matePostId);
+        if(!optionalPost.isPresent()){
+            throw new BaseException(MATE_POST_NOT_FOUND);
+        }
+        MatePost post = optionalPost.get();
+        List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MateFormDTO mateFormDTO = MateFormDTO.builder()
-                .userId(post.getWriterId())
+                .matePostId(post.getMatePostId())
+                .writerId(post.getWriterId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .scheduledTime(post.getScheduledTime())
+                .startScheduledTime(post.getStartScheduledTime())
+                .endScheduledTime(post.getEndScheduledTime())
                 .locationDetail(post.getLocationDetail())
-                .skillLevel(post.getSkillLevel())
+//                .skillLevelList(post.convertToSkillLevelList()) // todo : 스킬 레벨 목록을 반환하는 메소드를 만들어야 함.
+                .skillLevel(post.getSkillLevel()) // * 스킬 레벨 목록 생성 시 삭제.
                 .maxParticipantsCenters(post.getMaxParticipantsCenters())
                 .currentParticipantsCenters(post.getCurrentParticipantsCenters())
                 .maxParticipantsGuards(post.getMaxParticipantsGuards())
@@ -54,11 +63,6 @@ public class MatePostService {
                 .participants(participantsToArrayList)
                 .build();
         return mateFormDTO;
-    }
-
-    public void addParticipant(long matePostId, Participant participant){
-        MatePost post = matePostRepository.findById(matePostId).orElseThrow();
-        post.addParticipant(participant);
     }
 
     /**
@@ -83,8 +87,9 @@ public class MatePostService {
         String content = mateFormDTO.getContent();
         String title = mateFormDTO.getTitle();
         String locationDetail = mateFormDTO.getLocationDetail();
-        LocalDateTime scheduledTime = mateFormDTO.getScheduledTime();
-        SkillLevelType skillLevel = mateFormDTO.getSkillLevel();
+        LocalDateTime startScheduledTime = mateFormDTO.getStartScheduledTime();
+        LocalDateTime endScheduledTime = mateFormDTO.getEndScheduledTime();
+        RecruitedSkillLevelType skillLevel = mateFormDTO.getSkillLevel();
         int maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
         int maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
         int maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
@@ -102,8 +107,12 @@ public class MatePostService {
             post.updateLocationDetail(locationDetail);
         }
 
-        if(scheduledTime != null){
-            post.updateScheduledTime(scheduledTime);
+        if(startScheduledTime != null){
+            post.updateStartScheduledTime(startScheduledTime);
+        }
+
+        if(endScheduledTime != null){
+            post.updateEndScheduledTime(endScheduledTime);
         }
 
         if(skillLevel != null){
@@ -128,4 +137,6 @@ public class MatePostService {
 
         return true;
     }
+
+
 }

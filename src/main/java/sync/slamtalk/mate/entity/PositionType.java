@@ -6,5 +6,5 @@ package sync.slamtalk.mate.entity;
  * 추후 협의를 통해 하나의 ENUM으로 통합할 수 있음
  * */
 public enum PositionType {
-    FORWARD, GUARD, CENTER, ALL
+    FORWARD, GUARD, CENTER, UNSPECIFIED
 }
