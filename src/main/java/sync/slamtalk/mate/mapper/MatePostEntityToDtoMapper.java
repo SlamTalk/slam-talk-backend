@@ -1,12 +1,16 @@
 package sync.slamtalk.mate.mapper;
 
+import lombok.NoArgsConstructor;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.PositionType;
+import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@NoArgsConstructor
 public class MatePostEntityToDtoMapper {
 
     public List<PositionListDTO> toPositionListDto(MatePost matePost){
@@ -30,5 +34,41 @@ public class MatePostEntityToDtoMapper {
         }
 
         return positionList;
+    }
+
+    public List<String> toSkillLevelTypeList(MatePost matePost){
+        List<String> skillLevelTypeList = new ArrayList<>();
+
+        if(matePost.getSkillLevel() == RecruitedSkillLevelType.BEGINNER){
+            skillLevelTypeList.add("입문");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_BEGINNER) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("하수");
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_LOW) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("하수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_LOW) {
+            skillLevelTypeList.add("하수");
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_MIDDLE) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("하수");
+            skillLevelTypeList.add("중수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_MIDDLE) {
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_HIGH) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("하수");
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.HIGH) {
+            skillLevelTypeList.add("고수");
+        }
+
+        return skillLevelTypeList;
     }
 }
