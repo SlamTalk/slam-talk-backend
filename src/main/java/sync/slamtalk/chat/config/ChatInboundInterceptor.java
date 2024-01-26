@@ -49,14 +49,14 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         1. 토큰 검증
          */
         if(StompCommand.CONNECT.equals(headerAccessor.getCommand())){
-            log.info("===CONNECT===");
+            log.debug("===CONNECT===");
 
             Long authorization = tokenProvider.stompExtractUserIdFromToken(headerAccessor.getFirstNativeHeader("authorization").toString());
             Optional<User> userOptional = userRepository.findById(authorization);
             if(userOptional.isEmpty()){
                 throw new RuntimeException("JWT");
             }
-            log.info("성공");
+            log.debug("성공");
         }
 
 
@@ -68,12 +68,12 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         2. UserChatRoom 에 추가 ==> Token 로직 완성 되면 🌟서비스부터 수정해야됨🌟
          */
         if(StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())){
-            log.info("===SUBSCRIBE===");
+            log.debug("===SUBSCRIBE===");
 
 
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);
-            log.info("성공");
+            log.debug("성공");
 
 
             // RoomId 만 추출
@@ -82,7 +82,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             //'사용자채팅방' 테이블에 추가하기
             addUserChatRoom(headerAccessor);
-            log.info("성공 사용자테이블");
+            log.debug("성공 사용자테이블");
         }
 
 
@@ -108,7 +108,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             2. 'userName' 님이 채팅방을 나가셨습니다 메세지 보내기
          */
         if(StompCommand.SEND.equals(headerAccessor.getCommand())){
-            log.info("===SEND===");
+            log.debug("===SEND===");
 
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);

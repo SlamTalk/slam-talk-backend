@@ -49,7 +49,7 @@ public class CustomWebSocketHandler extends WebSocketHandlerDecorator {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
         //super.afterConnectionClosed(session,closeStatus);
-        log.info("웹 소켓 연결 종료");
+        log.debug("웹 소켓 연결 종료");
 
 
 
