@@ -72,20 +72,20 @@ public class MatePostEntityToDtoMapper {
         return skillLevelTypeList;
     }
 
-    public MatePostListDTO toMatePostListDto(MatePost matePost){
-        MatePostListDTO matePostListDTO = new MatePostListDTO();
-        matePostListDTO.setMatePostId(matePost.getMatePostId());
-        matePostListDTO.setWriterId(matePost.getWriterId());
-       // matePostListDTO.setWriterNickname(matePost.getWriterNickname());
-        matePostListDTO.setTitle(matePost.getTitle());
-        matePostListDTO.setContent(matePost.getContent());
-        matePostListDTO.setStartScheduledTime(matePost.getStartScheduledTime());
-        matePostListDTO.setEndScheduledTime(matePost.getEndScheduledTime());
-        matePostListDTO.setLocationDetail(matePost.getLocationDetail());
-        matePostListDTO.setPositionList(toPositionListDto(matePost));
-        matePostListDTO.setSkillList(toSkillLevelTypeList(matePost));
-        matePostListDTO.setParticipants(matePost.getParticipants());
-
-        return matePostListDTO;
-    }
+//    public MatePostListDTO toMatePostListDto(MatePost matePost){
+//        MatePostListDTO matePostListDTO = new MatePostListDTO();
+//        matePostListDTO.setMatePostId(matePost.getMatePostId());
+//        matePostListDTO.setWriterId(matePost.getWriterId());
+//       // matePostListDTO.setWriterNickname(matePost.getWriterNickname());
+//        matePostListDTO.setTitle(matePost.getTitle());
+//        matePostListDTO.setContent(matePost.getContent());
+//        matePostListDTO.setStartScheduledTime(matePost.getStartScheduledTime());
+//        matePostListDTO.setEndScheduledTime(matePost.getEndScheduledTime());
+//        matePostListDTO.setLocationDetail(matePost.getLocationDetail());
+//        matePostListDTO.setPositionList(toPositionListDto(matePost));
+//        matePostListDTO.setSkillList(toSkillLevelTypeList(matePost));
+//        matePostListDTO.setParticipants(matePost.getParticipants());
+//
+//        return matePostListDTO;
+//    }
 }

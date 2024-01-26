@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static sync.slamtalk.mate.error.MateErrorResponseCode.MATE_POST_NOT_FOUND;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -82,7 +82,6 @@ public class MatePostService {
 
     /**
      * 메이트찾기 게시글 수정
-     * 모집 글에 신청자가 한 명 이라도 있으면 수정 불가능하게 하기
      * 수정 가능한 항목 : 제목, 내용, 예정된 시간, 상세 시합 장소, 스킬 레벨, 모집 포지션 별 최대 인원 수
      * 모집 포지션 별 최대 인원 수는 필수 기입 사항. 변동사항이 없더라도 기존의 최대 인원 수를 기입해야 함.
      */
@@ -99,15 +98,15 @@ public class MatePostService {
         int maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
         int maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
 
-        if(content != null){
+        if(content != null && content != ""){
             post.updateContent(content);
         }
 
-        if(title != null){
+        if(title != null && title != ""){
             post.updateTitle(title);
         }
 
-        if(locationDetail != null){
+        if(locationDetail != null && locationDetail != ""){
             post.updateLocationDetail(locationDetail);
         }
 
@@ -124,18 +123,30 @@ public class MatePostService {
         }
 
         if(maxParticipantsCenters != 0){
+            if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsCenters(maxParticipantsCenters);
         }
 
         if(maxParticipantsGuards != 0){
+            if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsGuards(maxParticipantsGuards);
         }
 
         if(maxParticipantsForwards != 0){
+            if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsForwards(maxParticipantsForwards);
         }
 
         if(maxParticipantsOthers != 0){
+            if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsOthers(maxParticipantsOthers);
         }
 

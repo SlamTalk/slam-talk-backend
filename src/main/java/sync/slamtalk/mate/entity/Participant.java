@@ -38,8 +38,6 @@ public class Participant extends BaseEntity {
 
     private SkillLevelType skillLevel; // 스킬 레벨  HIGH, MIDDLE, LOW, BEGINNER
 
-    private boolean softDelete; // 삭제 여부 * 향후에 BaseEntity에 softDelete 추가 시 삭제 예정
-
     public Participant() {
     }
 
@@ -50,7 +48,6 @@ public class Participant extends BaseEntity {
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;
-        this.softDelete = false;
         this.matePost = null;
     }
 
@@ -60,7 +57,7 @@ public class Participant extends BaseEntity {
     }
 
     public boolean softDeleteParticipant() {
-        this.softDelete = true;
+        this.delete();
         return true;
     }
 
@@ -86,7 +83,6 @@ public class Participant extends BaseEntity {
                 ", applyStatus=" + applyStatus +
                 ", position=" + position +
                 ", skillLevel=" + skillLevel +
-                ", softDelete=" + softDelete +
                 '}';
     }
 

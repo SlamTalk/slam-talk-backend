@@ -92,6 +92,15 @@ public class MatePostController {
         return ApiResponse.ok();
     }
 
+    @Operation(
+            summary = "메이트 찾기 글 목록 조회",
+            description = "메이트 찾기 글 목록을 조회하는 api 입니다.",
+            tags = {"메이트 찾기"}
+    )
+    @GetMapping
+    public ApiResponse<MateFormDTO> getMatePosts(){
+        return ApiResponse.ok();
+    }
 
     @GetMapping("/test")
     public ApiResponse<MateFormDTO> test(){
