@@ -47,7 +47,7 @@ public class ParticipantService {
     public List<MatePostApplicantDTO> getParticipants(long matePostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
         if(!optionalMatePost.isPresent()){
-            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
+            throw new BaseException(MATE_POST_NOT_FOUND);
         }
         MatePost post = optionalMatePost.get();
         List<Participant> participants = post.getParticipants();
@@ -78,7 +78,7 @@ public class ParticipantService {
         }
         MatePost matePost = OptionalMatePost.get();
         if(matePost.getWriterId() != hostId){ // 접근자가 게시글 작성자가 아닐 때
-            return ApiResponse.fail(USER_NOT_AUTHORIZED);
+            throw new BaseException(USER_NOT_AUTHORIZED);
         }else{
             Optional<Participant> optionalParticipant = participantRepository.findById(participantTableId);
             Participant participant;
@@ -92,7 +92,7 @@ public class ParticipantService {
                 participant.updateApplyStatus(ApplyStatusType.ACCEPTED);
                 matePost.increasePositionNumbers(participant.getPosition());
             }else{
-                return ApiResponse.fail(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
+                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
             }
         }
         return ApiResponse.ok();
@@ -125,7 +125,7 @@ public class ParticipantService {
         }
 
         if(!(participant.getParticipantId() == writerId)){
-            return ApiResponse.fail(USER_NOT_AUTHORIZED);
+            throw new BaseException(USER_NOT_AUTHORIZED);
         } else{
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)){
                 participant.updateApplyStatus(ApplyStatusType.CANCEL);
@@ -133,7 +133,7 @@ public class ParticipantService {
                 participant.updateApplyStatus(ApplyStatusType.CANCEL);
                 matePost.reducePositionNumbers(participant.getPosition());
             }else{
-                return ApiResponse.fail(PARTICIPANT_ALREADY_REJECTED);
+                throw new BaseException(PARTICIPANT_ALREADY_REJECTED);
             }
             return ApiResponse.ok();
         }
@@ -158,12 +158,12 @@ public class ParticipantService {
             throw new BaseException(PARTICIPANT_NOT_FOUND);
         }
         if(!(matePost.getWriterId() == hostId)){
-            return ApiResponse.fail(USER_NOT_AUTHORIZED);
+            throw new BaseException(USER_NOT_AUTHORIZED);
         } else {
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)) {  // 모집글 작성자는 대기 상태인 참여자만 거절할 수 있다.
                 participant.updateApplyStatus(ApplyStatusType.REJECTED);
             }else{
-                return ApiResponse.fail(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 해당 참여자는 상태를 변경할 수 없습니다.
+                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 해당 참여자는 상태를 변경할 수 없습니다.
             }
         }
         return ApiResponse.ok();

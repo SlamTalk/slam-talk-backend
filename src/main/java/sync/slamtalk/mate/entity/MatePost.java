@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.common.BaseException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -189,28 +190,28 @@ public class MatePost extends BaseEntity {
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
-                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
-                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
-                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
-                                        return ApiResponse.fail(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }
@@ -224,28 +225,28 @@ public class MatePost extends BaseEntity {
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() == 0){
-                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() - 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() == 0){
-                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() - 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() == 0){
-                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() - 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() == 0){
-                                        return ApiResponse.fail(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() - 1);
                                 }
