@@ -93,20 +93,20 @@ public class MatePostService {
         LocalDateTime startScheduledTime = mateFormDTO.getStartScheduledTime();
         LocalDateTime endScheduledTime = mateFormDTO.getEndScheduledTime();
         RecruitedSkillLevelType skillLevel = mateFormDTO.getSkillLevel();
-        int maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
-        int maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
-        int maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
-        int maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
+        Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
+        Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
+        Integer maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
+        Integer maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
 
-        if(content != null && content != ""){
+        if(content != null && !content.equals("")){ // * 내용이 비어있지 않다면
             post.updateContent(content);
         }
 
-        if(title != null && title != ""){
+        if(title != null && !title.equals("")){ // * 제목이 비어있지 않다면
             post.updateTitle(title);
         }
 
-        if(locationDetail != null && locationDetail != ""){
+        if(locationDetail != null && !locationDetail.equals("")){ // * 상세 시합 장소가 비어있지 않다면
             post.updateLocationDetail(locationDetail);
         }
 
@@ -122,28 +122,28 @@ public class MatePostService {
             post.updateSkillLevel(skillLevel);
         }
 
-        if(maxParticipantsCenters != 0){
+        if(maxParticipantsCenters != null){
             if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
                 throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
             }
             post.updateMaxParticipantsCenters(maxParticipantsCenters);
         }
 
-        if(maxParticipantsGuards != 0){
+        if(maxParticipantsGuards != null){
             if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
                 throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
             }
             post.updateMaxParticipantsGuards(maxParticipantsGuards);
         }
 
-        if(maxParticipantsForwards != 0){
+        if(maxParticipantsForwards != null){
             if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
                 throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
             }
             post.updateMaxParticipantsForwards(maxParticipantsForwards);
         }
 
-        if(maxParticipantsOthers != 0){
+        if(maxParticipantsOthers != null){
             if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
                 throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
             }
