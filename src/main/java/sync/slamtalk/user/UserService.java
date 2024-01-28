@@ -8,15 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
+import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
+import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
@@ -52,26 +52,28 @@ public class UserService {
      * @return JwtTokenDto
      */
     @Transactional
-    public JwtTokenResponseDto login(
+    public UserLoginResponseDto login(
             UserLoginRequestDto userLoginDto,
             HttpServletResponse response
     ) {
         try {
-            // 1. email + password 를 기반으로 Authentication 객체 생성
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userLoginDto.getEmail(), userLoginDto.getPassword());
+            Authentication authentication = getAuthentication(userLoginDto.getEmail(), userLoginDto.getPassword());
 
-            // 2. 실제 검증. authenticate() 메서드를 통해 요청된 Member 에 대한 검증 진행
-            Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-            log.debug("authenticationToken ={}", authenticationToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            User user = (User) authentication.getPrincipal();
 
             // 3. 인증 정보를 기반으로 JWT 토큰 생성)
-            JwtTokenResponseDto jwtTokenResponseDto = tokenProvider.createToken((User) authentication.getPrincipal());
+            JwtTokenDto jwtTokenResponseDto = tokenProvider.createToken(user);
 
             response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
             setRefreshTokenCookie(response, jwtTokenResponseDto);
 
-            return jwtTokenResponseDto;
+            UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(user.getFirstLoginCheck());
+
+            // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
+            if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
+
+            return userLoginResponseDto;
+
         } catch (Exception e) {
             throw new BaseException(UserErrorResponseCode.BAD_CREDENTIALS);
         }
@@ -81,24 +83,25 @@ public class UserService {
      * 회원가입 검증 및 회원가입 로직
      *
      * @param userSignUpDto
+     * @param response
+     * @return JwtTokenResponseDto
      */
     @Transactional
-    public void signUp(UserSignUpRequestDto userSignUpDto) {
+    public UserLoginResponseDto signUp(
+            UserSignUpRequestDto userSignUpDto,
+            HttpServletResponse response
+    ) {
+        // 중복 이메일 검증
+        checkEmailExistence(userSignUpDto);
+        // 중복 닉네임 검증
+        checkNicknameExistence(userSignUpDto);
 
-        if (userRepository.findByEmailAndSocialType(userSignUpDto.getEmail(), SocialType.LOCAL).isPresent()) {
-            log.debug("이미 존재하는 유저 이메일입니다.");
-            throw new BaseException(UserErrorResponseCode.EMAIL_ALREADY_EXISTS);
-        }
-
-        if (userRepository.findByNickname(userSignUpDto.getNickname()).isPresent()) {
-            log.debug("이미 존재하는 닉네임입니다.");
-            throw new BaseException(UserErrorResponseCode.NICKNAME_ALREADY_EXISTS);
-        }
-
-        User user = User.from(userSignUpDto);
+        User user = userSignUpDto.toEntity();
         user.passwordEncode(passwordEncoder);
 
         userRepository.save(user);
+
+        return login(new UserLoginRequestDto(userSignUpDto.getEmail(), userSignUpDto.getPassword()), response);
     }
 
     /**
@@ -109,25 +112,80 @@ public class UserService {
      * @return JwtTokenResponseDto
      */
     @Transactional
-    public JwtTokenResponseDto refreshToken(
+    public UserLoginResponseDto refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
 
         String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
 
-        Optional<JwtTokenResponseDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
+        // 토큰 만료 검사
+        if(!tokenProvider.validateToken(refreshToken)){
+            throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
+        }
+
+        Optional<JwtTokenDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
 
         if (optionalJwtTokenResponseDto.isEmpty()) {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
-        JwtTokenResponseDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
+        JwtTokenDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
 
-        /* 엑세스 토큰및 리프레쉬 토큰 저장하는 로직 */
+        /* 엑세스 토큰 헤더에 저장 및 리프레쉬 토큰 쿠키에 저장하는 로직 */
         response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
         setRefreshTokenCookie(response, jwtTokenResponseDto);
-        return jwtTokenResponseDto;
+
+
+        // UserLoginResponseDto 생성 로직.
+        User user = userRepository.findByRefreshToken(jwtTokenResponseDto.getRefreshToken())
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
+
+        UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(user.getFirstLoginCheck());
+
+        // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
+        if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
+
+        return userLoginResponseDto;
+    }
+
+    /**
+     * UsernamePasswordAuthenticationToken를 이용해서 email과 password를 통해
+     * SecurityContextHolder에서 Authentication을 추출하는 메서드
+     *
+     * @param  email
+     * @param  password
+     * @return Authentication
+     * */
+    private Authentication getAuthentication(String email, String password) {
+        // 1. email + password 를 기반으로 Authentication 객체 생성
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
+
+        // 2. 실제 검증. authenticate() 메서드를 통해 요청된 Member 에 대한 검증 진행
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        log.debug("authenticationToken ={}", authenticationToken);
+
+        return authentication;
+    }
+
+    /**
+     * 회원가입 시 중복 닉네임이 존재하는지 검사하는 메서드
+     * */
+    private void checkNicknameExistence(UserSignUpRequestDto userSignUpDto) {
+        if (userRepository.findByNickname(userSignUpDto.getNickname()).isPresent()) {
+            log.debug("이미 존재하는 닉네임입니다.");
+            throw new BaseException(UserErrorResponseCode.NICKNAME_ALREADY_EXISTS);
+        }
+    }
+
+    /**
+     * 회원가입 시 중복 이메일이 존재하는지 검사하는 메서드
+     * */
+    private void checkEmailExistence(UserSignUpRequestDto userSignUpDto) {
+        if (userRepository.findByEmailAndSocialType(userSignUpDto.getEmail(), SocialType.LOCAL).isPresent()) {
+            log.debug("이미 존재하는 유저 이메일입니다.");
+            throw new BaseException(UserErrorResponseCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     /**
@@ -137,7 +195,7 @@ public class UserService {
      * */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
-            JwtTokenResponseDto jwtTokenResponseDto
+            JwtTokenDto jwtTokenResponseDto
     ) {
         CookieUtil.addCookie(
                 response,
@@ -146,7 +204,5 @@ public class UserService {
                 refreshTokenExpirationPeriod,
                 domain
         );
-
-        jwtTokenResponseDto.clearRefreshToken();
     }
 }

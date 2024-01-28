@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
+import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
@@ -51,8 +51,6 @@ public class JwtTokenProvider implements InitializingBean {
     public String accessAuthorizationHeader;
     @Value("${jwt.refresh.header}")
     public String refreshAuthorizationCookieName;
-    @Value("${jwt.domain}")
-    private String domain;
 
     public JwtTokenProvider(
             @Value("${jwt.secretKey}") String secretKey,
@@ -81,7 +79,7 @@ public class JwtTokenProvider implements InitializingBean {
      * @return String
      */
     @Transactional
-    public JwtTokenResponseDto createToken(User user) {
+    public JwtTokenDto createToken(User user) {
 
         // 권한 정보 가져오기
         String authorities = user.getAuthorities().stream()
@@ -93,10 +91,9 @@ public class JwtTokenProvider implements InitializingBean {
         String accessToken = createAccessToken(user, authorities);
         String refreshToken = createRefreshToken();
 
-
         user.updateRefreshToken(refreshToken);
 
-        return new JwtTokenResponseDto(GRANT_TYPE, accessToken, refreshToken);
+        return new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken);
     }
 
     /**
@@ -225,9 +222,8 @@ public class JwtTokenProvider implements InitializingBean {
      * @return Optional<JwtTokenResponseDto>
      * */
     @Transactional
-    public Optional<JwtTokenResponseDto> generateNewAccessToken(String refreshToken){
+    public Optional<JwtTokenDto> generateNewAccessToken(String refreshToken){
         log.debug("엑세스 토큰 재발급");
-        //todo : db 조회하는거
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElse(null);
 

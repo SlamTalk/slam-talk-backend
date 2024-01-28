@@ -8,7 +8,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.common.BaseEntity;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,9 +17,10 @@ import java.util.List;
 @Entity
 @Table(name = "users") // User가 예약어라서 users로 테이블이름 명시
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id", callSuper = false)
 @Getter
+@Builder
 public class User extends BaseEntity implements UserDetails {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
@@ -31,8 +31,8 @@ public class User extends BaseEntity implements UserDetails {
     private String nickname;
     @Column(nullable = false)
     private String email;
-    @Column(name = "image_uri")
-    private String imageUri;
+    @Column(name = "image_url")
+    private String imageUrl;
     @Column(name = "refresh_token")
     private String refreshToken;
 
@@ -51,6 +51,10 @@ public class User extends BaseEntity implements UserDetails {
     private String selfIntroduction;
     @Column(name = "region_name")
     private String regionName;
+
+    /* 정보 수집 부분 */
+    @Column(name = "first_login_check", nullable = false)
+    private Boolean firstLoginCheck;
     @Column(name = "basketball_skill_level")
     @Enumerated(EnumType.STRING)
     private UserBasketballSkillLevelType basketballSkillLevel;
@@ -67,8 +71,6 @@ public class User extends BaseEntity implements UserDetails {
     private Long levelScore = 0L;
 
     /* 연관 관계 매핑 */
-
-    // todo : 예지님 연관관계 매핑 부분
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
@@ -88,26 +90,20 @@ public class User extends BaseEntity implements UserDetails {
     }
 
     /**
-     * userSignUpDto 를 User로 변환
-     * @param userSignUpDto 유저회원가입 dto
-     * @return user 유저 entity
+     * 리프레쉬 토큰 update하는 메서드
+     *
+     * @param refreshToken
      * */
-    public static User from(UserSignUpRequestDto userSignUpDto) {
-
-        User user = new User();
-        user.email = userSignUpDto.getEmail();
-        user.password = userSignUpDto.getPassword();
-        user.nickname = userSignUpDto.getNickname();
-        user.role = UserRole.USER;
-        user.levelScore = 0L;
-        user.socialType = SocialType.LOCAL;
-        return user;
-    }
-
     public void updateRefreshToken(String refreshToken){
         this.refreshToken = refreshToken;
     }
 
+    /**
+     * 최초 로그인 상태를 false로 설정하는 메서드
+     * */
+    public void updateFirstLoginCheck(){
+        this.firstLoginCheck = false;
+    }
 
     /* UserDetails 관련 메서드 */
     @Override
