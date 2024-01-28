@@ -44,7 +44,7 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
 
     // 방에 대한 권한이 없는 경우 처리 하는 메소드
     private Message<byte[]> handleUnauthorizedException(Message<byte[]> clientMessage, Throwable ex){
-        return prepareErrorMessage(RoomCode.NOT_PARTICIPATE_ROOM);
+        return prepareErrorMessage(RoomCode. NOT_PARTICIPATE_ROOM);
     }
 
     // JWT 예외

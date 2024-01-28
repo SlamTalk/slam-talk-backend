@@ -70,10 +70,12 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         if(StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())){
             log.debug("===SUBSCRIBE===");
 
-
+            log.debug("==SUBSCRIBE STEP1==");
+            String d = headerAccessor.getDestination();
+            log.debug("destination:{}",d);
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);
-            log.debug("성공");
+            log.debug("==SUBSCRIBE STEP2==");
 
 
             // RoomId 만 추출
@@ -82,7 +84,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             //'사용자채팅방' 테이블에 추가하기
             addUserChatRoom(headerAccessor);
-            log.debug("성공 사용자테이블");
+            log.debug("==SUBSCRIBE STEP3==");
         }
 
 
@@ -112,10 +114,12 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             // 채팅방의 존재 여부 검증
             isExistChatRoom(headerAccessor);
+            log.debug("==SEND STEP1==");
 
             // client 가 destination 에 메세지를 보낼 수 있는지 검증(사용자 채팅방에 있는 채팅방인지)
             // Token 붙이기 전이면 이거 비활성화해주고 실행해야 제대로 테스트됨
             isExistUserChatRoom(headerAccessor);
+            log.debug("==SEND STEP2==");
 
 
             // destination 가져오기
@@ -128,16 +132,23 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             Long userId = extractUserId(headerAccessor);
 
 
+            // 이부분 유저아이디 이상한거 가지고 오는데???
             // 뒤로가기
             // 채팅방의 마지막 메세지를 저장
             if(destination.contains("back")){
+                log.debug("==SEND STEP3==");
                 Messages lastMessageFromChatRoom = chatService.getLastMessageFromChatRoom(roomId);
+//                log.debug("lastmessage:{}",lastMessageFromChatRoom.getContent().toString());
+//                log.debug("userId:{}",userId);
+//                log.debug("roomId:{}",roomId);
                 chatService.saveReadIndex(userId,roomId,lastMessageFromChatRoom.getId());
+                log.debug("==SEND STEP4==");
             }
 
             // 나가기
             // softDelete
             if(destination.contains("exit")){
+                log.debug("exit");
                 //TODO
 
             }
@@ -149,9 +160,11 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
                 // 메시지의 페이로드(본문) 추출
                 String content = extractRoomContent(messageContent);
+                log.debug("extract message content:{}",content);
 
                 // 메시지 보낸 유저의 닉네임 추출
                 String nickname = extractNickname(messageContent);
+                log.debug("extract message nickname:{}",nickname);
 
                 if (content != null) {
                     ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
@@ -161,6 +174,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                             .timestamp(LocalDateTime.now())
                             .build();
                     chatService.saveMessage(chatMessageDTO);
+                    log.debug("==SEND STEP5==");
                 }
             }
             // 처음 입장 메세지
@@ -168,6 +182,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, roomId);
                 if(existUserChatRoom.isPresent()){
 
+                    log.debug("enter");
                     // 본문 바디 가져오기
                     String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
 
@@ -209,7 +224,13 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private Long extractUserId(StompHeaderAccessor accessor){
         List<String> authorization = accessor.getNativeHeader("authorization");
         String Token = authorization.get(0).toString();
-        return tokenProvider.stompExtractUserIdFromToken(Token);
+        log.debug("Token:{}",Token);
+        Long l = tokenProvider.stompExtractUserIdFromToken(Token);
+        log.debug("tokenProvider:{}",l);
+        Optional<User> byId = userRepository.findById(l);
+        log.debug("usernickname:{}",byId.get().getNickname());
+
+        return l;
     }
 
 
@@ -229,9 +250,11 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private void isExistUserChatRoom(StompHeaderAccessor accessor){
 
         Long userId = extractUserId(accessor);
+        log.debug("userId:{}",userId);
 
         String destination = accessor.getDestination();
         Long RoomId = extractRoomId(destination);
+        log.debug("RoomId:{}",RoomId);
 
         Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId,RoomId);
         // UserChatRoom 이 존재하지 않는다면
@@ -251,7 +274,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 return Long.parseLong(parts[parts.length - 1]);
             } catch (NumberFormatException e) {
                 // 마지막 부분이 숫자가 아닌 경우
-                throw new RuntimeException(e.getMessage());
+                throw new RuntimeException("Not A number");
             }
         }
         return null; // 숫자가 없거나 변환할 수 없는 경우
