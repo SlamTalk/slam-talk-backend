@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
+import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
@@ -62,7 +62,7 @@ public class UserService {
             User user = (User) authentication.getPrincipal();
 
             // 3. 인증 정보를 기반으로 JWT 토큰 생성)
-            JwtTokenResponseDto jwtTokenResponseDto = tokenProvider.createToken(user);
+            JwtTokenDto jwtTokenResponseDto = tokenProvider.createToken(user);
 
             response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
             setRefreshTokenCookie(response, jwtTokenResponseDto);
@@ -124,13 +124,13 @@ public class UserService {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
-        Optional<JwtTokenResponseDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
+        Optional<JwtTokenDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
 
         if (optionalJwtTokenResponseDto.isEmpty()) {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
-        JwtTokenResponseDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
+        JwtTokenDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
 
         /* 엑세스 토큰 헤더에 저장 및 리프레쉬 토큰 쿠키에 저장하는 로직 */
         response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
@@ -195,7 +195,7 @@ public class UserService {
      * */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
-            JwtTokenResponseDto jwtTokenResponseDto
+            JwtTokenDto jwtTokenResponseDto
     ) {
         CookieUtil.addCookie(
                 response,
