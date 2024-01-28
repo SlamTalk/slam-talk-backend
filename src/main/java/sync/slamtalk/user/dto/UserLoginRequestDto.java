@@ -4,12 +4,10 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@ToString
 public class UserLoginRequestDto {
 
     @Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$",

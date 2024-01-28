@@ -9,8 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.security.dto.JwtTokenResponseDto;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
+import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 
 @Slf4j
@@ -23,12 +23,6 @@ public class UserController {
     public String authorizationHeader;
     @Value("${jwt.refresh.header}")
     public String refreshAuthorizationHeader;
-    @Value("${jwt.access.expiration}")
-    private int accessTokenExpirationPeriod;
-    @Value("${jwt.refresh.expiration}")
-    private int refreshTokenExpirationPeriod;
-    @Value("${jwt.domain}")
-    private String domain;
     private final UserService userService;
 
     /**
@@ -44,15 +38,15 @@ public class UserController {
             description = "자체 로그인 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<JwtTokenResponseDto> authorize(
+    public ApiResponse<UserLoginResponseDto> authorize(
             @Valid @RequestBody UserLoginRequestDto userLoginDto,
             HttpServletResponse response
     ) {
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        JwtTokenResponseDto jwtTokenResponseDto = userService.login(userLoginDto, response);
+        UserLoginResponseDto userLoginResponseDto = userService.login(userLoginDto, response);
 
-        return ApiResponse.ok(jwtTokenResponseDto);
+        return ApiResponse.ok(userLoginResponseDto);
     }
 
     /**
@@ -67,9 +61,11 @@ public class UserController {
             description = "자체 회원가입 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> signUp(@Valid @RequestBody UserSignUpRequestDto userSignUpDto) {
-        userService.signUp(userSignUpDto);
-        return ApiResponse.ok("회원가입 성공");
+    public ApiResponse<UserLoginResponseDto> signUp(
+            @Valid @RequestBody UserSignUpRequestDto userSignUpDto,
+            HttpServletResponse response) {
+        UserLoginResponseDto userLoginResponseDto = userService.signUp(userSignUpDto, response);
+        return ApiResponse.ok(userLoginResponseDto);
     }
 
     /**
@@ -85,12 +81,11 @@ public class UserController {
             description = "리프레쉬 토큰은 httpOnly secure 쿠키로 보내주고 엑세스 토큰은 헤더와 파라미터에 넣어 보내줍니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<JwtTokenResponseDto> refreshToken(
+    public ApiResponse<UserLoginResponseDto> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ){
-        JwtTokenResponseDto jwtTokenResponseDto = userService.refreshToken(request, response);
-
-        return ApiResponse.ok(jwtTokenResponseDto);
+        UserLoginResponseDto userLoginResponseDto = userService.refreshToken(request, response);
+        return ApiResponse.ok(userLoginResponseDto);
     }
 }
