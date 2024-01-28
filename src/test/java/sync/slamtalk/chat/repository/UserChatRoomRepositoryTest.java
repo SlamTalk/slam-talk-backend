@@ -41,7 +41,9 @@ class UserChatRoomRepositoryTest {
 //        UserSignUpRequestDto usd=new UserSignUpRequestDto();
 //        User user = User.from(usd);
 //        entityManager.persist(user);
-//        // chatroom
+
+
+        // chatroom
 //        ChatRoom c1 = ChatRoom.builder()
 //                .name("농구방")
 //                .roomType(RoomType.BASKETBALL)
