@@ -33,7 +33,7 @@ public class BaseEntity {
 
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
 
     // @PreRemove를 사용하여 엔티티가 삭제될 때 isDeleted를 true로 설정
