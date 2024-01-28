@@ -37,6 +37,10 @@ jobs:
     - run: echo "${{ secrets.APPLICATION_JWT }}" > ./src/main/resources/application-jwt.yml
     - run: cat ./src/main/resources/application-jwt.yml
 
+    - run: mkdir -p ./src/main/resources/
+    - run: echo "${{ secrets.APPLICATION_OAUTH }}" > ./src/main/resources/application-oauth.yml
+    - run: cat ./src/main/resources/application-oauth.yml
+
 
     # gradle을 통해 소스를 빌드.
     - name: Build with Gradle
