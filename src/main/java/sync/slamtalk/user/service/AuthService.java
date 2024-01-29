@@ -1,4 +1,4 @@
-package sync.slamtalk.user;
+package sync.slamtalk.user.service;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,6 +15,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
+import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
 import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
@@ -24,11 +25,14 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 
 import java.util.Optional;
 
+/**
+ * 이 컨트롤러는 유저의 인증과 관련된 기능을 다루는 클래스입니다.
+ * */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class UserService {
+public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

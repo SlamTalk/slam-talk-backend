@@ -1,4 +1,4 @@
-package sync.slamtalk.user;
+package sync.slamtalk.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,21 +9,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.user.service.AuthService;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
 import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 
+/**
+ * 이 컨트롤러는 인증과 관련된 기능을 다루는 클래스입니다.
+ */
 @Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class UserController {
+public class AuthController {
 
     @Value("${jwt.access.header}")
     public String authorizationHeader;
     @Value("${jwt.refresh.header}")
     public String refreshAuthorizationHeader;
-    private final UserService userService;
+    private final AuthService authService;
 
     /**
      * 로그인 api
@@ -44,7 +48,7 @@ public class UserController {
     ) {
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        UserLoginResponseDto userLoginResponseDto = userService.login(userLoginDto, response);
+        UserLoginResponseDto userLoginResponseDto = authService.login(userLoginDto, response);
 
         return ApiResponse.ok(userLoginResponseDto);
     }
@@ -64,7 +68,7 @@ public class UserController {
     public ApiResponse<UserLoginResponseDto> signUp(
             @Valid @RequestBody UserSignUpRequestDto userSignUpDto,
             HttpServletResponse response) {
-        UserLoginResponseDto userLoginResponseDto = userService.signUp(userSignUpDto, response);
+        UserLoginResponseDto userLoginResponseDto = authService.signUp(userSignUpDto, response);
         return ApiResponse.ok(userLoginResponseDto);
     }
 
@@ -85,7 +89,7 @@ public class UserController {
             HttpServletRequest request,
             HttpServletResponse response
     ){
-        UserLoginResponseDto userLoginResponseDto = userService.refreshToken(request, response);
+        UserLoginResponseDto userLoginResponseDto = authService.refreshToken(request, response);
         return ApiResponse.ok(userLoginResponseDto);
     }
 }
