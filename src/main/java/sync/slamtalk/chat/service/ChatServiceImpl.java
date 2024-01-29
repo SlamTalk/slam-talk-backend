@@ -2,6 +2,8 @@ package sync.slamtalk.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
@@ -12,6 +14,7 @@ import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.RoomType;
 import sync.slamtalk.chat.entity.UserChatRoom;
+import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
@@ -23,6 +26,8 @@ import sync.slamtalk.user.entity.User;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -98,6 +103,14 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
+
+            // Redis Test===================================
+//            List<Messages> list = new ArrayList<>();
+//            list.add(messages);
+//            redisService.saveMessage("test1",list);
+//            log.debug("Redis 저장완료");
+
+
         }else{
             // TODO Exceptioin 처리
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
@@ -130,28 +143,28 @@ public class ChatServiceImpl implements ChatService{
     // 채팅리스트 가져오기
     @Override
     public List<ChatRoomDTO> getChatLIst(Long userId) {
-        List<ChatRoomDTO> AnsList = new ArrayList<>();
-        //userChatRoomRepository.findByUser_Id(); // Token 에서 userId 추출
-        // 테스트 용도로 넣어둠
-        List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(userId);
+        List<ChatRoomDTO> chatRooms = new ArrayList<>();
 
-        // 내역 없으면 예외 처리
+        // 유저가 가지고 있는 채팅방 모두 가져오기
+        log.debug("userId:{}",userId);
+        List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(userId);
         if(chatRoom.isEmpty()){
-            throw new BaseException(ChatErrorResponseCode.CHAT_LIST_NOT_FOUND);
+            return null;
         }
         for(UserChatRoom ucr : chatRoom){
-            ChatRoomDTO chatRoomDTO = ChatRoomDTO.builder()
-                    .roomId(ucr.getId().toString())
+            ChatRoomDTO dto = ChatRoomDTO.builder()
                     .name(ucr.getChat().getName())
+                    .roomId(ucr.getChat().getId().toString())
                     .build();
+            PageRequest pageRequest = PageRequest.of(0, 1);
+            Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
+            Stream<Messages> messagesStream = latestByChatRoomId.get();
+            Messages messages = messagesStream.collect(Collectors.toList()).get(0);
 
-            List<Messages> chatContent = messagesRepository.findByChatRoomId(ucr.getId());
-
-            chatRoomDTO.setLast_message(chatContent.get(0).getContent());
-
-            AnsList.add(chatRoomDTO);
+            dto.setLast_message(messages.getContent());
+            chatRooms.add(dto);
         }
-        return AnsList;
+        return chatRooms;
     }
 
 
@@ -186,17 +199,11 @@ public class ChatServiceImpl implements ChatService{
     @Override
     public void saveReadIndex(Long userId,Long chatRoomId,Long readIndex) {
 
-        // userchatRoomRepository 에서 userId 검색해서 chatRoom ( user가 참여한 chatRoomList 를 가져옴 )
-        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByUser_Id(userId);
-
-
-        // 가져온 userChatRoomList 에서 해당하는 chatRoomId 를 가진 userchatRoom 를 가져온다
-        Optional<UserChatRoom> matchingChatRoom = userChatRooms.stream()
-                .filter(userChatRoom -> userChatRoom.getChat().getId().equals(chatRoomId))
-                .findFirst();
+        Optional<UserChatRoom> matchingChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
 
         // 해당하는 userchatRoom 의 readIndex 에 readIndex 를 업데이트
         if(matchingChatRoom.isPresent()){
+            log.debug("존재함 그래서 업데이트함");
             UserChatRoom userChatRoom = matchingChatRoom.get();
             userChatRoom.updateReadIndex(readIndex);
         }

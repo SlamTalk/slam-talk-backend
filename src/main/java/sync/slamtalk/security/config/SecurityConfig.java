@@ -1,8 +1,10 @@
 package sync.slamtalk.security.config;
 
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,39 +14,30 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.filter.CorsFilter;
 import sync.slamtalk.security.jwt.JwtAccessDeniedHandler;
 import sync.slamtalk.security.jwt.JwtAuthenticationEntryPoint;
 import sync.slamtalk.security.jwt.JwtFilter;
-import sync.slamtalk.security.jwt.JwtTokenProvider;
+import sync.slamtalk.security.logout.CustomLogoutHandler;
+import sync.slamtalk.security.oauth2.handler.OAuth2LoginFailureHandler;
+import sync.slamtalk.security.oauth2.handler.OAuth2LoginSuccessHandler;
+import sync.slamtalk.security.oauth2.service.CustomOAuth2UserService;
 import sync.slamtalk.user.entity.UserRole;
 
 @Configuration
 @EnableWebSecurity // Web 보안 활성화
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtTokenProvider tokenProvider;
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtFilter jwtFilter;
-
-    /**
-     * JwtFilter를 통해 Security 로직에 필터를 등록
-     */
-    public SecurityConfig(
-            JwtTokenProvider tokenProvider,
-            CorsFilter corsFilter,
-            JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            JwtAccessDeniedHandler jwtAccessDeniedHandler,
-            JwtFilter jwtFilter
-    ) {
-        this.tokenProvider = tokenProvider;
-        this.corsFilter = corsFilter;
-        this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
-        this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
-        this.jwtFilter = jwtFilter;
-    }
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomLogoutHandler customLogoutHandler;
 
     /**
      * Password 인코더 설정
@@ -54,7 +47,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
+    
     /**
      * 필터 체이닝
      */
@@ -65,6 +58,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+                .formLogin(AbstractHttpConfigurer::disable)
 
                 // exceptionHandler를 우리가 만든 클래스로 재정의
                 .exceptionHandling(exceptionHandling -> exceptionHandling
@@ -92,8 +86,21 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler)
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/logout") // post mapping
+                        .addLogoutHandler(customLogoutHandler)
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.setStatus(HttpStatus.OK.value())
+                        )
+                )
+                .addFilterBefore(jwtFilter, LogoutFilter.class);
         // JwtFilter를 addFiterBefore로 등록했던 JwtSecurityConfig 클래스도 적용
         return http.build();
     }

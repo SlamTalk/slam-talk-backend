@@ -24,7 +24,7 @@ public class Controller {
             tags = {"유저", "관리자"} // 유저인지 관리자기능인지 여부
     )
     // 주의 사항 ApiResponse Swagger 도 동일한 클래스가 존재하기 때문에 import 주의 해야합니다.
-    public ApiResponse hello(
+    public ApiResponse<String> hello(
             String param,
             @AuthenticationPrincipal User user
     ){

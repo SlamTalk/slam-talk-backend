@@ -22,6 +22,8 @@ public class  CorsConfig {
       config.addAllowedOrigin("http://localhost:3001");
       config.addAllowedHeader("*");
       config.addAllowedMethod("*");
+      // 다른도메인에서 오는 인증정보 포함을 허용할 경우 true로 설정
+      config.setAllowCredentials(true);
 
       // 클라이언트 response header 허용
       config.setExposedHeaders(Arrays.asList(

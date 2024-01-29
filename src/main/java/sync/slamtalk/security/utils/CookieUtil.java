@@ -41,7 +41,13 @@ public class CookieUtil {
      * @param maxAge
      * @param domain
      * */
-    public static void addCookie(HttpServletResponse response, String name, String value, int maxAge, String domain) {
+    public static void addCookie(
+            HttpServletResponse response,
+            String name,
+            String value,
+            int maxAge,
+            String domain
+    ) {
         ResponseCookie cookie = ResponseCookie.from(name, value) // 쿠키 이름과 값 설정
                 .path("/") // 쿠키 전체 도메인으로 경로 설정
                 .sameSite("None") // 쿠키가 같은 사이트 요청뿐만 아니라 크로스-사이트 요청에서도 전송될 수 있음
@@ -52,6 +58,7 @@ public class CookieUtil {
                 .build();
 
         log.debug("cookie 값 설정 ={}", cookie.toString());
+
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
@@ -62,7 +69,12 @@ public class CookieUtil {
      * @param name
      * @param domain
      * */
-    public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name, String domain) {
+    public static void deleteCookie(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            String name,
+            String domain
+    ) {
         Cookie[] cookies = request.getCookies();
 
         if (cookies != null) {

@@ -16,6 +16,8 @@ import sync.slamtalk.chat.service.ChatServiceImpl;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
+import sync.slamtalk.security.jwt.JwtTokenProvider;
+import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.util.List;
@@ -25,6 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ChatController {
     private final ChatServiceImpl chatService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     // 채팅방 생성
     @PostMapping("/api/chat/create")
@@ -70,6 +74,17 @@ public class ChatController {
         List<ChatMessageDTO> chatMessage = chatService.getChatMessage(roomId);
 
         return ApiResponse.ok(chatMessage);
+    }
+
+    @GetMapping("/api/chat/userTest")
+    public String nowUserId(@Param("token")String token){
+        Long userId = jwtTokenProvider.stompExtractUserIdFromToken(token);
+        Optional<User> byId = userRepository.findById(userId);
+        if(byId.isPresent()){
+            User user = byId.get();
+            return user.getId().toString();
+        }
+        return "존재하는 유저없음";
     }
 
 

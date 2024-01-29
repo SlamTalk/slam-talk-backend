@@ -90,4 +90,63 @@ public class BasketballCourt extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus; // 관리자 상태
 
+    //코트 타입 업데이트
+    public void updateCourtType(String courtType) {
+        this.courtType = courtType;
+    }
+
+    //실내외 정보 업데이트
+    public void updateIndoorOutDoor(String indoorOutdoor) {
+        this.indoorOutdoor = indoorOutdoor;
+    }
+    //코드 크기 업데이트
+    public void updateCourtSize(String courtSize) {
+        this.courtSize = courtSize;
+    }
+    //골대 개수 업데이트
+    public void updateHoopCount(Integer hoopCount) {
+        this.hoopCount = hoopCount;
+    }
+    //야간 조명 유무 업데이트
+    public void updateNightLighting(Boolean nightLighting) {
+        this.nightLighting = nightLighting;
+    }
+    //영업시간 업데이트
+    public void updateOpeningHours(Boolean openingHours) {
+        this.openingHours = openingHours;
+    }
+    //입장료 업데이트
+    public void updateFee(Boolean fee) {
+        this.fee = fee;
+    }
+    //주차 가능 유무 업데이트
+    public void updateParkingAvailable(Boolean parkingAvailable) {
+        this.parkingAvailable = parkingAvailable;
+    }
+    //전화번호 업데이트
+    public void updatePhoneNum(String phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+    //웹 사이트 url 업데이트
+    public void updateWebsite(String website) {
+        this.website = website;
+    }
+    //편의 시설 업데이트
+    public void updateConvenience(String convenience) {
+        this.convenience = convenience;
+    }
+    //기타 정보 업데이트
+    public void updateAdditionalInfo(String additionalInfo) {
+        this.additionalInfo = additionalInfo;
+    }
+    //농구장 사진 업데이트
+    public void updatePhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
+    }
+
+    // AdminStatus 변경 메소드
+    public void updateAdminStatus(AdminStatus adminStatus) {
+        this.adminStatus = adminStatus;
+    }
+
 }

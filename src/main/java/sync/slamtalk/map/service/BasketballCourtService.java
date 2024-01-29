@@ -21,16 +21,14 @@ public class BasketballCourtService {
 
     // 저장된 모든 농구장의 간략 정보
     public List<BasketballCourtDto> getAllCourtSummaryInfo() {
-        return basketballCourtRepository.findAll().stream()
-                .filter(court -> court.getAdminStatus() == AdminStatus.ACCEPT) // ACCEPT 상태 필터링
-                .map(basketballCourtMapper::toDto) // dto 변환 mapper 호출
+        return basketballCourtRepository.findByAdminStatus(AdminStatus.ACCEPT).stream() //수락 상태의 정보만 조회
+                .map(basketballCourtMapper::toDto) // dto 변환
                 .collect(Collectors.toList());
     }
 
     //특정 농구장 전체 정보
     public BasketballCourtDto getCourtFullInfoById(Long courtId) {
-        return basketballCourtRepository.findById(courtId)
-                .filter(court -> court.getAdminStatus() == AdminStatus.ACCEPT) // ACCEPT 상태 필터링
+        return basketballCourtRepository.findByCourtIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
                 .map(basketballCourtMapper::toFullDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
