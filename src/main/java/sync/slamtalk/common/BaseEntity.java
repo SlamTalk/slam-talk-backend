@@ -42,8 +42,19 @@ public class BaseEntity {
         this.isDeleted = true;
     }
 
+    // 삭제 플래그 가져오기
     public Boolean getIsDeleted(){
         return this.isDeleted;
+    }
+
+    // 생성시간 가져오기
+    public LocalDateTime getCreatedAt(){
+        return this.createdAt;
+    }
+
+    // 업데이트시간 가져오기
+    public LocalDateTime getUpdatedAt(){
+        return this.updatedAt;
     }
 
 }
