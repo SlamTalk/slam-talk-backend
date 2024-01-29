@@ -18,7 +18,7 @@ public class MatePostDTO {
     @NonNull
     private long matePostId;
     @NonNull
-    private long writerId;git
+    private long writerId;
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime startScheduledTime;
