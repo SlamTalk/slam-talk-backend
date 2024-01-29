@@ -103,14 +103,6 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
-
-            // Redis Test===================================
-//            List<Messages> list = new ArrayList<>();
-//            list.add(messages);
-//            redisService.saveMessage("test1",list);
-//            log.debug("Redis 저장완료");
-
-
         }else{
             // TODO Exceptioin 처리
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
@@ -151,18 +143,25 @@ public class ChatServiceImpl implements ChatService{
         if(chatRoom.isEmpty()){
             return null;
         }
-        for(UserChatRoom ucr : chatRoom){
-            ChatRoomDTO dto = ChatRoomDTO.builder()
-                    .name(ucr.getChat().getName())
-                    .roomId(ucr.getChat().getId().toString())
-                    .build();
-            PageRequest pageRequest = PageRequest.of(0, 1);
-            Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
-            Stream<Messages> messagesStream = latestByChatRoomId.get();
-            Messages messages = messagesStream.collect(Collectors.toList()).get(0);
 
-            dto.setLast_message(messages.getContent());
-            chatRooms.add(dto);
+        // 유저가 가지고 있는 채팅방 리스트를 돌면서 가져오기
+        for(UserChatRoom ucr : chatRoom){
+
+            // 삭제 되지 않은 채팅방만 가져옴
+            if(ucr.getIsDeleted().equals(false)){
+                ChatRoomDTO dto = ChatRoomDTO.builder()
+                        .roomId(ucr.getId().toString())
+                        .name(ucr.getChat().getName())
+                        .roomId(ucr.getChat().getId().toString())
+                        .build();
+                PageRequest pageRequest = PageRequest.of(0, 1);
+                Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
+                Stream<Messages> messagesStream = latestByChatRoomId.get();
+                Messages messages = messagesStream.collect(Collectors.toList()).get(0);
+
+                dto.setLast_message(messages.getContent());
+                chatRooms.add(dto);
+            }
         }
         return chatRooms;
     }
@@ -170,12 +169,14 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     @Override
-    public List<ChatMessageDTO> getChatMessage(Long chatRoomId) {
+    public List<ChatMessageDTO> getChatMessage(Long chatRoomId, Long messageId) {
         List<ChatMessageDTO> ansList = new ArrayList<>();
-        List<Messages> byChatRoomId = messagesRepository.findByChatRoomId(chatRoomId);
+
+        // 특정 방 메세지 중 현재 messageId 보다 큰 Id값을 가진 메세지들 가져오기
+        List<Messages> newMessages = messagesRepository.findByChatRoomIdAndIdGreaterThan(chatRoomId, messageId);
 
         // messageRepository 에서 가져온 메세지로 dto 생성하기
-        for(Messages m : byChatRoomId){
+        for(Messages m : newMessages){
             ChatMessageDTO messageDTO = ChatMessageDTO.builder()
                     .roomId(m.getChatRoom().getId().toString())
                     .senderNickname(m.getWriter())
@@ -203,12 +204,28 @@ public class ChatServiceImpl implements ChatService{
 
         // 해당하는 userchatRoom 의 readIndex 에 readIndex 를 업데이트
         if(matchingChatRoom.isPresent()){
-            log.debug("존재함 그래서 업데이트함");
             UserChatRoom userChatRoom = matchingChatRoom.get();
             userChatRoom.updateReadIndex(readIndex);
         }
-
     }
+
+
+    // 특정방을 나갈 때 userChatRoom softDelete
+    @Override
+    public Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId) {
+        Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
+
+        // 사용자 채팅방 가져와서 softDelete = true 처리
+        if(optionalUserChatRoom.isPresent()){
+            UserChatRoom userChatRoom = optionalUserChatRoom.get();
+            userChatRoom.delete();
+            return optionalUserChatRoom;
+        }
+
+        return Optional.empty();
+    }
+
+
 
 
 
