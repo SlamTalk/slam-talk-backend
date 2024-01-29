@@ -3,6 +3,7 @@ package sync.slamtalk.chat.redis;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import sync.slamtalk.common.ApiResponse;
 import java.util.List;
 
 @RestController
-@RequestMapping("/redis")
+@RequestMapping("/api/chat/redis")
 @AllArgsConstructor
 @Slf4j
 public class RedisController {
@@ -27,6 +28,11 @@ public class RedisController {
      * */
 
     @GetMapping("/save")
+    @Operation(
+            summary = "Redis 서버에 메세지 저장",
+            description = "이 기능은 Redis 서버에 메시지를 저장하는 기능입니다.",
+            tags = {"채팅"}
+    )
     public String save(){
         // test 코드여서 TODO 페이징과 연결해야함
 //        ChatMessageDTO dto1 = ChatMessageDTO.builder()
@@ -66,6 +72,11 @@ public class RedisController {
     }
 
     @GetMapping("/get/{chatRoomId}")
+    @Operation(
+            summary = "Redis 서버에서 메세지 조회",
+            description = "이 기능은 Redis 서버에서 메시지를 조회하는 기능입니다.",
+            tags = {"채팅"}
+    )
     public ApiResponse<List<String>> getMessages(@PathVariable String chatRoomId, @RequestParam(defaultValue = "0") int count) throws JsonProcessingException {
         // test 코드여서 TODO 페이징과 연결해야함
 //        List<String> messages = redisService.getMessages(chatRoomId, 0, 2);

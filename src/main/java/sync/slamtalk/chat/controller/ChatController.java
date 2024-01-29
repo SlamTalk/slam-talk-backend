@@ -59,8 +59,8 @@ public class ChatController {
     // TODO 페이징정책 확정되면 다시 수정해야함
     @PostMapping("/api/chat/participation")
     @Operation(
-            summary = "과거 내역 전달",
-            description = "이 기능은 채팅방에 입장할 때 채팅방의 과거 내역을 받을 수 있는 기능입니다.",
+            summary = "새로운 채팅 내역 조회",
+            description = "이 기능은 채팅방에 재입장 시 과거 마지막으로 읽은 메세지 이후에 발생한 메세지를 보내주는 기능입니다.",
             tags = {"채팅"}
     )
     public ApiResponse participation(@Param("roomId")Long roomId,@AuthenticationPrincipal User user){
