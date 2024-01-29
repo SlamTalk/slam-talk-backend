@@ -9,10 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
+import sync.slamtalk.mate.dto.MatePostDTO;
+import sync.slamtalk.mate.dto.MatePostListDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -94,16 +100,25 @@ public class MatePostController {
 
     @Operation(
             summary = "메이트 찾기 글 목록 조회",
-            description = "메이트 찾기 글 목록을 조회하는 api 입니다.",
+            description = "메이트 찾기 글 목록을 조회하는 api 입니다. cursor(모집글 등록일)를 이용하여 최근 등록일 순으로 커서 페이징을 구현합니다. 제공되는 기본 페이지 수는 10 입니다. \n" +
+                    "cursor가 없을 경우 현재 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
+                    "cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
+                    "cursor는 yyyy-MM-dd HH:mm 형식으로 요청해야 합니다. \n" +
+                    "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
             tags = {"메이트 찾기"}
     )
     @GetMapping
-    public ApiResponse<MateFormDTO> getMatePosts(){
-        return ApiResponse.ok();
-    }
+    public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor) {
+        String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, 10);
 
-    @GetMapping("/test")
-    public ApiResponse<MateFormDTO> test(){
-        return ApiResponse.ok();
+        MatePostListDTO response = new MatePostListDTO();
+        response.setMatePostList(listedMatePostDTO);
+        if (!listedMatePostDTO.isEmpty()) {
+            String nextCursor = listedMatePostDTO.get(listedMatePostDTO.size() - 1).getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+            response.setNextCursor(nextCursor);
+        }
+
+        return ApiResponse.ok(response);
     }
 }

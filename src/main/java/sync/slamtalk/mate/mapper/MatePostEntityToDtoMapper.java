@@ -1,7 +1,7 @@
 package sync.slamtalk.mate.mapper;
 
 import lombok.NoArgsConstructor;
-import sync.slamtalk.mate.dto.MatePostListDTO;
+import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.PositionType;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 public class MatePostEntityToDtoMapper {
 
-    public List<PositionListDTO> toPositionListDto(MatePost matePost){
+    public static List<PositionListDTO> toPositionListDto(MatePost matePost){
         List<PositionListDTO> positionList = new ArrayList<>();
 
         if(matePost.getMaxParticipantsCenters() > 0){
@@ -36,7 +36,7 @@ public class MatePostEntityToDtoMapper {
         return positionList;
     }
 
-    public List<String> toSkillLevelTypeList(MatePost matePost){
+    public static List<String> toSkillLevelTypeList(MatePost matePost){
         List<String> skillLevelTypeList = new ArrayList<>();
 
         if(matePost.getSkillLevel() == RecruitedSkillLevelType.BEGINNER){
@@ -72,20 +72,38 @@ public class MatePostEntityToDtoMapper {
         return skillLevelTypeList;
     }
 
-//    public MatePostListDTO toMatePostListDto(MatePost matePost){
-//        MatePostListDTO matePostListDTO = new MatePostListDTO();
-//        matePostListDTO.setMatePostId(matePost.getMatePostId());
-//        matePostListDTO.setWriterId(matePost.getWriterId());
-//       // matePostListDTO.setWriterNickname(matePost.getWriterNickname());
-//        matePostListDTO.setTitle(matePost.getTitle());
-//        matePostListDTO.setContent(matePost.getContent());
-//        matePostListDTO.setStartScheduledTime(matePost.getStartScheduledTime());
-//        matePostListDTO.setEndScheduledTime(matePost.getEndScheduledTime());
-//        matePostListDTO.setLocationDetail(matePost.getLocationDetail());
-//        matePostListDTO.setPositionList(toPositionListDto(matePost));
-//        matePostListDTO.setSkillList(toSkillLevelTypeList(matePost));
-//        matePostListDTO.setParticipants(matePost.getParticipants());
-//
-//        return matePostListDTO;
-//    }
+    public static void toPositionListDTO(MatePost matePost, MatePostDTO matePostDTO){
+        if(matePost.getMaxParticipantsCenters() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER, matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+            matePostDTO.getPositionList().add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsForwards() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD, matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+            matePostDTO.getPositionList().add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsGuards() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD, matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+            matePostDTO.getPositionList().add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsOthers() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED, matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+            matePostDTO.getPositionList().add(positionListDTO);
+        }
+    }
+    public static MatePostDTO toMatePostDto(MatePost matePost){
+        MatePostDTO matePostDTO = new MatePostDTO();
+        matePostDTO.setWriterId(matePost.getWriterId());
+        matePostDTO.setMatePostId(matePost.getMatePostId());
+        matePostDTO.setStartScheduledTime(matePost.getStartScheduledTime());
+        matePostDTO.setEndScheduledTime(matePost.getEndScheduledTime());
+        matePostDTO.setTitle(matePost.getTitle());
+        matePostDTO.setContent(matePost.getContent());
+        matePostDTO.setLocationDetail(matePost.getLocationDetail());
+        matePostDTO.setParticipants(matePost.getParticipants());
+        toPositionListDTO(matePost, matePostDTO);
+        matePostDTO.setSkillList(toSkillLevelTypeList(matePost));
+        matePostDTO.setPositionList(toPositionListDto(matePost));
+        matePostDTO.setCreatedAt(matePost.getCreatedAt());
+        return matePostDTO;
+    }
 }

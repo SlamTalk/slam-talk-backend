@@ -1,6 +1,7 @@
 package sync.slamtalk.mate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.ApiResponse;
@@ -20,6 +21,7 @@ import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ParticipantService {
 
     private final MatePostRepository matePostRepository;
@@ -56,8 +58,9 @@ public class ParticipantService {
 //            if(participant.getApplyStatus() == ApplyStatusType.REJECTED || participant.getApplyStatus() == ApplyStatusType.CANCEL){
 //                continue;
 //            }
-            MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantNickname(), participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
+            MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantId(), participant.getParticipantNickname(), participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
             matePostApplicantDTOs.add(matePostApplicantDTO);
+            log.debug("참여자 목록 : {}", matePostApplicantDTO);
         }
         return matePostApplicantDTOs;
     }

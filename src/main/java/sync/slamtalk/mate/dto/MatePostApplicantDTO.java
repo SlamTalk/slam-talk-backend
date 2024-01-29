@@ -15,6 +15,7 @@ import sync.slamtalk.mate.entity.SkillLevelType;
 public class MatePostApplicantDTO {
 
     private long participantTableId;
+    private long participantId;
     private String participantNickname;
     private ApplyStatusType applyStatus;
     private PositionType position;
@@ -30,8 +31,9 @@ public class MatePostApplicantDTO {
         this.position = position;
     }
 
-    public MatePostApplicantDTO(long participantTableId, String participantNickname, PositionType position, SkillLevelType skillLevel, ApplyStatusType applyStatus) {
+    public MatePostApplicantDTO(long participantTableId, long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel, ApplyStatusType applyStatus) {
         this.participantTableId = participantTableId;
+        this.participantId = participantId;
         this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;

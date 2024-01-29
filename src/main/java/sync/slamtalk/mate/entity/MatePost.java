@@ -292,4 +292,9 @@ public class MatePost extends BaseEntity {
                         ", currentParticipantsOthers=" + currentParticipantsOthers +
                         '}';
         }
+
+
+        public LocalDateTime getCreatedAt() {
+                return LocalDateTime.now();
+        }
 }

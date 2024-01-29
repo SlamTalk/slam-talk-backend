@@ -1,24 +1,32 @@
 package sync.slamtalk.mate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
+import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class MatePostService {
 
     private final MatePostRepository matePostRepository;
@@ -153,5 +161,14 @@ public class MatePostService {
         return true;
     }
 
+    public List<MatePostDTO> getMatePostsByCurser(String cursorStr, int limit) {
+        LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        log.debug("cursor: {}", cursor);
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanOrderByCreatedAtDesc(cursor, pageable);
+        log.debug("listedMatePosts: {}", listedMatePosts);
+        List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
+        return response;
+    }
 
 }

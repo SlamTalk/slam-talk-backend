@@ -24,7 +24,7 @@ public class Participant extends BaseEntity {
     @JoinColumn(name = "mate_post_id")
     private MatePost matePost; // 참여자가 참여한 글
 
-    @Column(nullable = false, name="participant_email")
+    @Column(nullable = false, name="participant_id")
     private long participantId; // 참여자 아이디 * 매핑 불필요
 
     @Column(nullable = false, name="participant_nickname")
