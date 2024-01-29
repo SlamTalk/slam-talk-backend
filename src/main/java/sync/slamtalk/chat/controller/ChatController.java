@@ -35,7 +35,7 @@ public class ChatController {
     @Operation(
             summary = "채팅방 생성",
             description = "이 기능은 채팅방을 생성하는 기능입니다.",
-            tags = {"유저","관리자"}
+            tags = {"채팅"}
     )
     public ApiResponse create(@RequestBody ChatCreateDTO dto){
         long chatRoom = chatService.createChatRoom(dto);
@@ -48,7 +48,7 @@ public class ChatController {
     @Operation(
             summary = "채팅리스트 조회",
             description = "이 기능은 유저의 채팅리스트를 조회하는 기능입니다.",
-            tags = {"유저"}
+            tags = {"채팅"}
     )
     public ApiResponse list(@AuthenticationPrincipal User user){
         List<ChatRoomDTO> chatLIst = chatService.getChatLIst(user.getId());
@@ -61,7 +61,7 @@ public class ChatController {
     @Operation(
             summary = "과거 내역 전달",
             description = "이 기능은 채팅방에 입장할 때 채팅방의 과거 내역을 받을 수 있는 기능입니다.",
-            tags = {"유저"}
+            tags = {"채팅"}
     )
     public ApiResponse participation(@Param("roomId")Long roomId,@AuthenticationPrincipal User user){
 
@@ -81,20 +81,5 @@ public class ChatController {
 
         return ApiResponse.ok(chatMessage);
     }
-
-    @GetMapping("/api/chat/userTest")
-    public String nowUserId(@Param("token")String token){
-        Long userId = jwtTokenProvider.stompExtractUserIdFromToken(token);
-        Optional<User> byId = userRepository.findById(userId);
-        if(byId.isPresent()){
-            User user = byId.get();
-            return user.getId().toString();
-        }
-        return "존재하는 유저없음";
-    }
-
-
-
-
 
 }
