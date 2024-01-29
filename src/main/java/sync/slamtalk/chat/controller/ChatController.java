@@ -70,8 +70,14 @@ public class ChatController {
         if(!existUserChatRoom.isPresent()){
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
+
+        UserChatRoom userChatRoom = existUserChatRoom.get();
+        // 사용자가 마지막으로 읽은 메세지 아이디
+        Long readIndex = userChatRoom.getReadIndex();
+
+
         // 채팅방에서 주고받았던 메세지 가져오기
-        List<ChatMessageDTO> chatMessage = chatService.getChatMessage(roomId);
+        List<ChatMessageDTO> chatMessage = chatService.getChatMessage(roomId,readIndex);
 
         return ApiResponse.ok(chatMessage);
     }

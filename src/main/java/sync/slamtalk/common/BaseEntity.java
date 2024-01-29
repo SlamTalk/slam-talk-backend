@@ -42,4 +42,8 @@ public class BaseEntity {
         this.isDeleted = true;
     }
 
+    public Boolean getIsDeleted(){
+        return this.isDeleted;
+    }
+
 }

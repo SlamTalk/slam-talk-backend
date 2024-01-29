@@ -132,15 +132,11 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             Long userId = extractUserId(headerAccessor);
 
 
-            // 이부분 유저아이디 이상한거 가지고 오는데???
             // 뒤로가기
             // 채팅방의 마지막 메세지를 저장
             if(destination.contains("back")){
                 log.debug("==SEND STEP3==");
                 Messages lastMessageFromChatRoom = chatService.getLastMessageFromChatRoom(roomId);
-//                log.debug("lastmessage:{}",lastMessageFromChatRoom.getContent().toString());
-//                log.debug("userId:{}",userId);
-//                log.debug("roomId:{}",roomId);
                 chatService.saveReadIndex(userId,roomId,lastMessageFromChatRoom.getId());
                 log.debug("==SEND STEP4==");
             }
@@ -149,7 +145,9 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             // softDelete
             if(destination.contains("exit")){
                 log.debug("exit");
-                //TODO
+                Optional<UserChatRoom> userChatRoom = chatService.exitRoom(userId, roomId);
+                log.debug("{} 방을 나가셨습니다.",userChatRoom.get().getChat().getId());
+
 
             }
 
