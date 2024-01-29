@@ -295,6 +295,6 @@ public class MatePost extends BaseEntity {
 
 
         public LocalDateTime getCreatedAt() {
-                return LocalDateTime.now();
+                return super.getCreatedAt();
         }
 }
