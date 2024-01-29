@@ -28,6 +28,7 @@ public interface MessagesRepository extends JpaRepository<Messages,Long> {
     List<Messages> findAllByChatRoom(@Param("chatRoomId")Long chatRoomId);
 
 
-    // TODO 특정 keyword 를 가지고 있는 Message 가져오기
+    // 메세지 아이디가 특정넘버 이상인 메세지들 가져오기
+    List<Messages> findByChatRoomIdAndIdGreaterThan(Long chatRoomId, Long messageId);
 
 }
