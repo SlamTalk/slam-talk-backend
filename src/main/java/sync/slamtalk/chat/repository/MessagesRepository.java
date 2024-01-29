@@ -18,7 +18,7 @@ public interface MessagesRepository extends JpaRepository<Messages,Long> {
 
 
     // 2. 특정 채팅방의 가장 최근 메시지를 가져오기
-    @Query("select m from Messages m where m.chatRoom.id =: chatroom_id order by m.creation_time desc ")
+    @Query("select m from Messages m where m.chatRoom.id =:chatroom_id order by m.creation_time desc ")
     Page<Messages> findLatestByChatRoomId(@Param("chatroom_id")Long chatRoomId, Pageable pageable);
 
 
