@@ -4,12 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 public class ToTeamFormDTO {
 
     @NotBlank(message = "팀명을 입력해주세요.")
@@ -43,7 +47,7 @@ public class ToTeamFormDTO {
 
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private long createdTime;
+    private LocalDateTime createdAt;
 
     @NonNull
     @Enumerated(EnumType.STRING)
