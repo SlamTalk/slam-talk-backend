@@ -28,7 +28,7 @@ public class UserService {
 
 
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
-        if(user.getId().equals(userId)) return UserDetailsInfoResponseDto.generateMyProfile(user);
+        if(user.getId().equals(findUser.getId())) return UserDetailsInfoResponseDto.generateMyProfile(user);
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
         else return UserDetailsInfoResponseDto.generateOtherUserProfile(user);
     }
