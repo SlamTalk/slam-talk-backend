@@ -8,7 +8,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
-import sync.slamtalk.team.entity.TeamMatchings;
+import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamMatchingRepository;
 
 import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_ALREADY_DELETED;
@@ -22,14 +22,14 @@ public class TeamMatchingService {
     private final TeamMatchingRepository teamMatchingRepository;
 
     public long registerTeamMatching(FromTeamFormDTO dto, long userId){
-        TeamMatchings teamMatchingEntity = new TeamMatchings();
+        TeamMatching teamMatchingEntity = new TeamMatching();
         teamMatchingEntity.createTeamMatching(dto, userId);
-        TeamMatchings resultTeamMatchingEntity = teamMatchingRepository.save(teamMatchingEntity);
+        TeamMatching resultTeamMatchingEntity = teamMatchingRepository.save(teamMatchingEntity);
         return resultTeamMatchingEntity.getTeamMatchingId();
     }
 
     public ToTeamFormDTO getTeamMatching(long teamMatchingId){
-        TeamMatchings teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
         if(teamMatchingEntity.getIsDeleted()){
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
         }
@@ -39,12 +39,12 @@ public class TeamMatchingService {
     }
 
     public ApiResponse updateTeamMatching(long teamMatchingId, FromTeamFormDTO fromTeamFormDTO){
-        TeamMatchings teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow();
+        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow();
         teamMatchingEntity.updateTeamMatching(fromTeamFormDTO);
         return ApiResponse.ok();
     }
 
-    public ApiResponse deleteTeamMatching(long teamMatchingId, TeamMatchings teamMatchingEntity){
+    public ApiResponse deleteTeamMatching(long teamMatchingId, TeamMatching teamMatchingEntity){
         teamMatchingEntity.delete();
         return ApiResponse.ok();
     }

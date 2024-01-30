@@ -9,6 +9,8 @@ import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,7 +18,7 @@ import java.util.Objects;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "teammatchinglist")
 @Getter
-public class TeamMatchings extends BaseEntity {
+public class TeamMatching extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long teamMatchingId;
@@ -37,7 +39,6 @@ public class TeamMatchings extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
     private String locationDetail;
 
     @Column(nullable = false)
@@ -56,6 +57,9 @@ public class TeamMatchings extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
 
+    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL)
+    private List<TeamApplicant> teamApplicants = new ArrayList<>();
+
 //    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!
 //        this.writerId = writerId;
 //    }
@@ -68,7 +72,7 @@ public class TeamMatchings extends BaseEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TeamMatchings that = (TeamMatchings) o;
+        TeamMatching that = (TeamMatching) o;
         return teamMatchingId == that.teamMatchingId;
     }
 
