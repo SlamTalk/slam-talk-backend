@@ -75,7 +75,6 @@ public class AuthService {
                     user.getId(),
                     user.getNickname(),
                     user.getImageUrl(),
-                    user.getRole(),
                     user.getFirstLoginCheck()
             );
 
@@ -155,7 +154,6 @@ public class AuthService {
                 user.getId(),
                 user.getNickname(),
                 user.getImageUrl(),
-                user.getRole(),
                 user.getFirstLoginCheck()
         );
         // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직

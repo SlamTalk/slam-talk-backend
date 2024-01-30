@@ -10,6 +10,5 @@ public class UserLoginResponseDto {
     private Long userId;
     private String nickname;
     private String imageUrl;
-    private UserRole userRole;
     private Boolean firstLoginCheck;
 }
