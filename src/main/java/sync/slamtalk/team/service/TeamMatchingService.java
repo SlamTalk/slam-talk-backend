@@ -46,7 +46,6 @@ public class TeamMatchingService {
 
     public ApiResponse deleteTeamMatching(long teamMatchingId, TeamMatchings teamMatchingEntity){
         teamMatchingEntity.delete();
-        teamMatchingRepository.deleteById(teamMatchingId);
         return ApiResponse.ok();
     }
 }
