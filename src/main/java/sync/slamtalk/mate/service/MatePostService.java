@@ -11,6 +11,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
+import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
@@ -49,11 +50,15 @@ public class MatePostService {
         if(!optionalPost.isPresent()){
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
+        if(optionalPost.get().getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
         MatePost post = optionalPost.get();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
         List<String> skillList = mapper.toSkillLevelTypeList(post);
+        List<PositionListDTO> positionList = mapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
@@ -64,14 +69,8 @@ public class MatePostService {
                 .endScheduledTime(post.getEndScheduledTime())
                 .locationDetail(post.getLocationDetail())
                 .skillLevelList(skillList)
-                .maxParticipantsCenters(post.getMaxParticipantsCenters())
-                .currentParticipantsCenters(post.getCurrentParticipantsCenters())
-                .maxParticipantsGuards(post.getMaxParticipantsGuards())
-                .currentParticipantsGuards(post.getCurrentParticipantsGuards())
-                .maxParticipantsForwards(post.getMaxParticipantsForwards())
-                .currentParticipantsForwards(post.getCurrentParticipantsForwards())
-                .maxParticipantsOthers(post.getMaxParticipantsOthers())
-                .currentParticipantsOthers(post.getCurrentParticipantsOthers())
+                .recruitmentStatus(post.getRecruitmentStatus())
+                .positionList(positionList)
                 .participants(participantsToArrayList)
                 .build();
         return mateFormDTO;
@@ -84,6 +83,9 @@ public class MatePostService {
      */
     public boolean deleteMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow();
+        if(post.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
         post.softDeleteMatePost();
         return true;
     }
@@ -165,7 +167,7 @@ public class MatePostService {
         LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
         log.debug("cursor: {}", cursor);
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanOrderByCreatedAtDesc(cursor, pageable);
+        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedNotOrderByCreatedAtDesc(cursor, true, pageable);
         log.debug("listedMatePosts: {}", listedMatePosts);
         List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
         return response;

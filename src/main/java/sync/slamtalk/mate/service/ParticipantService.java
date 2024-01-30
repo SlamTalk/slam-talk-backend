@@ -58,6 +58,9 @@ public class ParticipantService {
 //            if(participant.getApplyStatus() == ApplyStatusType.REJECTED || participant.getApplyStatus() == ApplyStatusType.CANCEL){
 //                continue;
 //            }
+            if(participant.getIsDeleted()){
+                continue;
+            }
             MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantId(), participant.getParticipantNickname(), participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
             matePostApplicantDTOs.add(matePostApplicantDTO);
             log.debug("참여자 목록 : {}", matePostApplicantDTO);

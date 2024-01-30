@@ -13,7 +13,9 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
     DECREASE_POSITION_NOT_AVAILABLE(SC_BAD_REQUEST, 4004, "해당 포지션의 모집 인원을 감소시킬 수 없습니다."),
     INCREASE_POSITION_NOT_AVAILABLE(SC_BAD_REQUEST, 4005, "해당 포지션의 모집 인원을 증가시킬 수 없습니다."),
     MATE_POST_NOT_FOUND(SC_NOT_FOUND, 4041, "해당 모집 글을 찾을 수 없습니다."),
-    PARTICIPANT_NOT_FOUND(SC_NOT_FOUND, 4042, "해당 참여자를 찾을 수 없습니다.");
+    PARTICIPANT_NOT_FOUND(SC_NOT_FOUND, 4042, "해당 참여자를 찾을 수 없습니다."),
+
+    MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4006, "이미 삭제된 모집 글입니다.");
 
     MateErrorResponseCode(int code, int status, String message) {
         this.code = code;
