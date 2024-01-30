@@ -31,7 +31,7 @@ public class UserController {
      * */
     @GetMapping("/user/{userId}/info")
     @Operation(
-            summary = "유저 상세 정보 조회 api",
+            summary = "(미완성) 유저 상세 정보 조회 api",
             description = "유저가 본인이 아닐경우 email을 제외하고 보내줍니다.",
             tags = {"유저 상세정보 조회"}
     )
