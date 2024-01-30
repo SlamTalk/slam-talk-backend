@@ -27,7 +27,16 @@ public enum ErrorResponseCode implements ResponseCodeDetails {
 
 
     // 서버에러
-    UNCATEGORIZED(SC_INTERNAL_SERVER_ERROR,5000,"Uncategorized");
+    UNCATEGORIZED(SC_INTERNAL_SERVER_ERROR,5000,"Uncategorized"),
+
+    /* s3 bucket 에러*/
+
+    // 이미지 찾을 수 없을 때
+    S3_BUCKET_NOT_FOUND(SC_BAD_REQUEST,6000,"Image is null"),
+    // 이미지 업로드 실패
+    S3_BUCKET_CANNOT_UPLOAD(SC_BAD_REQUEST,6001,"failed Upload"),
+    // 이미지 삭제 실패
+    S3_BUCKET_CANNOT_DELETE(SC_BAD_REQUEST,6002,"failed Delete");
 
     private final int code;
     private int status;
