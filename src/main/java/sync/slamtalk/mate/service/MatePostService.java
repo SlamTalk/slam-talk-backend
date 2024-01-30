@@ -166,7 +166,7 @@ public class MatePostService {
     public List<MatePostDTO> getMatePostsByCurser(String cursorStr, int limit) {
         LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
         log.debug("cursor: {}", cursor);
-        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(0, limit);
         List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedNotOrderByCreatedAtDesc(cursor, true, pageable);
         log.debug("listedMatePosts: {}", listedMatePosts);
         List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
