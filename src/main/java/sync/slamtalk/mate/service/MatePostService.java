@@ -11,6 +11,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
+import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
@@ -57,6 +58,7 @@ public class MatePostService {
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
         List<String> skillList = mapper.toSkillLevelTypeList(post);
+        List<PositionListDTO> positionList = mapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
@@ -68,14 +70,7 @@ public class MatePostService {
                 .locationDetail(post.getLocationDetail())
                 .skillLevelList(skillList)
                 .recruitmentStatus(post.getRecruitmentStatus())
-                .maxParticipantsCenters(post.getMaxParticipantsCenters())
-                .currentParticipantsCenters(post.getCurrentParticipantsCenters())
-                .maxParticipantsGuards(post.getMaxParticipantsGuards())
-                .currentParticipantsGuards(post.getCurrentParticipantsGuards())
-                .maxParticipantsForwards(post.getMaxParticipantsForwards())
-                .currentParticipantsForwards(post.getCurrentParticipantsForwards())
-                .maxParticipantsOthers(post.getMaxParticipantsOthers())
-                .currentParticipantsOthers(post.getCurrentParticipantsOthers())
+                .positionList(positionList)
                 .participants(participantsToArrayList)
                 .build();
         return mateFormDTO;
