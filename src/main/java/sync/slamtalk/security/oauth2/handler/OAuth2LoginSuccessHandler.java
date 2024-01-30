@@ -67,7 +67,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         setRefreshTokenCookie(response, refreshToken);
 
-        response.sendRedirect("http://localhost:3000/login-success");
+        response.sendRedirect("http://localhost:3000");
     }
 
 
