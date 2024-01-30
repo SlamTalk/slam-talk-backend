@@ -57,9 +57,6 @@ public class MatePost extends BaseEntity {
         @Column(nullable = true, name="chat_room_id") // 채팅방 아이디 * 매핑 필요
         private long chatRoomId;
 
-        @Column(nullable = false, name="soft_delete")
-        private boolean softDelete = false; // 삭제 여부
-
         @Column(nullable = false, name="recruitment_status_type")
         @Enumerated(EnumType.STRING)
         private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
@@ -99,7 +96,7 @@ public class MatePost extends BaseEntity {
          */
         public boolean softDeleteMatePost(){
                 softDeleteParticipantAll();
-                this.softDelete = true;
+                this.delete();
                 return true;
         }
 
@@ -284,7 +281,6 @@ public class MatePost extends BaseEntity {
                         ", startScheduledTime=" + startScheduledTime +
                         ", endScheduledTime=" + endScheduledTime +
                         ", chatRoomId=" + chatRoomId +
-                        ", softDelete=" + softDelete +
                         ", recruitmentStatus=" + recruitmentStatus +
                         ", maxParticipantsForwards=" + maxParticipantsForwards +
                         ", currentParticipantsForwards=" + currentParticipantsForwards +
@@ -295,5 +291,10 @@ public class MatePost extends BaseEntity {
                         ", maxParticipantsOthers=" + maxParticipantsOthers +
                         ", currentParticipantsOthers=" + currentParticipantsOthers +
                         '}';
+        }
+
+
+        public LocalDateTime getCreatedAt() {
+                return super.getCreatedAt();
         }
 }

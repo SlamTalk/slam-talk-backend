@@ -1,23 +1,32 @@
 package sync.slamtalk.mate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
+import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-import static sync.slamtalk.mate.error.MateErrorResponseCode.MATE_POST_NOT_FOUND;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class MatePostService {
 
     private final MatePostRepository matePostRepository;
@@ -41,7 +50,11 @@ public class MatePostService {
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
         MatePost post = optionalPost.get();
+
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
+        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
+        List<String> skillList = mapper.toSkillLevelTypeList(post);
+
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(post.getWriterId())
@@ -50,8 +63,7 @@ public class MatePostService {
                 .startScheduledTime(post.getStartScheduledTime())
                 .endScheduledTime(post.getEndScheduledTime())
                 .locationDetail(post.getLocationDetail())
-//                .skillLevelList(post.convertToSkillLevelList()) // todo : 스킬 레벨 목록을 반환하는 메소드를 만들어야 함.
-                .skillLevel(post.getSkillLevel()) // * 스킬 레벨 목록 생성 시 삭제.
+                .skillLevelList(skillList)
                 .maxParticipantsCenters(post.getMaxParticipantsCenters())
                 .currentParticipantsCenters(post.getCurrentParticipantsCenters())
                 .maxParticipantsGuards(post.getMaxParticipantsGuards())
@@ -78,7 +90,6 @@ public class MatePostService {
 
     /**
      * 메이트찾기 게시글 수정
-     * 모집 글에 신청자가 한 명 이라도 있으면 수정 불가능하게 하기
      * 수정 가능한 항목 : 제목, 내용, 예정된 시간, 상세 시합 장소, 스킬 레벨, 모집 포지션 별 최대 인원 수
      * 모집 포지션 별 최대 인원 수는 필수 기입 사항. 변동사항이 없더라도 기존의 최대 인원 수를 기입해야 함.
      */
@@ -90,20 +101,20 @@ public class MatePostService {
         LocalDateTime startScheduledTime = mateFormDTO.getStartScheduledTime();
         LocalDateTime endScheduledTime = mateFormDTO.getEndScheduledTime();
         RecruitedSkillLevelType skillLevel = mateFormDTO.getSkillLevel();
-        int maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
-        int maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
-        int maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
-        int maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
+        Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
+        Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
+        Integer maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
+        Integer maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
 
-        if(content != null){
+        if(content != null && !content.equals("")){ // * 내용이 비어있지 않다면
             post.updateContent(content);
         }
 
-        if(title != null){
+        if(title != null && !title.equals("")){ // * 제목이 비어있지 않다면
             post.updateTitle(title);
         }
 
-        if(locationDetail != null){
+        if(locationDetail != null && !locationDetail.equals("")){ // * 상세 시합 장소가 비어있지 않다면
             post.updateLocationDetail(locationDetail);
         }
 
@@ -119,24 +130,45 @@ public class MatePostService {
             post.updateSkillLevel(skillLevel);
         }
 
-        if(maxParticipantsCenters != 0){
+        if(maxParticipantsCenters != null){
+            if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsCenters(maxParticipantsCenters);
         }
 
-        if(maxParticipantsGuards != 0){
+        if(maxParticipantsGuards != null){
+            if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsGuards(maxParticipantsGuards);
         }
 
-        if(maxParticipantsForwards != 0){
+        if(maxParticipantsForwards != null){
+            if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsForwards(maxParticipantsForwards);
         }
 
-        if(maxParticipantsOthers != 0){
+        if(maxParticipantsOthers != null){
+            if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
+                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+            }
             post.updateMaxParticipantsOthers(maxParticipantsOthers);
         }
 
         return true;
     }
 
+    public List<MatePostDTO> getMatePostsByCurser(String cursorStr, int limit) {
+        LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+        log.debug("cursor: {}", cursor);
+        Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
+        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanOrderByCreatedAtDesc(cursor, pageable);
+        log.debug("listedMatePosts: {}", listedMatePosts);
+        List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
+        return response;
+    }
 
 }
