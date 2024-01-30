@@ -16,6 +16,7 @@ import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.service.AuthService;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,12 +24,12 @@ import static org.mockito.Mockito.mock;
 
 @Slf4j
 @SpringBootTest
-class UserServiceTest {
+class AuthServiceTest {
 
     @Autowired
     public UserRepository userRepository;
     @Autowired
-    public UserService userService;
+    public AuthService authService;
     @Autowired
     public JwtTokenProvider jwtTokenProvider;
 
@@ -45,7 +46,7 @@ class UserServiceTest {
         UserSignUpRequestDto userSignUpRequestDto = new UserSignUpRequestDto(email, password, nickname);
 
         // when
-        UserLoginResponseDto userLoginResponseDto = userService.signUp(userSignUpRequestDto, response);
+        UserLoginResponseDto userLoginResponseDto = authService.signUp(userSignUpRequestDto, response);
 
         // then
         assertTrue(userLoginResponseDto.getFirstLoginCheck());
@@ -58,7 +59,7 @@ class UserServiceTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         // when
-        UserLoginResponseDto userLoginResponseDto = userService.login(userLoginRequestDto, response);
+        UserLoginResponseDto userLoginResponseDto = authService.login(userLoginRequestDto, response);
 
         // then
         assertFalse(userLoginResponseDto.getFirstLoginCheck());
@@ -83,7 +84,7 @@ class UserServiceTest {
         Mockito.when(request.getCookies()).thenReturn(cookies);
 
         // when
-        UserLoginResponseDto userLoginResponseDto = userService.refreshToken(request, response);
+        UserLoginResponseDto userLoginResponseDto = authService.refreshToken(request, response);
 
         // then
         assertFalse(userLoginResponseDto.getFirstLoginCheck());
