@@ -14,8 +14,6 @@ public class UserDetailsInfoResponseDto {
     /* 개인 정보 관련 */
     private String email;
     private SocialType socialType;
-    private String regionName;
-    private String isAlarmSet;
 
     /* 공개되어도 상관없는 부분 */
     private Long id;
@@ -29,6 +27,8 @@ public class UserDetailsInfoResponseDto {
     private UserBasketballSkillLevelType basketballSkillLevel;
     private UserBasketballPositionType basketballPosition;
     private Long levelScore = 0L;
+    private Long mateCompleteParticipationCount = 0L;
+    private Long teamMatchingCompleteParticipationCount = 0L;
 
     /**
      * 나의 프로필 조회 시 필요한 정보를 반환하는 생성자
@@ -44,10 +44,10 @@ public class UserDetailsInfoResponseDto {
                 .basketballSkillLevel(user.getBasketballSkillLevel())
                 .basketballPosition(user.getBasketballPosition())
                 .levelScore(user.getLevelScore())
+                .mateCompleteParticipationCount(0L)
+                .teamMatchingCompleteParticipationCount(0L)
                 .email(user.getEmail())
                 .socialType(user.getSocialType())
-                .regionName(user.getRegionName())
-                .isAlarmSet(user.getIsAlarmSet())
                 .build();
 
     }
@@ -66,6 +66,8 @@ public class UserDetailsInfoResponseDto {
                 .basketballSkillLevel(user.getBasketballSkillLevel())
                 .basketballPosition(user.getBasketballPosition())
                 .levelScore(user.getLevelScore())
+                .mateCompleteParticipationCount(0L)
+                .teamMatchingCompleteParticipationCount(0L)
                 .build();
 
     }
