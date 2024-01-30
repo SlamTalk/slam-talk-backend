@@ -28,6 +28,7 @@ public class ParticipantController {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = 1;
         String userNickname = "testApplicant";
+        //todo : 글 작성자 id와 일치하면 참여 불가능하게 한다.
 
         // * 해당 글에 지원자의 신청 절차를 진행한다.
         MatePostApplicantDTO dto = participantService.addParticipant(matePostId, userId, userNickname, matePostApplicantDTO);

@@ -49,6 +49,9 @@ public class MatePostService {
         if(!optionalPost.isPresent()){
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
+        if(optionalPost.get().getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
         MatePost post = optionalPost.get();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
@@ -64,6 +67,7 @@ public class MatePostService {
                 .endScheduledTime(post.getEndScheduledTime())
                 .locationDetail(post.getLocationDetail())
                 .skillLevelList(skillList)
+                .recruitmentStatus(post.getRecruitmentStatus())
                 .maxParticipantsCenters(post.getMaxParticipantsCenters())
                 .currentParticipantsCenters(post.getCurrentParticipantsCenters())
                 .maxParticipantsGuards(post.getMaxParticipantsGuards())
@@ -84,6 +88,9 @@ public class MatePostService {
      */
     public boolean deleteMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow();
+        if(post.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
         post.softDeleteMatePost();
         return true;
     }
@@ -165,7 +172,7 @@ public class MatePostService {
         LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
         log.debug("cursor: {}", cursor);
         Pageable pageable = PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanOrderByCreatedAtDesc(cursor, pageable);
+        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedOrderByCreatedAtDesc(cursor, true, pageable);
         log.debug("listedMatePosts: {}", listedMatePosts);
         List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
         return response;

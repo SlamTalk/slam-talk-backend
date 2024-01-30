@@ -98,6 +98,7 @@ public class MatePostEntityToDtoMapper {
         matePostDTO.setEndScheduledTime(matePost.getEndScheduledTime());
         matePostDTO.setTitle(matePost.getTitle());
         matePostDTO.setContent(matePost.getContent());
+        matePostDTO.setRecruitmentStatus(matePost.getRecruitmentStatus());
         matePostDTO.setLocationDetail(matePost.getLocationDetail());
         matePostDTO.setParticipants(matePost.getParticipants());
         toPositionListDTO(matePost, matePostDTO);

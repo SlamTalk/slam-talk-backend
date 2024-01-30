@@ -1,11 +1,14 @@
 package sync.slamtalk.mate.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import sync.slamtalk.mate.entity.Participant;
+import sync.slamtalk.mate.entity.RecruitmentStatusType;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,6 +36,9 @@ public class MatePostDTO {
     private List<PositionListDTO> positionList = new ArrayList<>();
     @NonNull
     private List<String> skillList = new ArrayList<>();
+    @NonNull
+    @Enumerated(EnumType.STRING)
+    private RecruitmentStatusType recruitmentStatus;
     @NonNull
     private String locationDetail;
     @NonNull

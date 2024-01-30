@@ -32,7 +32,9 @@ public class MateFormDTO {
     private LocalDateTime startScheduledTime; // 예정된 시작 시간
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endScheduledTime; // 예정된 종료 시간
-    private String locationDetail; // 상세 시합 장소
+    private String locationDetail; // 상세 시합
+    @Enumerated(EnumType.STRING)
+    private RecruitmentStatusType recruitmentStatus; // 모집 상태 - RECRUITING, COMPLETED, CANCEL
     @Enumerated(EnumType.STRING)
     private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 - BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
     private List<String> skillLevelList; // 원하는 스킬 레벨 목록 (프론트로 응답 시에만 사용)
