@@ -51,8 +51,8 @@ public class AuthService {
     /**
      * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
      *
-     * @param userLoginDto
-     * @param response
+     * @param userLoginDto 유저로그인 dto
+     * @param response HttpServletResponse를 받음
      * @return JwtTokenDto
      */
     @Transactional
@@ -66,12 +66,17 @@ public class AuthService {
             User user = (User) authentication.getPrincipal();
 
             // 3. 인증 정보를 기반으로 JWT 토큰 생성)
-            JwtTokenDto jwtTokenResponseDto = tokenProvider.createToken(user);
+            JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
 
-            response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
-            setRefreshTokenCookie(response, jwtTokenResponseDto);
+            response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+            setRefreshTokenCookie(response, jwtTokenDto);
 
-            UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(user.getFirstLoginCheck());
+            UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getImageUrl(),
+                    user.getFirstLoginCheck()
+            );
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
             if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
@@ -86,8 +91,8 @@ public class AuthService {
     /**
      * 회원가입 검증 및 회원가입 로직
      *
-     * @param userSignUpDto
-     * @param response
+     * @param userSignUpDto UserSignUpRequestDto
+     * @param response HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
@@ -109,8 +114,8 @@ public class AuthService {
     /**
      * 쿠키에서 리프래쉬 토큰을 추출하여 엑세스 토큰과 리프래쉬 토큰을 재발급하는 메서드
      *
-     * @param request
-     * @param response
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
@@ -132,19 +137,23 @@ public class AuthService {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
-        JwtTokenDto jwtTokenResponseDto = optionalJwtTokenResponseDto.get();
+        JwtTokenDto jwtTokenDto = optionalJwtTokenResponseDto.get();
 
         /* 엑세스 토큰 헤더에 저장 및 리프레쉬 토큰 쿠키에 저장하는 로직 */
-        response.addHeader(accessAuthorizationHeader, jwtTokenResponseDto.getAccessToken());
-        setRefreshTokenCookie(response, jwtTokenResponseDto);
+        response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+        setRefreshTokenCookie(response, jwtTokenDto);
 
 
         // UserLoginResponseDto 생성 로직.
-        User user = userRepository.findByRefreshToken(jwtTokenResponseDto.getRefreshToken())
+        User user = userRepository.findByRefreshToken(jwtTokenDto.getRefreshToken())
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
 
-        UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(user.getFirstLoginCheck());
-
+        UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(
+                user.getId(),
+                user.getNickname(),
+                user.getImageUrl(),
+                user.getFirstLoginCheck()
+        );
         // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
         if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
 
@@ -155,11 +164,14 @@ public class AuthService {
      * UsernamePasswordAuthenticationToken를 이용해서 email과 password를 통해
      * SecurityContextHolder에서 Authentication을 추출하는 메서드
      *
-     * @param  email
-     * @param  password
+     * @param  email 이메일
+     * @param  password 패스워드
      * @return Authentication
      * */
-    private Authentication getAuthentication(String email, String password) {
+    private Authentication getAuthentication(
+            String email,
+            String password
+    ) {
         // 1. email + password 를 기반으로 Authentication 객체 생성
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
 
@@ -182,17 +194,17 @@ public class AuthService {
 
     /**
      * 쿠키에 리프레쉬 토큰을 저장하는 메서드
-     * @param response
-     * @param jwtTokenResponseDto
+     * @param response HttpServletResponse
+     * @param jwtTokenDto JwtTokenDto
      * */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
-            JwtTokenDto jwtTokenResponseDto
+            JwtTokenDto jwtTokenDto
     ) {
         CookieUtil.addCookie(
                 response,
                 refreshAuthorizationCookieName,
-                jwtTokenResponseDto.getRefreshToken(),
+                jwtTokenDto.getRefreshToken(),
                 refreshTokenExpirationPeriod,
                 domain
         );

@@ -4,6 +4,7 @@ package sync.slamtalk.security.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -77,6 +78,10 @@ public class SecurityConfig {
                                     "/v3/api-docs/**",
                                     "/favicon.ico"
                             ).permitAll();
+
+                            // 게스트 권환 설정
+                            request.requestMatchers(HttpMethod.GET,
+                                    "/api/map/courts/**").permitAll();
                             request.requestMatchers("/api/admin").hasRole(UserRole.ADMIN.toString());
                             request.anyRequest().authenticated();
                         }
