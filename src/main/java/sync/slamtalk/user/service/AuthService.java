@@ -102,6 +102,8 @@ public class AuthService {
     ) {
         // 중복 이메일 검증
         checkEmailExistence(userSignUpDto);
+        // 중복 닉네임 검증
+        checkNicknameExistence(userSignUpDto.getNickname());
 
         User user = userSignUpDto.toEntity();
         user.passwordEncode(passwordEncoder);
@@ -180,6 +182,19 @@ public class AuthService {
         log.debug("authenticationToken ={}", authenticationToken);
 
         return authentication;
+    }
+
+    /**
+     * 회원가입 시 중복 닉네임이 존재하는지 검사하는 메서드
+     *
+     * @param nickname 유저 닉네임
+     * */
+    private void checkNicknameExistence(String nickname) {
+        String lowercaseNickname = nickname.toLowerCase();
+        if (userRepository.findByNickname(lowercaseNickname).isPresent()) {
+            log.debug("이미 존재하는 닉네임입니다.");
+            throw new BaseException(UserErrorResponseCode.NICKNAME_ALREADY_EXISTS);
+        }
     }
 
     /**
