@@ -30,10 +30,10 @@ public class MatePost extends BaseEntity {
         @Column(name = "mate_post_id")
         private long matePostId;
 
-        //@ManyToOne(fetch = FetchType.LAZY)
-        //@JoinColumn(nullable = false, name="writer_id")
+//        @ManyToOne(fetch = FetchType.LAZY)
+//        @JoinColumn(nullable = false, name="writer_id")
         @Column(name="writer_id")
-        private long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
+        private Long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -59,7 +59,7 @@ public class MatePost extends BaseEntity {
 
         @Column(nullable = false, name="recruitment_status_type")
         @Enumerated(EnumType.STRING)
-        private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCEL"
+        private RecruitmentStatusType recruitmentStatus; // 모집 마감 여부 "RECRUITING", "COMPLETED", "CANCELED"
 
         @Column(nullable = false, name="max_participants_forward")
         private int maxParticipantsForwards; // 포워드 최대 참여 인원

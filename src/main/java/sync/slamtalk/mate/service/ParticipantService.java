@@ -134,9 +134,9 @@ public class ParticipantService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         } else{
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)){
-                participant.updateApplyStatus(ApplyStatusType.CANCEL);
+                participant.updateApplyStatus(ApplyStatusType.CANCELED);
             }else if(participant.getApplyStatus().equals(ApplyStatusType.ACCEPTED)){ // 이미 수락된 참여자가 취소할 경우 해당 포지션의 모집 인원 수를 감소 시킵니다.
-                participant.updateApplyStatus(ApplyStatusType.CANCEL);
+                participant.updateApplyStatus(ApplyStatusType.CANCELED);
                 matePost.reducePositionNumbers(participant.getPosition());
             }else{
                 throw new BaseException(PARTICIPANT_ALREADY_REJECTED);
