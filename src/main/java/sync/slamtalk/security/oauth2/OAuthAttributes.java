@@ -84,13 +84,13 @@ public class OAuthAttributes {
      * email에는 UUID로 중복 없는 랜덤 값 생성
      * role은 GUEST로 설정
      */
-    public User toEntity(SocialType socialType, OAuth2UserInfo oauth2UserInfo) {
+    public User toEntity(SocialType socialType, OAuth2UserInfo oauth2UserInfo, String newNickname) {
 
         return User.builder()
                 .email(oauth2UserInfo.getEmail())
                 .password(UUID.randomUUID().toString())
-                .nickname(oauth2UserInfo.getNickname())
-                .role(UserRole.GEUST)
+                .nickname(newNickname)
+                .role(UserRole.USER)
                 .levelScore(0L)
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
@@ -99,4 +99,5 @@ public class OAuthAttributes {
                 .build();
 
     }
+
 }
