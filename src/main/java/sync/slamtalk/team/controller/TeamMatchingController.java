@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 import sync.slamtalk.team.entity.TeamMatching;
@@ -16,6 +17,10 @@ import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.team.service.TeamMatchingService;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -92,5 +97,17 @@ public class TeamMatchingController {
         }
 
         return ApiResponse.ok();
+    }
+
+    @GetMapping
+    public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
+        List<ToTeamFormDTO> dtoList;
+        String cursorTime = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
+        int limitNumber = 10;
+        if(limit.isPresent()){
+            limitNumber = limit.get();
+        }
+        dtoList = teamMatchingService.getTeamMatchingList(limitNumber, cursorTime);
+        return ApiResponse.ok(dtoList);
     }
 }

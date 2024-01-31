@@ -18,6 +18,11 @@ import java.util.Objects;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "teammatchinglist")
 @Getter
+@NamedEntityGraph(
+        name = "TeamMatching.forEagerApplicants",
+        attributeNodes = @NamedAttributeNode("teamApplicants")
+
+)
 public class TeamMatching extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -121,7 +126,7 @@ public class TeamMatching extends BaseEntity {
         this.connectParentUser(writerId);
     }
 
-    public void toTeamFormDto(ToTeamFormDTO dto){
+    public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writerId); // * writerId를 User 객체로 대체할 것!
@@ -133,6 +138,7 @@ public class TeamMatching extends BaseEntity {
         dto.setNumberOfMembers(this.numberOfMembers);
         dto.setCreatedAt(this.getCreatedAt());
         dto.setRecruitmentStatusType(this.recruitmentStatus);
+        return dto;
     }
 
     @Override

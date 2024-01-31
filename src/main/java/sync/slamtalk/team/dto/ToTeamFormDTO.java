@@ -9,8 +9,10 @@ import lombok.NonNull;
 import lombok.Setter;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.team.entity.TeamApplicant;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -52,4 +54,7 @@ public class ToTeamFormDTO {
     @NonNull
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatusType;
+
+    @NonNull
+    private List<TeamApplicant> teamApplicants;
 }
