@@ -27,7 +27,7 @@ public class UserSignUpRequestDto {
     )
     private String password;
     @Pattern(
-            regexp = "^[ㄱ-ㅎ가-힣a-z0-9-_]{2,13}$",
+            regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9-_]{2,13}$",
             message = "닉네임은 특수문자를 제외한 2~13자리여야 합니다."
     )
     private String nickname;
