@@ -44,11 +44,12 @@ public class BasketballCourtMapper {
                 basketballCourt.getWebsite(),
                 basketballCourt.getConvenience(),
                 basketballCourt.getAdditionalInfo(),
-                basketballCourt.getPhotoUrl()
+                basketballCourt.getPhotoUrl(),
+                basketballCourt.getInformerid()
         );
     }
 
-    public BasketballCourt toEntity(BasketballCourtDto dto) {
+    public BasketballCourt toEntity(BasketballCourtDto dto, Long userId) {
         if (dto == null) {
             return null;
         }
@@ -72,6 +73,7 @@ public class BasketballCourtMapper {
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(dto.getPhotoUrl())
                 .adminStatus(AdminStatus.STAND) // 대기 상태
+                .informerid(userId)
                 .build();
 
     }
