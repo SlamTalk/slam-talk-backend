@@ -3,6 +3,7 @@ package sync.slamtalk.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -41,4 +42,14 @@ public class GlobalRestControllerAdvice {
         log.debug("Exception cathced in RestControllerAdvice:{}",e.getMessage());
         return ApiResponse.fail(e.getMessage());
     }
+
+    // enum 타입 클라이언트가 잘못 요청 했을 경우 발생하는 exception
+    // HttpMessageNotReadableException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ApiResponse<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
+        log.debug("Exception cathced in RestControllerAdvice:{}",e.getMessage());
+        return ApiResponse.fail(e.getMessage());
+    }
+
 }
