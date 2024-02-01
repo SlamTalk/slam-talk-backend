@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.service.BasketballCourtService;
 import sync.slamtalk.map.service.ReportBasketballCourtService;
+import sync.slamtalk.user.entity.User;
 
 @RestController
 @RequiredArgsConstructor
@@ -61,8 +63,9 @@ public class BasketballCourtController {
             description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto) {
-        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto);
+    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto, @AuthenticationPrincipal User user) {
+        Long userId = user.getId();
+        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto, userId);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
     }
 }

@@ -18,8 +18,8 @@
         private final BasketballCourtMapper basketballCourtMapper;
 
         @Transactional
-        public BasketballCourt reportCourt(BasketballCourtDto basketballCourtDto) {
-            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtDto);
+        public BasketballCourt reportCourt(BasketballCourtDto basketballCourtDto, Long userId) {
+            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtDto, userId);
             return basketballCourtRepository.save(court);
         }
 
