@@ -101,6 +101,13 @@ public class TeamMatchingController {
         return ApiResponse.ok();
     }
 
+    @Operation(
+            summary = "팀 매칭 리스트 조회",
+            description = "커서 페이징 방식으로 팀 매칭 글 리스트를 조회하는 api 입니다. " +
+                    "다음 글 목록을 불러오려면 이전 요청 응답 모델에 넣었던 cursor값을 쿼리파라미터의 cursor에 적어주세요. (yyyy-MM-dd HH:mm:ss.SSS)"
+                    + "limit은 한번 조회할 때 가져올 수 있는 최대 글 개수이며, 기본값은 10개입니다.",
+            tags = {"팀 매칭"}
+    )
     @GetMapping
     public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
         List<ToTeamFormDTO> dtoList;
@@ -122,6 +129,11 @@ public class TeamMatchingController {
         return ApiResponse.ok(resultDto);
     }
 
+    @Operation(
+            summary = "팀 매칭 신청",
+            description = "팀 매칭 글에 신청하는 api 입니다.",
+            tags = {"팀 매칭 / 신청자 목록",}
+    )
     @PostMapping("/{teamMatchingId}/apply")
     public ApiResponse applyTeamMatching(@PathVariable("teamMatchingId") long teamMatchingId){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
