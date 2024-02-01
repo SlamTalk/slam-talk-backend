@@ -31,6 +31,9 @@ public class TeamMatchingService {
     private final TeamMatchingRepository teamMatchingRepository;
     private final TeamApplicantRepository teamApplicantRepository;
 
+    /*
+    * 팀 매칭 글을 등록하는 메소드 입니다.
+     */
     public long registerTeamMatching(FromTeamFormDTO dto, long userId){
         TeamMatching teamMatchingEntity = new TeamMatching();
         teamMatchingEntity.createTeamMatching(dto, userId);
@@ -38,6 +41,11 @@ public class TeamMatchingService {
         return resultTeamMatchingEntity.getTeamMatchingId();
     }
 
+    /*
+    * 팀 매칭 글을 조회하는 메소드 입니다.
+    * 인자로 받은 id를 가진 팀 매칭 글이 없을 경우 BaseException을 발생시킵니다.
+    * 팀 매칭 글이 삭제되었을 경우 BaseException을 발생시킵니다.
+     */
     public ToTeamFormDTO getTeamMatching(long teamMatchingId){
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
         if(teamMatchingEntity.getIsDeleted()){
@@ -48,17 +56,31 @@ public class TeamMatchingService {
         return dto;
     }
 
+    /*
+    * 팀 매칭 글을 수정하는 메소드 입니다.
+     */
     public ApiResponse updateTeamMatching(long teamMatchingId, FromTeamFormDTO fromTeamFormDTO){
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow();
         teamMatchingEntity.updateTeamMatching(fromTeamFormDTO);
         return ApiResponse.ok();
     }
 
+    /*
+    * 팀 매칭 글을 삭제하는 메소드 입니다.
+     */
     public ApiResponse deleteTeamMatching(long teamMatchingId, TeamMatching teamMatchingEntity){
         teamMatchingEntity.delete();
         return ApiResponse.ok();
     }
 
+    /*
+    * 팀 매칭 목록 조회를 위한 메소드 입니다. 최신 등록일자 순으로 조회합니다.
+    * 커서 페이징 방식으로 구현 하였고 다음의 인자를 받습니다.
+    * limit : 한번에 가져올 목록의 개수
+    * stringCursor : 커서로 사용할 날짜시간 문자열 입니다. 이 값은 LocalDateTime.parse를 통해 LocalDateTime으로 변환됩니다.
+    * log.debug를 통해 쿼리가 실행된 시간을 확인할 수 있습니다.
+    * ToTeamFormDTO 타입의 리스트를 반환합니다.
+     */
     public List<ToTeamFormDTO> getTeamMatchingList(int limit, String stringCursor){
         PageRequest request = PageRequest.of(0, limit);
         LocalDateTime cursor = LocalDateTime.parse(stringCursor, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
