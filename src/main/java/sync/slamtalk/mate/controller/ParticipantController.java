@@ -50,7 +50,7 @@ public class ParticipantController {
             return participantService.acceptParticipant(matePostId, participantTableId, id);
         }else if(applyStatus == ApplyStatusType.REJECTED){
             return participantService.rejectParticipant(matePostId, participantTableId, id);
-        }else if(applyStatus == ApplyStatusType.CANCEL){
+        }else if(applyStatus == ApplyStatusType.CANCELED){
             return participantService.cancelParticipant(matePostId, participantTableId, id);
         }else{
             return ApiResponse.fail("잘못된 요청입니다.");

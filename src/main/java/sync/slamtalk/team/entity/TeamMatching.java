@@ -3,20 +3,32 @@ package sync.slamtalk.team.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
+import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "teammatchinglist")
 @Getter
-public class TeamMatchings extends BaseEntity {
+@NamedEntityGraph(
+        name = "TeamMatching.forEagerApplicants",
+        attributeNodes = @NamedAttributeNode("teamApplicants")
+
+)
+public class TeamMatching extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long teamMatchingId;
@@ -37,7 +49,6 @@ public class TeamMatchings extends BaseEntity {
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
     private String locationDetail;
 
     @Column(nullable = false)
@@ -56,6 +67,9 @@ public class TeamMatchings extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
 
+    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL)
+    private List<TeamApplicant> teamApplicants = new ArrayList<>();
+
 //    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!
 //        this.writerId = writerId;
 //    }
@@ -68,7 +82,7 @@ public class TeamMatchings extends BaseEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TeamMatchings that = (TeamMatchings) o;
+        TeamMatching that = (TeamMatching) o;
         return teamMatchingId == that.teamMatchingId;
     }
 
@@ -117,7 +131,12 @@ public class TeamMatchings extends BaseEntity {
         this.connectParentUser(writerId);
     }
 
-    public void toTeamFormDto(ToTeamFormDTO dto){
+    /*
+    * TeamMatching 객체를 ToTeamFormDTO로 변환하여 반환하는 메소드 입니다.
+    * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
+     */
+    public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
+        dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writerId); // * writerId를 User 객체로 대체할 것!
@@ -129,6 +148,8 @@ public class TeamMatchings extends BaseEntity {
         dto.setNumberOfMembers(this.numberOfMembers);
         dto.setCreatedAt(this.getCreatedAt());
         dto.setRecruitmentStatusType(this.recruitmentStatus);
+        dto.setTeamApplicantsDto(this.makeApplicantDto());
+        return dto;
     }
 
     @Override
@@ -159,5 +180,12 @@ public class TeamMatchings extends BaseEntity {
         this.writerId = writerId;
         // * 연관관계 편의 메서드
         // todo: User 객체에 있는 teamMatchingList에 현재 객체를 추가한다.
+    }
+
+    // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
+    public List<ToApplicantDto> makeApplicantDto(){
+        List<TeamApplicant> teamApplicants = getTeamApplicants();
+        List<ToApplicantDto> dto = teamApplicants.stream().map(TeamApplicant::makeDto).collect(Collectors.toList());
+        return dto;
     }
 }
