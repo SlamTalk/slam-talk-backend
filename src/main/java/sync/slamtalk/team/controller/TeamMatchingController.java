@@ -108,7 +108,7 @@ public class TeamMatchingController {
                     + "limit은 한번 조회할 때 가져올 수 있는 최대 글 개수이며, 기본값은 10개입니다.",
             tags = {"팀 매칭"}
     )
-    @GetMapping
+    @GetMapping({"/guest","/"})
     public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
         List<ToTeamFormDTO> dtoList;
         String cursorTime = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
@@ -143,6 +143,7 @@ public class TeamMatchingController {
 
         return ApiResponse.ok(dto);
     }
+
 
 
 }

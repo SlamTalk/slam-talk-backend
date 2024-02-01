@@ -55,7 +55,7 @@ public class MatePostController {
             description = "글 아이디를 요청하면 글을 조회하는 api 입니다.",
             tags = {"메이트 찾기"}
     )
-    @GetMapping("/{matePostId}")
+    @GetMapping({"/guest/{matePostId}", "/{matePostId}"})
     public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
         MateFormDTO dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
@@ -107,7 +107,7 @@ public class MatePostController {
                     "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
             tags = {"메이트 찾기"}
     )
-    @GetMapping
+    @GetMapping({"/guest", "/"})
     public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor) {
         String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
         List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, 10);
