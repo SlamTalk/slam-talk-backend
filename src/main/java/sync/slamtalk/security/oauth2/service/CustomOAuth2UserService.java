@@ -29,7 +29,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private final UserRepository userRepository;
     private final NicknameService nicknameService;
 
-//    private static final String NAVER = "naver";
+    private static final String NAVER = "naver";
     private static final String KAKAO = "kakao";
 
     @Override
@@ -73,13 +73,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     private SocialType getSocialType(String registrationId) {
-/*        if(NAVER.equals(registrationId)) {
+        if(NAVER.equals(registrationId)) {
             return SocialType.NAVER;
-        }*/
-//        if(KAKAO.equals(registrationId)) {
+        }
+        if(KAKAO.equals(registrationId)) {
             return SocialType.KAKAO;
-//        }
-/*        return SocialType.GOOGLE;*/
+        }
+        return SocialType.GOOGLE;
     }
 
     /**
