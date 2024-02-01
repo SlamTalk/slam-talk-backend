@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
 import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
@@ -21,7 +22,11 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final MatePostRepository matePostRepository;
 
+    /* 레벨 시스템을 위한 상수 */
+    private final Long LEVEL_THRESHOLD = 50L;
+    private final Long MATE_LEVEL_SCORE = 5L;
     /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
      *
@@ -34,11 +39,37 @@ public class UserService {
         User findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
+        // 레벨 score 계산하기
+        long levelScore = 0L;
+
+        // Mate 게시판 상태가 Complete
+        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(userId);
+        levelScore += mateCompleteParticipationCount * MATE_LEVEL_SCORE;
+
+        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
+
+        // todo : 출석부 개수 counting 하기
+
+        /* 레벨 단위를 나타내는 변수 */
+        long level = levelScore / LEVEL_THRESHOLD;
 
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
-        if(user.getId().equals(findUser.getId())) return UserDetailsInfoResponseDto.generateMyProfile(user);
+        if(user.getId().equals(findUser.getId())){
+            return UserDetailsInfoResponseDto.generateMyProfile(
+                    user,
+                    level,
+                    levelScore,
+                    mateCompleteParticipationCount
+            );
+        }
+
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
-        else return UserDetailsInfoResponseDto.generateOtherUserProfile(user);
+        else return UserDetailsInfoResponseDto.generateOtherUserProfile(
+                user,
+                level,
+                levelScore,
+                mateCompleteParticipationCount
+        );
     }
 
     /**

@@ -91,7 +91,6 @@ public class OAuthAttributes {
                 .password(UUID.randomUUID().toString())
                 .nickname(newNickname)
                 .role(UserRole.USER)
-                .levelScore(0L)
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
                 .imageUrl(oauth2UserInfo.getImageUrl())
