@@ -28,7 +28,7 @@ public class BasketballCourtController {
 
 
     //전체 농구장 간략 정보
-    @GetMapping
+    @GetMapping("/courts")
     @Operation(
             summary = "전체 농구장 간략 정보", // 기능 제목 입니다
             description = "이 기능은 마커에 띄울 전체 농구장의 간략 정보 응답을 보내는 기능입니다.", // 기능 설명
@@ -41,7 +41,7 @@ public class BasketballCourtController {
 
 
     //특정 농구장 전체 정보
-    @GetMapping("/{courtId}")
+    @GetMapping("/courts/{courtId}")
     @Operation(
             summary = "마커 클릭 농구장 전체 정보", // 기능 제목 입니다
             description = "이 기능은 클릭한 마커에 해당하는 농구장의 전체 정보 응답을 보내는 기능입니다.", // 기능 설명
