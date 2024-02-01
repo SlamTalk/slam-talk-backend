@@ -3,15 +3,20 @@ package sync.slamtalk.team.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
+import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -127,6 +132,7 @@ public class TeamMatching extends BaseEntity {
     }
 
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
+        dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writerId); // * writerId를 User 객체로 대체할 것!
@@ -138,6 +144,7 @@ public class TeamMatching extends BaseEntity {
         dto.setNumberOfMembers(this.numberOfMembers);
         dto.setCreatedAt(this.getCreatedAt());
         dto.setRecruitmentStatusType(this.recruitmentStatus);
+        dto.setTeamApplicantsDto(this.makeApplicantDto());
         return dto;
     }
 
@@ -169,5 +176,11 @@ public class TeamMatching extends BaseEntity {
         this.writerId = writerId;
         // * 연관관계 편의 메서드
         // todo: User 객체에 있는 teamMatchingList에 현재 객체를 추가한다.
+    }
+
+    public List<ToApplicantDto> makeApplicantDto(){
+        List<TeamApplicant> teamApplicants = getTeamApplicants();
+        List<ToApplicantDto> dto = teamApplicants.stream().map(TeamApplicant::makeDto).collect(Collectors.toList());
+        return dto;
     }
 }

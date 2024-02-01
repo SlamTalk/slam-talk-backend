@@ -13,6 +13,7 @@ import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
+import sync.slamtalk.team.dto.ToTeamMatchingListDto;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.team.service.TeamMatchingService;
@@ -109,7 +110,16 @@ public class TeamMatchingController {
             limitNumber = limit.get();
         }
         dtoList = teamMatchingService.getTeamMatchingList(limitNumber, cursorTime);
-        return ApiResponse.ok(dtoList);
+        ToTeamMatchingListDto resultDto = new ToTeamMatchingListDto();
+        if(dtoList.size() == 0){
+            return ApiResponse.ok(resultDto);
+        }else if(dtoList.size() < limitNumber) {
+            resultDto.setCursor(null);
+        }else{
+            resultDto.setCursor(dtoList.get(dtoList.size() - 1).getCreatedAt());
+        }
+        resultDto.setTeamMatchingList(dtoList);
+        return ApiResponse.ok(resultDto);
     }
 
     @PostMapping("/{teamMatchingId}/apply")
@@ -117,11 +127,7 @@ public class TeamMatchingController {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         int userId = 1;
 
-        long chatroomId = teamMatchingService.applyTeamMatching(teamMatchingId, userId);
-
-        ToApplicantDto dto = new ToApplicantDto();
-        dto.setTeamMatchingId(teamMatchingId);
-        dto.setChatroomId(chatroomId);
+        ToApplicantDto dto = teamMatchingService.applyTeamMatching(teamMatchingId, userId);
 
         return ApiResponse.ok(dto);
     }

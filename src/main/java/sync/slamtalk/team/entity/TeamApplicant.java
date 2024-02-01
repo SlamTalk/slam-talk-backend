@@ -3,9 +3,15 @@ package sync.slamtalk.team.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.ApplyStatusType;
+import sync.slamtalk.team.dto.ToApplicantDto;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND;
 
 @Entity
 @Getter
@@ -25,12 +31,26 @@ public class TeamApplicant extends BaseEntity {
     @Column(nullable = false)
     private String applicantNickname;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED, CANCELED
     private long chatroomId;
 
     public void connectTeamMatching(TeamMatching teamMatching) {
         this.teamMatching = teamMatching;
         teamMatching.getTeamApplicants().add(this);
+    }
+
+
+
+    public ToApplicantDto makeDto(){
+        ToApplicantDto dto = new ToApplicantDto();
+        dto.setApplicantId(this.applicantId);
+        dto.setApplicantNickname(this.applicantNickname);
+        dto.setApplyStatusType(this.applyStatus);
+        dto.setChatroomId(this.chatroomId);
+        dto.setTeamApplicantTableId(this.teamApplicantTableId);
+        dto.setTeamMatchingId(this.teamMatching.getTeamMatchingId());
+        return dto;
     }
 
     @Override

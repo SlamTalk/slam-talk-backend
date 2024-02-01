@@ -1,6 +1,7 @@
 package sync.slamtalk.team.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +17,10 @@ import java.util.List;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ToTeamFormDTO {
+
+    private long teamMatchingId;
 
     @NotBlank(message = "팀명을 입력해주세요.")
     private String teamName;
@@ -56,5 +60,5 @@ public class ToTeamFormDTO {
     private RecruitmentStatusType recruitmentStatusType;
 
     @NonNull
-    private List<TeamApplicant> teamApplicants;
+    private List<ToApplicantDto> teamApplicantsDto;
 }
