@@ -131,6 +131,10 @@ public class TeamMatching extends BaseEntity {
         this.connectParentUser(writerId);
     }
 
+    /*
+    * TeamMatching 객체를 ToTeamFormDTO로 변환하여 반환하는 메소드 입니다.
+    * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
+     */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
@@ -178,6 +182,7 @@ public class TeamMatching extends BaseEntity {
         // todo: User 객체에 있는 teamMatchingList에 현재 객체를 추가한다.
     }
 
+    // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
     public List<ToApplicantDto> makeApplicantDto(){
         List<TeamApplicant> teamApplicants = getTeamApplicants();
         List<ToApplicantDto> dto = teamApplicants.stream().map(TeamApplicant::makeDto).collect(Collectors.toList());
