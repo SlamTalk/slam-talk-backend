@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
+import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamMatchingRepository;
@@ -110,4 +111,20 @@ public class TeamMatchingController {
         dtoList = teamMatchingService.getTeamMatchingList(limitNumber, cursorTime);
         return ApiResponse.ok(dtoList);
     }
+
+    @PostMapping("/{teamMatchingId}/apply")
+    public ApiResponse applyTeamMatching(@PathVariable("teamMatchingId") long teamMatchingId){
+        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
+        int userId = 1;
+
+        long chatroomId = teamMatchingService.applyTeamMatching(teamMatchingId, userId);
+
+        ToApplicantDto dto = new ToApplicantDto();
+        dto.setTeamMatchingId(teamMatchingId);
+        dto.setChatroomId(chatroomId);
+
+        return ApiResponse.ok(dto);
+    }
+
+
 }

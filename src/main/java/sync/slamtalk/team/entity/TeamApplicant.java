@@ -11,6 +11,7 @@ import java.util.Objects;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class TeamApplicant extends BaseEntity {
 
     @Id
