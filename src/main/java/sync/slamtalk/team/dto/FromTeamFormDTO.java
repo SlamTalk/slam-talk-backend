@@ -19,9 +19,6 @@ public class FromTeamFormDTO {
     @NotBlank(message = "팀명을 입력해주세요.")
     private String teamName;
 
-    @NotBlank(message = "닉네임을 입력해주세요.")
-    private String nickname;
-
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 

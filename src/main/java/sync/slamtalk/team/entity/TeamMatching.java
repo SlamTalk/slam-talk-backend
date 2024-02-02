@@ -171,7 +171,7 @@ public class TeamMatching extends BaseEntity {
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
-        return this.teamMatchingId == loginId;
+        return this.writerId == loginId;
     }
 
     public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
