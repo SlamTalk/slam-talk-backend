@@ -27,9 +27,6 @@ public class Participant extends BaseEntity {
     @Column(nullable = false, name="participant_id")
     private long participantId; // 참여자 아이디 * 매핑 불필요
 
-    @Column(nullable = false, name="participant_nickname")
-    private String participantNickname; // 참여자 닉네임
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // 참여자 신청 상태 "WAITING", "ACCEPTED", "REJECTED", "CANCEL"
@@ -41,10 +38,9 @@ public class Participant extends BaseEntity {
     public Participant() {
     }
 
-    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
+    public Participant(long participantId, PositionType position, SkillLevelType skillLevel) {
 
         this.participantId = participantId;
-        this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;
@@ -79,7 +75,6 @@ public class Participant extends BaseEntity {
         return "Participant{" +
                 "participantTableId=" + participantTableId +
                 ", participantId='" + participantId + '\'' +
-                ", participantNickname='" + participantNickname + '\'' +
                 ", applyStatus=" + applyStatus +
                 ", position=" + position +
                 ", skillLevel=" + skillLevel +
@@ -91,11 +86,11 @@ public class Participant extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Participant that = (Participant) o;
-        return participantId == that.participantId && Objects.equals(participantTableId, that.participantTableId);
+        return Objects.equals(participantTableId, that.participantTableId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(participantNickname, participantId);
+        return Objects.hash(participantTableId);
     }
 }

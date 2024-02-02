@@ -6,11 +6,14 @@ import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -59,10 +62,13 @@ public class TeamMatching extends BaseEntity {
     private RecruitedSkillLevelType skillLevel;
 
     @Column(nullable = false)
-    private LocalDateTime startScheduledTime;
+    private LocalDate scheduledDate;
 
     @Column(nullable = false)
-    private LocalDateTime endScheduledTime;
+    private LocalTime startTime;
+
+    @Column(nullable = false)
+    private LocalTime endTime;
 
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
@@ -102,8 +108,9 @@ public class TeamMatching extends BaseEntity {
                 ", locationDetail='" + locationDetail + '\'' +
                 ", numberOfMembers=" + numberOfMembers +
                 ", skillLevel=" + skillLevel +
-                ", startScheduledTime=" + startScheduledTime +
-                ", endScheduledTime=" + endScheduledTime +
+                ", scheduledDate=" + scheduledDate +
+                ", startTime=" + startTime +
+                ", endTime=" + endTime +
                 '}';
     }
 
@@ -112,8 +119,9 @@ public class TeamMatching extends BaseEntity {
         this.content = fromTeamFormDTO.getContent();
         this.locationDetail = fromTeamFormDTO.getLocationDetail();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
-        this.startScheduledTime = fromTeamFormDTO.getStartScheduledTime();
-        this.endScheduledTime = fromTeamFormDTO.getEndScheduledTime();
+        this.startTime = fromTeamFormDTO.getStartTime();
+        this.endTime = fromTeamFormDTO.getEndTime();
+        this.scheduledDate = fromTeamFormDTO.getScheduledDate();
         this.teamName = fromTeamFormDTO.getTeamName();
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
     }
@@ -123,8 +131,9 @@ public class TeamMatching extends BaseEntity {
         this.content = fromTeamFormDTO.getContent();
         this.locationDetail = fromTeamFormDTO.getLocationDetail();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
-        this.startScheduledTime = fromTeamFormDTO.getStartScheduledTime();
-        this.endScheduledTime = fromTeamFormDTO.getEndScheduledTime();
+        this.startTime = fromTeamFormDTO.getStartTime();
+        this.endTime = fromTeamFormDTO.getEndTime();
+        this.scheduledDate = fromTeamFormDTO.getScheduledDate();
         this.teamName = fromTeamFormDTO.getTeamName();
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
         this.recruitmentStatus = RecruitmentStatusType.RECRUITING;
@@ -136,14 +145,16 @@ public class TeamMatching extends BaseEntity {
     * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
      */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
+        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
-        dto.setWriterId(this.writerId); // * writerId를 User 객체로 대체할 것!
+        dto.setWriterId(this.writerId); // todo : writerId를 User 객체로 대체할 것!
+        dto.setNickname("작성자 닉네임"); // todo : 작성자 닉네임을 가져오는 기능을 추가할 것!
         dto.setLocationDetail(this.locationDetail);
-        dto.setSkillLevel(this.skillLevel);
-        dto.setStartScheduledTime(this.startScheduledTime);
-        dto.setEndScheduledTime(this.endScheduledTime);
+        dto.setSkillLevel(mapper.toSkillLevelTypeList(this.skillLevel));
+        dto.setStartTime(this.startTime);
+        dto.setEndTime(this.endTime);
         dto.setTeamName(this.teamName);
         dto.setNumberOfMembers(this.numberOfMembers);
         dto.setCreatedAt(this.getCreatedAt());
@@ -160,7 +171,7 @@ public class TeamMatching extends BaseEntity {
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
-        return this.teamMatchingId == loginId;
+        return this.writerId == loginId;
     }
 
     public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){

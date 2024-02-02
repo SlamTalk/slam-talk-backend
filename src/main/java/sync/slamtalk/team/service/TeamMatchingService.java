@@ -1,5 +1,6 @@
 package sync.slamtalk.team.service;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -9,6 +10,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.team.dto.FromApplicantDto;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
@@ -94,10 +96,13 @@ public class TeamMatchingService {
         return dtoList;
     }
 
-    public ToApplicantDto applyTeamMatching(long teamMatchingId, long userId){
+    public ToApplicantDto applyTeamMatching(long teamMatchingId, long userId, FromApplicantDto fromApplicantDto){
         TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()-> new BaseException(TEAM_POST_NOT_FOUND));
+        if(entity.getIsDeleted()){
+            throw new BaseException(TEAM_POST_ALREADY_DELETED);
+        }
         // * 신청자의 닉네임을 가져온다.
-        String writerNickname = "test";
+        String userNickname = "test";
 
         // * 채팅방을 생성해서 채팅방 id를 가져온다.
         long createdChatroomId = 1; // todo : 채팅방 생성 로직 완료시 해당 메서드를 통한 채팅방 id 가져오기
@@ -119,14 +124,15 @@ public class TeamMatchingService {
 
         TeamApplicant applicant = TeamApplicant.builder()
                 .applicantId(userId)
-                .applicantNickname(writerNickname)
+                .applicantNickname(userNickname)
                 .applyStatus(ApplyStatusType.WAITING)
                 .chatroomId(createdChatroomId)
+                .teamName(fromApplicantDto.getTeamName())
+                .skillLevel(fromApplicantDto.getSkillLevel())
                 .build();
         applicant.connectTeamMatching(entity);
         TeamApplicant result = teamApplicantRepository.save(applicant);
 
         return result.makeDto();
     }
-
 }

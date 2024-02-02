@@ -36,36 +36,36 @@ public class MatePostEntityToDtoMapper {
         return positionList;
     }
 
-    public static List<String> toSkillLevelTypeList(MatePost matePost){
+    public static List<String> toSkillLevelTypeList(RecruitedSkillLevelType postSkillType){
         List<String> skillLevelTypeList = new ArrayList<>();
 
-        if(matePost.getSkillLevel() == RecruitedSkillLevelType.BEGINNER){
+        if(postSkillType == RecruitedSkillLevelType.BEGINNER){
             skillLevelTypeList.add("입문");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_BEGINNER) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_LOW) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_LOW) {
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_MIDDLE) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.OVER_MIDDLE) {
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.UNDER_HIGH) {
+        }else if(postSkillType == RecruitedSkillLevelType.OVER_BEGINNER) {
             skillLevelTypeList.add("입문");
             skillLevelTypeList.add("초보");
             skillLevelTypeList.add("중수");
             skillLevelTypeList.add("고수");
-        }else if(matePost.getSkillLevel() == RecruitedSkillLevelType.HIGH) {
+        }else if(postSkillType == RecruitedSkillLevelType.UNDER_LOW) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("초보");
+        }else if(postSkillType == RecruitedSkillLevelType.OVER_LOW) {
+            skillLevelTypeList.add("초보");
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(postSkillType == RecruitedSkillLevelType.UNDER_MIDDLE) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("초보");
+            skillLevelTypeList.add("중수");
+        }else if(postSkillType == RecruitedSkillLevelType.OVER_MIDDLE) {
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(postSkillType == RecruitedSkillLevelType.UNDER_HIGH) {
+            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add("초보");
+            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add("고수");
+        }else if(postSkillType == RecruitedSkillLevelType.HIGH) {
             skillLevelTypeList.add("고수");
         }
 
@@ -102,7 +102,7 @@ public class MatePostEntityToDtoMapper {
         matePostDTO.setLocationDetail(matePost.getLocationDetail());
         matePostDTO.setParticipants(matePost.getParticipants());
         toPositionListDTO(matePost, matePostDTO);
-        matePostDTO.setSkillList(toSkillLevelTypeList(matePost));
+        matePostDTO.setSkillList(toSkillLevelTypeList(matePost.getSkillLevel()));
         matePostDTO.setPositionList(toPositionListDto(matePost));
         matePostDTO.setCreatedAt(matePost.getCreatedAt());
         return matePostDTO;

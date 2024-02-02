@@ -11,6 +11,7 @@ import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
+import sync.slamtalk.user.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class ParticipantService {
 
     private final MatePostRepository matePostRepository;
     private final ParticipantRepository participantRepository;
+    private final UserRepository userRepository;
 
     //
     //todo : post가 null이면 어떤 값을 반환할 지 결정해야 한다.
@@ -34,8 +36,7 @@ public class ParticipantService {
         if(!post.isPresent()){
             throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
-        Participant participant = new Participant(participantId,
-                participantNIckname, matePostApplicantDTO.getPosition(),
+        Participant participant = new Participant(participantId, matePostApplicantDTO.getPosition(),
                 matePostApplicantDTO.getSkillLevel());
         participant.connectParent(post.get());
         Participant resultParticipant = participantRepository.save(participant);
@@ -61,7 +62,8 @@ public class ParticipantService {
             if(participant.getIsDeleted()){
                 continue;
             }
-            MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantId(), participant.getParticipantNickname(), participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
+            String participantNickname = "tempNickname"; // todo : userRepository.findById(participant.getParticipantId()).get().getNickname(); // 참여자 닉네임 가져온다.
+            MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantId(), participantNickname, participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
             matePostApplicantDTOs.add(matePostApplicantDTO);
             log.debug("참여자 목록 : {}", matePostApplicantDTO);
         }

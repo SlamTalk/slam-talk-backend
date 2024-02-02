@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SkillLevelType {
-    HIGH("고수"), MIDDLE("중수"), LOW("하수"), BEGINNER("입문");
+    HIGH("고수"), MIDDLE("중수"), LOW("초보"), BEGINNER("입문");
 
     private final String level;
 }
