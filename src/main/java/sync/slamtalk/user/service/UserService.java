@@ -115,8 +115,8 @@ public class UserService {
     ) {
         userRepository.updateUserPositionAndSkillLevel(
                 userId,
-                userUpdatePositionAndSkillRequestDto.convertStringToSkillLevel(),
-                userUpdatePositionAndSkillRequestDto.convertStringToPosition()
+                userUpdatePositionAndSkillRequestDto.getBasketballSkillLevel(),
+                userUpdatePositionAndSkillRequestDto.getBasketballPosition()
         );
     }
 }
