@@ -23,6 +23,7 @@ public class ApiResponse<T> {
 
 
     private ApiResponse(boolean success, String message, T results){
+        this.status = 200;
         this.success= success;
         this.message = message;
         this.results = results;

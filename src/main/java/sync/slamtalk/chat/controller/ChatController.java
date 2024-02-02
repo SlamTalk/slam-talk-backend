@@ -39,7 +39,7 @@ public class ChatController {
     )
     public ApiResponse create(@RequestBody ChatCreateDTO dto){
         long chatRoom = chatService.createChatRoom(dto);
-        return ApiResponse.ok(); // TODO ApiResponse 수정
+        return ApiResponse.ok(chatRoom,"채팅방이 생성되었습니다."); // TODO ApiResponse 수정
     }
 
 
