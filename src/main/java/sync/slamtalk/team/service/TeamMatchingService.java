@@ -96,6 +96,9 @@ public class TeamMatchingService {
 
     public ToApplicantDto applyTeamMatching(long teamMatchingId, long userId){
         TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()-> new BaseException(TEAM_POST_NOT_FOUND));
+        if(entity.getIsDeleted()){
+            throw new BaseException(TEAM_POST_ALREADY_DELETED);
+        }
         // * 신청자의 닉네임을 가져온다.
         String writerNickname = "test";
 
@@ -128,5 +131,4 @@ public class TeamMatchingService {
 
         return result.makeDto();
     }
-
 }
