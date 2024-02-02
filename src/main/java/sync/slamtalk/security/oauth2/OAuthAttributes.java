@@ -3,7 +3,9 @@ package sync.slamtalk.security.oauth2;
 
 import lombok.Builder;
 import lombok.Getter;
+import sync.slamtalk.security.oauth2.userinfo.GoogleOAuth2UserInfo;
 import sync.slamtalk.security.oauth2.userinfo.KakaoOAuth2UserInfo;
+import sync.slamtalk.security.oauth2.userinfo.NaverOAuth2UserInfo;
 import sync.slamtalk.security.oauth2.userinfo.OAuth2UserInfo;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
@@ -43,15 +45,15 @@ public class OAuthAttributes {
             Map<String, Object> attributes
     ) {
 
-/*        if (socialType == SocialType.NAVER) {
+        if (socialType == SocialType.NAVER) {
             return ofNaver(userNameAttributeName, attributes);
-        }*/
+        }
         if (socialType == SocialType.KAKAO) {
             return ofKakao(userNameAttributeName, attributes);
         }
-/*        if(socialType == SocialType.GOOGLE){
+        if(socialType == SocialType.GOOGLE){
             return ofGoogle(userNameAttributeName, attributes);
-        }*/
+        }
 
         // 지원하지 않는 SocialType이 들어온 경우 예외를 발생시킵니다.
         throw new IllegalArgumentException("지원하지 않는 소셜 타입입니다: " + socialType);
@@ -64,7 +66,7 @@ public class OAuthAttributes {
                 .build();
     }
 
-/*    public static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+    public static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
         return OAuthAttributes.builder()
                 .nameAttributeKey(userNameAttributeName)
                 .oauth2UserInfo(new GoogleOAuth2UserInfo(attributes))
@@ -76,7 +78,7 @@ public class OAuthAttributes {
                 .nameAttributeKey(userNameAttributeName)
                 .oauth2UserInfo(new NaverOAuth2UserInfo(attributes))
                 .build();
-    }*/
+    }
 
     /**
      * of메소드로 OAuthAttributes 객체가 생성되어, 유저 정보들이 담긴 OAuth2UserInfo가 소셜 타입별로 주입된 상태
@@ -91,7 +93,6 @@ public class OAuthAttributes {
                 .password(UUID.randomUUID().toString())
                 .nickname(newNickname)
                 .role(UserRole.USER)
-                .levelScore(0L)
                 .socialType(socialType)
                 .socialId(oauth2UserInfo.getId())
                 .imageUrl(oauth2UserInfo.getImageUrl())

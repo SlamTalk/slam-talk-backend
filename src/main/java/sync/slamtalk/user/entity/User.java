@@ -66,14 +66,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "is_alarm_set")
     private String isAlarmSet;
 
-    /* 레벨 시스템 기능 */
-    @Column(name = "level_score", nullable = false)
-    private Long levelScore = 0L;
-
     /* 연관 관계 매핑 */
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
-
 
 /*
     //todo : 동수님 연관관계 매핑 부분

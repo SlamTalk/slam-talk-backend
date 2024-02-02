@@ -43,7 +43,6 @@ public class UserSignUpRequestDto {
                  .password(this.getPassword())
                  .nickname(this.getNickname())
                  .role(UserRole.USER)
-                 .levelScore(0L)
                  .socialType(SocialType.LOCAL)
                  .firstLoginCheck(true)
                  .build();

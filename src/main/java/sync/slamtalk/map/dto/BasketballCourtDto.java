@@ -28,6 +28,7 @@ public class BasketballCourtDto {
     private String convenience;
     private String additionalInfo;
     private String photoUrl;
+    private Long informerid;
 
     //농구장 전체 정보 dto
     public BasketballCourtDto(Long courtId, String courtName, String address, BigDecimal latitude, BigDecimal longitude,
@@ -35,7 +36,7 @@ public class BasketballCourtDto {
                               Boolean nightLighting, Boolean openingHours, Boolean fee, Boolean parkingAvailable,
                               String phoneNum, String website,
                               String convenience,
-                              String additionalInfo, String photoUrl) {
+                              String additionalInfo, String photoUrl, Long informerid) {
 
         this.courtId = courtId;
         this.courtName = courtName;
@@ -55,6 +56,7 @@ public class BasketballCourtDto {
         this.convenience = convenience;
         this.additionalInfo = additionalInfo;
         this.photoUrl = photoUrl;
+        this.informerid = informerid;
     }
 
     // 농구장 간략 정보 dto

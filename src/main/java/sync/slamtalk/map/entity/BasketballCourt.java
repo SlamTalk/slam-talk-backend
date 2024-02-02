@@ -90,6 +90,10 @@ public class BasketballCourt extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus; // 관리자 상태
 
+    @Column(name = "informer_id")
+    private Long informerid; // 제보자 ID
+
+
     //코트 타입 업데이트
     public void updateCourtType(String courtType) {
         this.courtType = courtType;
