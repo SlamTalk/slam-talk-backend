@@ -3,8 +3,6 @@ package sync.slamtalk.user.dto;
 import lombok.*;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
-import sync.slamtalk.user.entity.UserBasketballPositionType;
-import sync.slamtalk.user.entity.UserBasketballSkillLevelType;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -24,8 +22,8 @@ public class UserDetailsInfoResponseDto {
     private String selfIntroduction;
 
     /* 정보 수집 부분 */
-    private UserBasketballSkillLevelType basketballSkillLevel;
-    private UserBasketballPositionType basketballPosition;
+    private String basketballSkillLevel;
+    private String basketballPosition;
     private Long level = 0L;
     private Long levelScore = 0L;
     private Long mateCompleteParticipationCount = 0L;
@@ -41,7 +39,6 @@ public class UserDetailsInfoResponseDto {
      */
     public static UserDetailsInfoResponseDto generateMyProfile(
             User user,
-            long level,
             long levelScore,
             long mateCompleteParticipationCount
     ){ return UserDetailsInfoResponseDto.builder()
@@ -49,9 +46,9 @@ public class UserDetailsInfoResponseDto {
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .selfIntroduction(user.getSelfIntroduction())
-                .basketballSkillLevel(user.getBasketballSkillLevel())
-                .basketballPosition(user.getBasketballPosition())
-                .level(levelScore)
+                .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
+                .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
+                .level(levelScore/User.LEVEL_THRESHOLD)
                 .levelScore(levelScore)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(0L)
@@ -70,7 +67,6 @@ public class UserDetailsInfoResponseDto {
      */
     public static UserDetailsInfoResponseDto generateOtherUserProfile(
             User user,
-            long level,
             long levelScore,
             long mateCompleteParticipationCount
     ) { return UserDetailsInfoResponseDto.builder()
@@ -78,10 +74,10 @@ public class UserDetailsInfoResponseDto {
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .selfIntroduction(user.getSelfIntroduction())
-                .basketballSkillLevel(user.getBasketballSkillLevel())
-                .basketballPosition(user.getBasketballPosition())
+                .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
+                .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
                 .levelScore(levelScore)
-                .level(level)
+                .level(levelScore / User.LEVEL_THRESHOLD)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(0L)
                 .build();
