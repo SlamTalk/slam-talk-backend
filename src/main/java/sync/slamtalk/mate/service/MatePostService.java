@@ -57,7 +57,7 @@ public class MatePostService {
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
-        List<String> skillList = mapper.toSkillLevelTypeList(post);
+        List<String> skillList = mapper.toSkillLevelTypeList(post.getSkillLevel());
         List<PositionListDTO> positionList = mapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
