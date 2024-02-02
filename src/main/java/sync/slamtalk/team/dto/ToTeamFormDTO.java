@@ -12,7 +12,9 @@ import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.entity.TeamApplicant;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -20,16 +22,19 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ToTeamFormDTO {
 
-    private long teamMatchingId;
+    private Long teamMatchingId;
 
     @NotBlank(message = "팀명을 입력해주세요.")
     private String teamName;
+
+    @NotBlank(message = "닉네임을 입력해주세요.")
+    private String nickname;
 
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 
     @NonNull
-    private long writerId;
+    private Long writerId;
 
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
@@ -38,18 +43,22 @@ public class ToTeamFormDTO {
     private String locationDetail;
 
     @NonNull
-    private int numberOfMembers;
+    private Integer numberOfMembers;
 
     @NonNull
     private RecruitedSkillLevelType skillLevel;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startScheduledTime;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate scheduledDate;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endScheduledTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime startTime;
+
+    @NonNull
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime endTime;
 
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")

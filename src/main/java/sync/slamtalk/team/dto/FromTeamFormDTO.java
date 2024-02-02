@@ -9,13 +9,18 @@ import lombok.NonNull;
 import lombok.Setter;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Setter
 public class FromTeamFormDTO {
     @NotBlank(message = "팀명을 입력해주세요.")
     private String teamName;
+
+    @NotBlank(message = "닉네임을 입력해주세요.")
+    private String nickname;
 
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
@@ -34,16 +39,23 @@ public class FromTeamFormDTO {
     private RecruitedSkillLevelType skillLevel;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startScheduledTime;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate scheduledDate;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endScheduledTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime startTime;
+
+    @NonNull
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime endTime;
 
 
     public String toString() {
-        return "FromTeamFormDTO(teamName=" + this.getTeamName() + ", title=" + this.getTitle() + ", content=" + this.getContent() + ", locationDetail=" + this.getLocationDetail() + ", numberOfMembers=" + this.getNumberOfMembers() + ", skillLevel=" + this.getSkillLevel() + ", startScheduledTime=" + this.getStartScheduledTime() + ", endScheduledTime=" + this.getEndScheduledTime() + ")";
+        return "FromTeamFormDTO(teamName=" + this.getTeamName() + ", title=" + this.getTitle() +
+                ", content=" + this.getContent() + ", locationDetail=" + this.getLocationDetail() +
+                ", numberOfMembers=" + this.getNumberOfMembers() + ", skillLevel=" + this.getSkillLevel() +
+                ", scheduledDate=" + this.getScheduledDate() + ", startTime=" + this.getStartTime() + ", endTime=" + this.getEndTime() + ")";
     }
 
 }

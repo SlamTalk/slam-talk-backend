@@ -5,6 +5,7 @@ import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.ApplyStatusType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.team.dto.ToApplicantDto;
 
 import java.util.List;
@@ -22,18 +23,21 @@ public class TeamApplicant extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long teamApplicantTableId;
+    private Long teamApplicantTableId;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_matching_id")
     private TeamMatching teamMatching;
     @Column(nullable = false)
-    private long applicantId;
+    private String teamName;
+    @Column(nullable = false)
+    private Long applicantId;
     @Column(nullable = false)
     private String applicantNickname;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED, CANCELED
-    private long chatroomId;
+    private Long chatroomId;
+    private SkillLevelType skillLevel;
 
     public void connectTeamMatching(TeamMatching teamMatching) {
         this.teamMatching = teamMatching;
@@ -48,8 +52,10 @@ public class TeamApplicant extends BaseEntity {
         dto.setApplicantNickname(this.applicantNickname);
         dto.setApplyStatusType(this.applyStatus);
         dto.setChatroomId(this.chatroomId);
+        dto.setTeamName(this.teamName);
         dto.setTeamApplicantTableId(this.teamApplicantTableId);
         dto.setTeamMatchingId(this.teamMatching.getTeamMatchingId());
+        dto.setSkillLevel(this.skillLevel);
         return dto;
     }
 
@@ -71,10 +77,12 @@ public class TeamApplicant extends BaseEntity {
         return "TeamApplicant{" +
                 "teamApplicantTableId=" + teamApplicantTableId +
                 ", teamMatchingId=" + teamMatching.getTeamMatchingId() +
+                ", teamName='" + teamName + '\'' +
                 ", applicantId=" + applicantId +
                 ", applicantNickname='" + applicantNickname + '\'' +
                 ", isChatroomCreated=" + applyStatus +
                 ", chatroomId=" + chatroomId +
+                ", skillLevel=" + skillLevel +
                 '}';
     }
 
