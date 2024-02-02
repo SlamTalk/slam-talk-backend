@@ -6,6 +6,7 @@ import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
@@ -144,13 +145,14 @@ public class TeamMatching extends BaseEntity {
     * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
      */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
+        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writerId); // todo : writerId를 User 객체로 대체할 것!
         dto.setNickname("작성자 닉네임"); // todo : 작성자 닉네임을 가져오는 기능을 추가할 것!
         dto.setLocationDetail(this.locationDetail);
-        dto.setSkillLevel(this.skillLevel);
+        dto.setSkillLevel(mapper.toSkillLevelTypeList(this.skillLevel));
         dto.setStartTime(this.startTime);
         dto.setEndTime(this.endTime);
         dto.setTeamName(this.teamName);

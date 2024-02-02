@@ -46,7 +46,7 @@ public class ToTeamFormDTO {
     private Integer numberOfMembers;
 
     @NonNull
-    private RecruitedSkillLevelType skillLevel;
+    private List<String> skillLevel;
 
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd")
