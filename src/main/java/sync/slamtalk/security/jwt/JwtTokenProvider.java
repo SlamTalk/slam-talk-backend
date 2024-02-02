@@ -139,18 +139,7 @@ public class JwtTokenProvider implements InitializingBean {
     public Authentication getAuthentication(String accessToken) {
 
         // Jwt 토큰 복호화
-        Jws<Claims> claimsJws = Jwts
-                .parser()
-                .verifyWith(key) // 서명 검증
-                .build()
-                .parseSignedClaims(accessToken);
-
-        Claims claims = claimsJws.getPayload();
-
-        if (claims.get(AUTHORITIES_KEY) == null) {
-            log.info("권한 정보가 없는 토큰입니다");
-            throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
-        }
+        Claims claims = getClaimsFromAccessToken(accessToken);
 
         User user = userRepository.findById(Long.valueOf(claims.getSubject()))
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
@@ -171,7 +160,22 @@ public class JwtTokenProvider implements InitializingBean {
      * @return long userid
      * */
     public Long stompExtractUserIdFromToken(String accessToken){
+        // 웹 소켓에서 오는 Bearer 키워드 제거하기
+        String token = resolveToken(accessToken);
+
         // Jwt 토큰 복호화
+        Claims claims = getClaimsFromAccessToken(token);
+
+        return Long.valueOf(claims.getSubject());
+    }
+
+    /**
+     *  accessToken에서 서명 검증 및 Claims 반환하는 메서드
+     *
+     * @param accessToken 엑세스 토큰
+     * @return Claims 사용자에 대한 정보
+     * */
+    private Claims getClaimsFromAccessToken(String accessToken) {
         Jws<Claims> claimsJws = Jwts
                 .parser()
                 .verifyWith(key) // 서명 검증
@@ -184,8 +188,7 @@ public class JwtTokenProvider implements InitializingBean {
             log.info("권한 정보가 없는 토큰입니다");
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
-
-        return Long.valueOf(claims.getSubject());
+        return claims;
     }
 
     /**
