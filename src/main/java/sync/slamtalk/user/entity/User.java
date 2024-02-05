@@ -39,7 +39,7 @@ public class User extends BaseEntity implements UserDetails {
     private String nickname;
     @Column(nullable = false)
     private String email;
-    @Column(name = "image_url")
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
     @Column(name = "refresh_token")
     private String refreshToken;
@@ -83,6 +83,10 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "writerId", fetch = FetchType.LAZY)
     private List<MatePost> matePosts = new ArrayList<>();
 */
+
+    /* 출석 관련 매핑 */
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserAttendance> userAttendances = new ArrayList<>();
 
     /**
      * 비밀번호 암호화 메소드

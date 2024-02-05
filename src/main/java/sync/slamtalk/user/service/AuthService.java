@@ -16,7 +16,8 @@ import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserAttendanceRepository;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.dto.UserDetailsAfterRefreshResponseDto;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
 import sync.slamtalk.user.dto.UserLoginResponseDto;
@@ -38,6 +39,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final MatePostRepository matePostRepository;
+    private final UserAttendanceRepository userAttendanceRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
@@ -162,7 +164,9 @@ public class AuthService {
 
         // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
         long teamMatchingCompleteParticipationCount = 0L;
-        // todo : 출석부 개수 counting 하기
+        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+                .orElse(0L);
+        levelScore += userAttendCount * User.ATTEND_SCORE;
 
 
         UserDetailsAfterRefreshResponseDto refreshResponseDto =

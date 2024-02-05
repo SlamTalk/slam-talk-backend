@@ -10,7 +10,6 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
 import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
 import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
-import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.service.UserService;
 
 /**
@@ -87,4 +86,22 @@ public class UserController {
 
         return ApiResponse.ok();
     }
+
+    /**
+     * 유저 출석체크를 위한 api
+     *
+     * @param userId 유저 아이디
+     * */
+    @PostMapping("/user/attend")
+    @Operation(
+            summary = "출석 체크 api",
+            description = "하루 한번 출석체크 하는 api,",
+            tags = {"유저 상세정보 조회"}
+    )
+    public ApiResponse<String> userAttendance(@AuthenticationPrincipal Long userId){
+        log.debug("[유저 출석체크] 동작");
+        userService.userAttendance(userId);
+        return ApiResponse.ok();
+    }
+
 }
