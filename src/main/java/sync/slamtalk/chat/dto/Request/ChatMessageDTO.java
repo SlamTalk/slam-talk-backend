@@ -16,7 +16,10 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatMessageDTO implements Serializable {
     @Nullable
+    private String messageId; // 메세지 아이디
+    @Nullable
     private String roomId; // 채팅방 아이디(채팅방 식별자)
+    @Nullable
     private String senderNickname; // 메세지를 보낸 사용자의 닉네임 -> 채팅방에 표시될
     @Nullable
     private String content; // 메세지 내용
