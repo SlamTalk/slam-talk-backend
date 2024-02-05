@@ -26,9 +26,9 @@ public class Controller {
     // 주의 사항 ApiResponse Swagger 도 동일한 클래스가 존재하기 때문에 import 주의 해야합니다.
     public ApiResponse<String> hello(
             String param,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal Long userId
     ){
-        log.debug("user = {}", user.toString());
+        log.debug("user = {}", userId.toString());
         return ApiResponse.ok(param + "성공쓰");
     }
 }

@@ -26,14 +26,15 @@ public class UserService {
 
     /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
-     *
+     * @param userId 찾고자하는 userId
+     * @param loginUserId  로그인한 userId
      *
      * */
     public UserDetailsInfoResponseDto userDetailsInfo(
             Long userId,
-            User user
+            Long loginUserId
     ) {
-        User findUser = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
         // 레벨 score 계산하기
@@ -48,7 +49,7 @@ public class UserService {
         // todo : 출석부 개수 counting 하기
 
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
-        if(user.getId().equals(findUser.getId())){
+        if(loginUserId.equals(user.getId())){
             return UserDetailsInfoResponseDto.generateMyProfile(
                     user,
                     levelScore,
