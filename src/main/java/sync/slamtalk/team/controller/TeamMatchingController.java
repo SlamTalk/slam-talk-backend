@@ -7,8 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.team.dto.*;
 import sync.slamtalk.team.entity.TeamMatching;
@@ -21,6 +23,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import static sync.slamtalk.mate.error.MateErrorResponseCode.USER_NOT_AUTHORIZED;
+
 @Slf4j
 @RestController
 @RequestMapping("api/match")
@@ -28,7 +32,6 @@ import java.util.Optional;
 public class TeamMatchingController {
 
     private final TeamMatchingService teamMatchingService;
-    private final TeamMatchingRepository teamMatchingRepository;
 
     @Operation(
             summary = "팀 매칭 등록",
@@ -36,11 +39,11 @@ public class TeamMatchingController {
             tags = {"팀 매칭"}
     )
     @PostMapping("/register")
-    public ResponseEntity registerTeamMatchingPage(@Valid @RequestBody FromTeamFormDTO fromTeamFormDTO){
+    public ResponseEntity registerTeamMatchingPage(@Valid @RequestBody FromTeamFormDTO fromTeamFormDTO, @AuthenticationPrincipal Long id){
         log.debug("fromTeamFormDTO : {}", fromTeamFormDTO);
 
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다. User객체로 대체할것
-        long userId = 1;
+        long userId = id;
 
         long matePostId = teamMatchingService.registerTeamMatching(fromTeamFormDTO, userId);
         HttpHeaders headers = new HttpHeaders();
@@ -55,7 +58,9 @@ public class TeamMatchingController {
     )
     @GetMapping("/{teamMatchingId}")
     public ApiResponse<ToTeamFormDTO> getTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId){
+
         ToTeamFormDTO dto = teamMatchingService.getTeamMatching(teamMatchingId);
+
         return ApiResponse.ok(dto);
     }
 
@@ -65,13 +70,13 @@ public class TeamMatchingController {
             tags = {"팀 매칭"}
     )
     @PatchMapping("/{teamMatchingId}")
-    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @RequestBody FromTeamFormDTO fromTeamFormDTO){
+    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @RequestBody FromTeamFormDTO fromTeamFormDTO,
+                                              @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
+        Long userId = id;
 
-        // * 해당 게시글 등록 폼에 입력된 작성자 ID와 접속자 ID가 일치하는지 확인한다.
+        teamMatchingService.updateTeamMatching(teamMatchingId, fromTeamFormDTO,userId);
 
-        teamMatchingService.updateTeamMatching(teamMatchingId, fromTeamFormDTO);
         return ApiResponse.ok();
     }
 
@@ -81,19 +86,11 @@ public class TeamMatchingController {
             tags = {"팀 매칭"}
     )
     @DeleteMapping("/{teamMatchingId}")
-    public ApiResponse deleteTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId){
+    public ApiResponse deleteTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
+        Long userId = id;
 
-        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow();
-
-        ToTeamFormDTO dto;
-        // * 해당 게시글 등록 폼에 입력된 작성자 ID와 접속자 ID가 일치하는지 확인한다.
-        if(teamMatchingEntity.isCorrespondTo(userId)){
-            teamMatchingService.deleteTeamMatching(teamMatchingId, teamMatchingEntity);
-        }else{
-            throw new IllegalArgumentException("해당 글을 삭제할 권한이 없습니다.");
-        }
+        teamMatchingService.deleteTeamMatching(teamMatchingId, userId);
 
         return ApiResponse.ok();
     }
@@ -132,11 +129,12 @@ public class TeamMatchingController {
             tags = {"팀 매칭 / 신청자 목록",}
     )
     @PostMapping("/{teamMatchingId}/apply")
-    public ApiResponse applyTeamMatching(@PathVariable("teamMatchingId") long teamMatchingId, @RequestBody FromApplicantDto fromApplicantDto){
-                                         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
+    public ApiResponse applyTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @RequestBody FromApplicantDto fromApplicantDto,
+                                         @AuthenticationPrincipal Long id){
+        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
+        Long userId = id;
 
-        ToApplicantDto dto = teamMatchingService.applyTeamMatching(teamMatchingId, userId, fromApplicantDto);
+        ToApplicantDto dto = teamMatchingService.applyTeamMatching(teamMatchingId, fromApplicantDto, userId);
 
         return ApiResponse.ok(dto);
     }

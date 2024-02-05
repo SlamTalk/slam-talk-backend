@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,10 +31,10 @@ public class MatePost extends BaseEntity {
         @Column(name = "mate_post_id")
         private long matePostId;
 
-//        @ManyToOne(fetch = FetchType.LAZY)
-//        @JoinColumn(nullable = false, name="writer_id")
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(nullable = false, name="writer_id")
         @Column(name="writer_id")
-        private Long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
+        private User writer; // 글 작성자 아이디 * User 테이블과 매핑 필요
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -112,6 +113,10 @@ public class MatePost extends BaseEntity {
                         }
                 }
                 return true;
+        }
+
+        public boolean isCorrespondToUser(Long userId){
+                return this.writer.getId() == userId;
         }
 
         //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요

@@ -1,9 +1,9 @@
 package sync.slamtalk.team.service;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.ApiResponse;
@@ -18,12 +18,16 @@ import sync.slamtalk.team.entity.TeamApplicant;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamApplicantRepository;
 import sync.slamtalk.team.repository.TeamMatchingRepository;
+import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static sync.slamtalk.mate.error.MateErrorResponseCode.USER_NOT_AUTHORIZED;
 import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
+import static sync.slamtalk.user.error.UserErrorResponseCode.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -32,13 +36,15 @@ import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
 public class TeamMatchingService {
     private final TeamMatchingRepository teamMatchingRepository;
     private final TeamApplicantRepository teamApplicantRepository;
+    private final UserRepository userRepository;
 
     /*
     * 팀 매칭 글을 등록하는 메소드 입니다.
      */
     public long registerTeamMatching(FromTeamFormDTO dto, long userId){
+        User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
         TeamMatching teamMatchingEntity = new TeamMatching();
-        teamMatchingEntity.createTeamMatching(dto, userId);
+        teamMatchingEntity.createTeamMatching(dto, user);
         TeamMatching resultTeamMatchingEntity = teamMatchingRepository.save(teamMatchingEntity);
         return resultTeamMatchingEntity.getTeamMatchingId();
     }
@@ -48,6 +54,7 @@ public class TeamMatchingService {
     * 인자로 받은 id를 가진 팀 매칭 글이 없을 경우 BaseException을 발생시킵니다.
     * 팀 매칭 글이 삭제되었을 경우 BaseException을 발생시킵니다.
      */
+    @Transactional(readOnly = true)
     public ToTeamFormDTO getTeamMatching(long teamMatchingId){
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
         if(teamMatchingEntity.getIsDeleted()){
@@ -61,8 +68,14 @@ public class TeamMatchingService {
     /*
     * 팀 매칭 글을 수정하는 메소드 입니다.
      */
-    public ApiResponse updateTeamMatching(long teamMatchingId, FromTeamFormDTO fromTeamFormDTO){
-        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow();
+    public ApiResponse updateTeamMatching(Long teamMatchingId, FromTeamFormDTO fromTeamFormDTO, Long userId){
+        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        if(teamMatchingEntity.getIsDeleted()){
+            throw new BaseException(TEAM_POST_ALREADY_DELETED);
+        }
+        if(teamMatchingEntity.getWriter().getId() != userId){
+            throw new BaseException(USER_NOT_AUTHORIZED);
+        }
         teamMatchingEntity.updateTeamMatching(fromTeamFormDTO);
         return ApiResponse.ok();
     }
@@ -70,8 +83,16 @@ public class TeamMatchingService {
     /*
     * 팀 매칭 글을 삭제하는 메소드 입니다.
      */
-    public ApiResponse deleteTeamMatching(long teamMatchingId, TeamMatching teamMatchingEntity){
-        teamMatchingEntity.delete();
+    public ApiResponse deleteTeamMatching(long teamMatchingId, Long userId){
+        TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        if(teamMatchingEntity.getIsDeleted()){
+            throw new BaseException(TEAM_POST_ALREADY_DELETED);
+        }
+        if(teamMatchingEntity.getWriter().getId() != userId){
+            throw new BaseException(USER_NOT_AUTHORIZED);
+        }else{
+            teamMatchingEntity.delete();
+        }
         return ApiResponse.ok();
     }
 
@@ -83,6 +104,7 @@ public class TeamMatchingService {
     * log.debug를 통해 쿼리가 실행된 시간을 확인할 수 있습니다.
     * ToTeamFormDTO 타입의 리스트를 반환합니다.
      */
+    @Transactional(readOnly = true)
     public List<ToTeamFormDTO> getTeamMatchingList(int limit, String stringCursor){
         PageRequest request = PageRequest.of(0, limit);
         LocalDateTime cursor = LocalDateTime.parse(stringCursor, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
@@ -96,7 +118,10 @@ public class TeamMatchingService {
         return dtoList;
     }
 
-    public ToApplicantDto applyTeamMatching(long teamMatchingId, long userId, FromApplicantDto fromApplicantDto){
+    public ToApplicantDto applyTeamMatching(Long teamMatchingId, FromApplicantDto fromApplicantDto,
+                                            @AuthenticationPrincipal Long id){
+        long userId = id;
+
         TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()-> new BaseException(TEAM_POST_NOT_FOUND));
         if(entity.getIsDeleted()){
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
@@ -122,6 +147,7 @@ public class TeamMatchingService {
 //            }
 //        });
 
+        // * 신청자 객체를 생성하고 저장한다.
         TeamApplicant applicant = TeamApplicant.builder()
                 .applicantId(userId)
                 .applicantNickname(userNickname)

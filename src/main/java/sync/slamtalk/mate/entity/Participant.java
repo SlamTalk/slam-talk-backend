@@ -25,7 +25,9 @@ public class Participant extends BaseEntity {
     private MatePost matePost; // 참여자가 참여한 글
 
     @Column(nullable = false, name="participant_id")
-    private long participantId; // 참여자 아이디 * 매핑 불필요
+    private long participantId;
+    @Column(nullable = false)
+    private String participantNickname;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -38,9 +40,10 @@ public class Participant extends BaseEntity {
     public Participant() {
     }
 
-    public Participant(long participantId, PositionType position, SkillLevelType skillLevel) {
+    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
 
         this.participantId = participantId;
+        this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;

@@ -12,12 +12,14 @@ import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
 import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
+import static sync.slamtalk.user.error.UserErrorResponseCode.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +31,25 @@ public class ParticipantService {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
 
-    //
-    //todo : post가 null이면 어떤 값을 반환할 지 결정해야 한다.
-    public MatePostApplicantDTO addParticipant(long matePostId, long participantId, String participantNIckname, MatePostApplicantDTO matePostApplicantDTO){
-        Optional<MatePost> post = matePostRepository.findById(matePostId);
-        if(!post.isPresent()){
-            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
+
+    public MatePostApplicantDTO addParticipant(long matePostId, long participantId, MatePostApplicantDTO matePostApplicantDTO){
+        MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND));
+
+        User user = userRepository.findById(participantId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
+        String participantNickname = user.getNickname();
+        if(post.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        Participant participant = new Participant(participantId, matePostApplicantDTO.getPosition(),
+        if(post.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED)){
+            throw new BaseException(MATE_POST_ALREADY_COMPLETED);
+        }
+        if(post.isCorrespondToUser(participantId)){
+            throw new BaseException(USER_NOT_AUTHORIZED);
+        }
+
+        Participant participant = new Participant(participantId, participantNickname, matePostApplicantDTO.getPosition(),
                 matePostApplicantDTO.getSkillLevel());
-        participant.connectParent(post.get());
+        participant.connectParent(post);
         Participant resultParticipant = participantRepository.save(participant);
 
         MatePostApplicantDTO resultParticipantDTO = new MatePostApplicantDTO(resultParticipant.getParticipantTableId(), resultParticipant.getApplyStatus());
@@ -85,7 +96,10 @@ public class ParticipantService {
             throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
         MatePost matePost = OptionalMatePost.get();
-        if(matePost.getWriterId() != hostId){ // 접근자가 게시글 작성자가 아닐 때
+        if(matePost.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
+        if(!matePost.isCorrespondToUser(hostId)){ // 접근자가 게시글 작성자가 아닐 때
             throw new BaseException(USER_NOT_AUTHORIZED);
         }else{
             Optional<Participant> optionalParticipant = participantRepository.findById(participantTableId);

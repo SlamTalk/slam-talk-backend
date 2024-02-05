@@ -11,7 +11,9 @@ public enum TeamErrorResponseCode implements ResponseCodeDetails {
     TEAM_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4006, "이미 삭제된 모집 글입니다."),
     PROHIBITED_TO_APPLY_TO_YOUR_POST(SC_BAD_REQUEST, 4007, "자신이 작성한 글에는 지원할 수 없습니다."),
     TEAM_POST_IS_NOT_RECRUITING(SC_BAD_REQUEST, 4008, "모집이 마감된 글입니다."),
-    ALREADY_APPLIED_TO_THIS_POST(SC_BAD_REQUEST, 4009, "이미 지원한 글입니다.");
+    ALREADY_APPLIED_TO_THIS_POST(SC_BAD_REQUEST, 4009, "이미 지원한 글입니다."),
+    ALEADY_DECLARED_OPPONENT(SC_BAD_REQUEST, 4010, "이미 상대팀을 선언한 글입니다.");
+
     TeamErrorResponseCode(int code, int status, String message) {
         this.code = code;
         this.status = status;

@@ -2,6 +2,7 @@ package sync.slamtalk.mate.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
@@ -24,14 +25,13 @@ public class ParticipantController {
             tags = {"메이트 찾기 / 참여자 목록"}
     )
     @PostMapping("/{matePostId}/participants/register")
-    public ApiResponse<MatePostApplicantDTO> addParticipant(@PathVariable("matePostId") long matePostId, @RequestBody MatePostApplicantDTO matePostApplicantDTO){
+    public ApiResponse<MatePostApplicantDTO> addParticipant(@PathVariable("matePostId") long matePostId, @RequestBody MatePostApplicantDTO matePostApplicantDTO,
+                                                            @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        long userId = 1;
-        String userNickname = "testApplicant";
-        //todo : 글 작성자 id와 일치하면 참여 불가능하게 한다.
+        long userId = id;
 
         // * 해당 글에 지원자의 신청 절차를 진행한다.
-        MatePostApplicantDTO dto = participantService.addParticipant(matePostId, userId, userNickname, matePostApplicantDTO);
+        MatePostApplicantDTO dto = participantService.addParticipant(matePostId, userId, matePostApplicantDTO);
 
         return ApiResponse.ok(dto);
     }
@@ -42,16 +42,17 @@ public class ParticipantController {
             tags = {"메이트 찾기 / 참여자 목록"}
     )
     @PatchMapping("/{matePostId}/participants/{participantTableId}")
-    public ApiResponse updateParticipant(@PathVariable("matePostId") long matePostId, @PathVariable("participantTableId") long participantTableId, @RequestParam("applyStatus") ApplyStatusType applyStatus){
+    public ApiResponse updateParticipant(@PathVariable("matePostId") long matePostId, @PathVariable("participantTableId") long participantTableId,
+                                         @RequestParam("applyStatus") ApplyStatusType applyStatus, @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        long id = 1;
+        long userId = id;
 
         if(applyStatus == ApplyStatusType.ACCEPTED){
-            return participantService.acceptParticipant(matePostId, participantTableId, id);
+            return participantService.acceptParticipant(matePostId, participantTableId, userId);
         }else if(applyStatus == ApplyStatusType.REJECTED){
-            return participantService.rejectParticipant(matePostId, participantTableId, id);
+            return participantService.rejectParticipant(matePostId, participantTableId, userId);
         }else if(applyStatus == ApplyStatusType.CANCELED){
-            return participantService.cancelParticipant(matePostId, participantTableId, id);
+            return participantService.cancelParticipant(matePostId, participantTableId, userId);
         }else{
             return ApiResponse.fail("잘못된 요청입니다.");
         }

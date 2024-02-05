@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
@@ -34,17 +35,13 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PostMapping("/register")
-    public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO){
+    public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO, @AuthenticationPrincipal Long id){
 
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
-
-        // * 해당 게시글 등록 폼에 입력된 작성자 ID와 접속자 ID가 일치하는지 확인한다.
-
+        long userId = id;
 
         // MateFormDTO를 MatePost로 변환한다.
-        MatePost matePost = mateFormDTO.toEntity(userId);
-        long matePostId = matePostService.registerMatePost(matePost);
+        long matePostId = matePostService.registerMatePost(mateFormDTO, userId);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("/api/mate/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
@@ -67,15 +64,13 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> updateMatePost(@PathVariable("matePostId") long matePostId, @RequestBody MateFormDTO mateFormDTO){
+    public ApiResponse<MateFormDTO> updateMatePost(@PathVariable("matePostId") long matePostId, @RequestBody MateFormDTO mateFormDTO,
+                                                   @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
-
-        // * 접근한 유저 아이디와 수정하려는 글의 작성자 아이디가 일치하는지 확인한다.
-        // * 일치하지 않으면 에러 메세지를 보낸다.
+        long userId = id;
 
         // * MatePost를 저장한다.
-        matePostService.updateMatePost(matePostId, mateFormDTO);
+        matePostService.updateMatePost(matePostId, mateFormDTO, userId); // todo : Localdatetime 수정
 
         return ApiResponse.ok();
     }
@@ -86,15 +81,12 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @DeleteMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> deleteMatePost(@PathVariable("matePostId") long matePostId){
+    public ApiResponse<MateFormDTO> deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        int userId = 1;
-
-        // * 접근한 유저 아이디와 수정하려는 글의 작성자 아이디가 일치하는지 확인한다.
-        // * 일치하지 않으면 에러 메시지를 반환한다.
+        long userId = id;
 
         // * 일치한다면 해당 글을 soft delete 한다.
-        matePostService.deleteMatePost(matePostId);
+        matePostService.deleteMatePost(matePostId, userId);
         return ApiResponse.ok();
     }
 

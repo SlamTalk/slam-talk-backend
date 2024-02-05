@@ -11,6 +11,7 @@ import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import java.util.List;
 public class MateFormDTO {
     private long matePostId; // 글 아이디
     private long writerId; // 작성자 아이디
+    private String writerNickname; // 작성자 닉네임
 
     private String title; // 제목
     private String content; // 본문
@@ -56,9 +58,9 @@ public class MateFormDTO {
     private List<MatePostApplicantDTO> participants = new ArrayList<>(); // 참여자 목록
 
     @JsonIgnore
-    public MatePost toEntity(long userId) { // * writerId를 User 객체로 대체할 것!
+    public MatePost toEntity(User user) { // * writerId를 User 객체로 대체할 것!
             return MatePost.builder()
-                    .writerId(userId)
+                    .writer(user)
                     .title(title)
                     .startScheduledTime(startScheduledTime)
                     .endScheduledTime(endScheduledTime)

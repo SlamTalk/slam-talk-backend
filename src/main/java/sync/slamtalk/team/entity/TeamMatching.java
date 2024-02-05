@@ -10,16 +10,17 @@ import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND;
+import static sync.slamtalk.team.error.TeamErrorResponseCode.ALEADY_DECLARED_OPPONENT;
+import static sync.slamtalk.team.error.TeamErrorResponseCode.PROHIBITED_TO_APPLY_TO_YOUR_POST;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -34,15 +35,15 @@ import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND
 public class TeamMatching extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long teamMatchingId;
+    private Long teamMatchingId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "writer_id")
-    private long writerId; // * 작성자 User 객체로 변경해야 함
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id")
+    private User writer;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "opponent_id")
-    private long opponentId; // * 상대팀 User 객체로 변경해야 함
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opponent_id")
+    private User opponent;
 
     private String teamName;
 
@@ -55,7 +56,7 @@ public class TeamMatching extends BaseEntity {
     private String locationDetail;
 
     @Column(nullable = false)
-    private int numberOfMembers;
+    private Integer numberOfMembers;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -80,8 +81,8 @@ public class TeamMatching extends BaseEntity {
 //        this.writerId = writerId;
 //    }
 
-    public void declareOpponent(long opponentId){
-        this.opponentId = opponentId;
+    public void declareOpponent(User opponent){
+        this.opponent = opponent;
     }
 
     @Override
@@ -101,7 +102,8 @@ public class TeamMatching extends BaseEntity {
     public String toString() {
         return "teammatching{" +
                 "teamMatchingId=" + teamMatchingId +
-                ", writerId=" + writerId +
+                ", writerId=" + writer.getId() +
+                ", opponentId=" + opponent.getId() +
                 ", teamName='" + teamName + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
@@ -126,7 +128,7 @@ public class TeamMatching extends BaseEntity {
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
     }
 
-    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, long writerId){ // * writerId를 User 객체로 대체할 것!
+    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user){ // * writerId를 User 객체로 대체할 것!
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
         this.locationDetail = fromTeamFormDTO.getLocationDetail();
@@ -137,7 +139,7 @@ public class TeamMatching extends BaseEntity {
         this.teamName = fromTeamFormDTO.getTeamName();
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
         this.recruitmentStatus = RecruitmentStatusType.RECRUITING;
-        this.connectParentUser(writerId);
+        this.connectParentUser(user);
     }
 
     /*
@@ -149,10 +151,11 @@ public class TeamMatching extends BaseEntity {
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
-        dto.setWriterId(this.writerId); // todo : writerId를 User 객체로 대체할 것!
-        dto.setNickname("작성자 닉네임"); // todo : 작성자 닉네임을 가져오는 기능을 추가할 것!
+        dto.setWriterId(this.writer.getId());
+        dto.setNickname(this.writer.getNickname());
         dto.setLocationDetail(this.locationDetail);
         dto.setSkillLevel(mapper.toSkillLevelTypeList(this.skillLevel));
+        dto.setScheduledDate(this.scheduledDate);
         dto.setStartTime(this.startTime);
         dto.setEndTime(this.endTime);
         dto.setTeamName(this.teamName);
@@ -171,7 +174,7 @@ public class TeamMatching extends BaseEntity {
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
-        return this.writerId == loginId;
+        return this.writer.getId() == loginId;
     }
 
     public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
@@ -180,15 +183,19 @@ public class TeamMatching extends BaseEntity {
         this.recruitmentStatus = recruitmentStatus;
     }
 
-    public void connectOpponent(long opponentId){ // * opponentId를 User 객체로 대체할 것!
-        if(opponentId == this.writerId){
-            throw new IllegalArgumentException("상대팀은 작성자가 될 수 없습니다.");
+    public void connectOpponent(User opponent){
+        if(opponent.equals(this.writer)){
+            throw new BaseException(PROHIBITED_TO_APPLY_TO_YOUR_POST);
         }
-        this.opponentId = opponentId;
+        if(this.opponent != null){
+            throw new BaseException(ALEADY_DECLARED_OPPONENT);
+        }
+        this.opponent = opponent;
     }
 
-    public void connectParentUser(long writerId){ // * writerId를 User 객체로 대체할 것!
-        this.writerId = writerId;
+    public void connectParentUser(User user){ // * writerId를 User 객체로 대체할 것!
+        this.writer = user;
+        //  this.writer.getTeamMatchings().add(this);
         // * 연관관계 편의 메서드
         // todo: User 객체에 있는 teamMatchingList에 현재 객체를 추가한다.
     }

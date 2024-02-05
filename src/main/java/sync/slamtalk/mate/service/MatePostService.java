@@ -15,6 +15,8 @@ import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
+import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
+import static sync.slamtalk.user.error.UserErrorResponseCode.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +35,12 @@ public class MatePostService {
 
     private final MatePostRepository matePostRepository;
     private final ParticipantService participantService;
+    private final UserRepository userRepository;
 
     // * MatePost를 저장한다.
-    public long registerMatePost(MatePost matePost){
+    public long registerMatePost(MateFormDTO mateFormDTO, long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
+        MatePost matePost = mateFormDTO.toEntity(user);
         MatePost result = matePostRepository.save(matePost);
         return result.getMatePostId(); // * 저장된 게시글의 아이디를 반환한다.
     }
@@ -45,7 +51,6 @@ public class MatePostService {
      * 게시글을 DTO로 변환하여 반환한다.
      */
     public MateFormDTO getMatePost(long matePostId){
-
         Optional<MatePost> optionalPost = matePostRepository.findById(matePostId);
         if(!optionalPost.isPresent()){
             throw new BaseException(MATE_POST_NOT_FOUND);
@@ -54,6 +59,9 @@ public class MatePostService {
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
         MatePost post = optionalPost.get();
+        User writer = post.getWriter();
+        Long writerId = writer.getId();
+        String writerNickname = writer.getNickname();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
         MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
@@ -62,7 +70,8 @@ public class MatePostService {
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
-                .writerId(post.getWriterId())
+                .writerId(writerId)
+                .writerNickname(writerNickname)
                 .title(post.getTitle())
                 .content(post.getContent())
                 .startScheduledTime(post.getStartScheduledTime())
@@ -81,10 +90,13 @@ public class MatePostService {
      * 게시글 ID를 이용해서 저장된 게시글을 삭제한다.(soft delete)
      * 해당 게시글에 속한 참여자 목록도 soft delete 한다.
      */
-    public boolean deleteMatePost(long matePostId){
-        MatePost post = matePostRepository.findById(matePostId).orElseThrow();
+    public boolean deleteMatePost(long matePostId, long userId){
+        MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
         if(post.getIsDeleted()){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
+        if(post.isCorrespondToUser(userId)){
+            throw new BaseException(USER_NOT_AUTHORIZED);
         }
         post.softDeleteMatePost();
         return true;
@@ -95,8 +107,15 @@ public class MatePostService {
      * 수정 가능한 항목 : 제목, 내용, 예정된 시간, 상세 시합 장소, 스킬 레벨, 모집 포지션 별 최대 인원 수
      * 모집 포지션 별 최대 인원 수는 필수 기입 사항. 변동사항이 없더라도 기존의 최대 인원 수를 기입해야 함.
      */
-    public boolean updateMatePost(long matePostId, MateFormDTO mateFormDTO){
-        MatePost post = matePostRepository.findById(matePostId).orElseThrow();
+    public boolean updateMatePost(long matePostId, MateFormDTO mateFormDTO, long userId){
+        MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
+
+        if(post.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
+        if(post.isCorrespondToUser(userId)) {
+            throw new BaseException(USER_NOT_AUTHORIZED);
+        }
         String content = mateFormDTO.getContent();
         String title = mateFormDTO.getTitle();
         String locationDetail = mateFormDTO.getLocationDetail();
