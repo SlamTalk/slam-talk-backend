@@ -6,8 +6,7 @@ import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 public enum UserErrorResponseCode implements ResponseCodeDetails {
-    INVALID_TOKEN(SC_BAD_REQUEST,4001,"Token Invalid"),
-    LOGIN_FAIL(SC_UNAUTHORIZED,4002,"Failed Login"),
+    INVALID_TOKEN(SC_UNAUTHORIZED,4001,"Token Invalid"),
     EMAIL_ALREADY_EXISTS(SC_BAD_REQUEST, 4003, "이미 존재하는 유저 이메일입니다."),
     NICKNAME_ALREADY_EXISTS(SC_BAD_REQUEST, 4004, "이미 존재하는 닉네임입니다."),
     BAD_CREDENTIALS(SC_BAD_REQUEST, 4005, "아이디 또는 비밀번호를 다시 확인해주세요."),

@@ -12,10 +12,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.dto.UserDetailsAfterRefreshResponseDto;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
 import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
@@ -35,6 +37,7 @@ import java.util.Optional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final MatePostRepository matePostRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
@@ -116,12 +119,12 @@ public class AuthService {
     /**
      * 쿠키에서 리프래쉬 토큰을 추출하여 엑세스 토큰과 리프래쉬 토큰을 재발급하는 메서드
      *
-     * @param request HttpServletRequest
+     * @param request  HttpServletRequest
      * @param response HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
-    public UserLoginResponseDto refreshToken(
+    public UserDetailsAfterRefreshResponseDto refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
@@ -150,16 +153,27 @@ public class AuthService {
         User user = userRepository.findByRefreshToken(jwtTokenDto.getRefreshToken())
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
 
-        UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(
-                user.getId(),
-                user.getNickname(),
-                user.getImageUrl(),
-                user.getFirstLoginCheck()
-        );
+        // 레벨 score 계산하기
+        long levelScore = 0L;
+
+        // Mate 게시판 상태가 Complete
+        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(user.getId());
+        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
+
+        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
+        long teamMatchingCompleteParticipationCount = 0L;
+        // todo : 출석부 개수 counting 하기
+
+
+        UserDetailsAfterRefreshResponseDto refreshResponseDto =
+                UserDetailsAfterRefreshResponseDto.from(
+                        user, levelScore, mateCompleteParticipationCount, teamMatchingCompleteParticipationCount);
+
+
         // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
         if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
 
-        return userLoginResponseDto;
+        return refreshResponseDto;
     }
 
     /**

@@ -26,7 +26,7 @@ public class UserController {
     /**
      * 유저의 상세 정보 조회하는 api
      * @param userId Pathvariable로 유저 id 받아오기
-     * @param user 시큐리티를 통해 user 정보를 받아옴
+     * @param loginUserId 시큐리티를 통해 user 정보를 받아옴
      * @return UserDetailsInfoResponseDto 객체가 반환(개인정보 있는 버전, 없는 버전)
      * */
     @GetMapping("/user/{userId}/info")
@@ -37,9 +37,9 @@ public class UserController {
     )
     public ApiResponse<UserDetailsInfoResponseDto> userDetailsInfo(
             @PathVariable("userId") Long userId,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal Long loginUserId
     ) {
-        UserDetailsInfoResponseDto userDetailsInfoResponseDto= userService.userDetailsInfo(userId, user);
+        UserDetailsInfoResponseDto userDetailsInfoResponseDto= userService.userDetailsInfo(userId, loginUserId);
 
         return ApiResponse.ok(userDetailsInfoResponseDto);
     }
@@ -48,7 +48,7 @@ public class UserController {
      * 닉네임 변경을 위한 api
      *
      * @param userUpdateNicknameRequestDto 유저 닉네임 요청한 dto
-     * @param user 유저 엔티티
+     * @param userId 유저 엔티티
      * */
     @PatchMapping("/user/update/nickname")
     @Operation(
@@ -59,9 +59,9 @@ public class UserController {
     )
     public ApiResponse<UserDetailsInfoResponseDto> userUpdateNickname(
             @Valid @RequestBody UserUpdateNicknameRequestDto userUpdateNicknameRequestDto,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal Long userId
     ) {
-        userService.userUpdateNickname(user.getId(), userUpdateNicknameRequestDto);
+        userService.userUpdateNickname(userId, userUpdateNicknameRequestDto);
 
         return ApiResponse.ok();
     }
@@ -70,7 +70,7 @@ public class UserController {
      * 유저 최초 정보 수집을 위한 api
      *
      * @param userUpdatePositionAndSkillRequestDto 유저 포지션과 스킬타입을 요청한 dto
-     * @param user user엔티티 객체
+     * @param userId user엔티티 객체
      * */
     @PatchMapping("/user/update/info")
     @Operation(
@@ -80,10 +80,10 @@ public class UserController {
     )
     public ApiResponse<UserDetailsInfoResponseDto> userUpdatePositionAndSkillLevel(
                 @Valid @RequestBody UserUpdatePositionAndSkillRequestDto userUpdatePositionAndSkillRequestDto,
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal Long userId
     ) {
         log.debug("UserUpdatePositionAndSkillRequestDto = {}", userUpdatePositionAndSkillRequestDto.toString());
-        userService.userUpdatePositionAndSkillLevel(user.getId(), userUpdatePositionAndSkillRequestDto);
+        userService.userUpdatePositionAndSkillLevel(userId, userUpdatePositionAndSkillRequestDto);
 
         return ApiResponse.ok();
     }

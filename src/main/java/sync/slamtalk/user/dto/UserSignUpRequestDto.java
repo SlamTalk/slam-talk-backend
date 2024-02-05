@@ -16,6 +16,8 @@ import sync.slamtalk.user.entity.UserRole;
 @AllArgsConstructor
 public class UserSignUpRequestDto {
 
+    private final String DEFAULT_IMAGE_URL = "https://slamtalks3.s3.ap-northeast-2.amazonaws.com/userprofile-default_1706862413360.png";
+
     @Pattern(
             regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$",
             message = "이메일 형식에 맞지 않습니다."
@@ -42,6 +44,7 @@ public class UserSignUpRequestDto {
                  .email(this.getEmail())
                  .password(this.getPassword())
                  .nickname(this.getNickname())
+                 .imageUrl(DEFAULT_IMAGE_URL)
                  .role(UserRole.USER)
                  .socialType(SocialType.LOCAL)
                  .firstLoginCheck(true)

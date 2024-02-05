@@ -17,7 +17,6 @@ import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.service.BasketballCourtService;
 import sync.slamtalk.map.service.ReportBasketballCourtService;
-import sync.slamtalk.user.entity.User;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,8 +62,7 @@ public class BasketballCourtController {
             description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto, @AuthenticationPrincipal User user) {
-        Long userId = user.getId();
+    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto, @AuthenticationPrincipal Long userId) {
         BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto, userId);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
     }

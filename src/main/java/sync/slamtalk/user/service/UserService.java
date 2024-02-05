@@ -24,19 +24,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final MatePostRepository matePostRepository;
 
-    /* 레벨 시스템을 위한 상수 */
-    private final Long LEVEL_THRESHOLD = 50L;
-    private final Long MATE_LEVEL_SCORE = 5L;
     /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
-     *
+     * @param userId 찾고자하는 userId
+     * @param loginUserId  로그인한 userId
      *
      * */
     public UserDetailsInfoResponseDto userDetailsInfo(
             Long userId,
-            User user
+            Long loginUserId
     ) {
-        User findUser = userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
         // 레벨 score 계산하기
@@ -44,20 +42,16 @@ public class UserService {
 
         // Mate 게시판 상태가 Complete
         long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(userId);
-        levelScore += mateCompleteParticipationCount * MATE_LEVEL_SCORE;
+        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
 
         // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
 
         // todo : 출석부 개수 counting 하기
 
-        /* 레벨 단위를 나타내는 변수 */
-        long level = levelScore / LEVEL_THRESHOLD;
-
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
-        if(user.getId().equals(findUser.getId())){
+        if(loginUserId.equals(user.getId())){
             return UserDetailsInfoResponseDto.generateMyProfile(
                     user,
-                    level,
                     levelScore,
                     mateCompleteParticipationCount
             );
@@ -66,7 +60,6 @@ public class UserService {
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
         else return UserDetailsInfoResponseDto.generateOtherUserProfile(
                 user,
-                level,
                 levelScore,
                 mateCompleteParticipationCount
         );
@@ -115,8 +108,8 @@ public class UserService {
     ) {
         userRepository.updateUserPositionAndSkillLevel(
                 userId,
-                userUpdatePositionAndSkillRequestDto.convertStringToSkillLevel(),
-                userUpdatePositionAndSkillRequestDto.convertStringToPosition()
+                userUpdatePositionAndSkillRequestDto.getBasketballSkillLevel(),
+                userUpdatePositionAndSkillRequestDto.getBasketballPosition()
         );
     }
 }
