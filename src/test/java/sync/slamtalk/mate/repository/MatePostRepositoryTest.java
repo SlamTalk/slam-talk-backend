@@ -1,23 +1,15 @@
 package sync.slamtalk.mate.repository;
 
-import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.DialectOverride;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import sync.slamtalk.mate.entity.*;
-import sync.slamtalk.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class MatePostRepositoryTest {

@@ -17,7 +17,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;

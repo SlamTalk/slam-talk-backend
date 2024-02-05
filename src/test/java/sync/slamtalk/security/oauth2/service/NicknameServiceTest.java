@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.entity.User;
 import java.util.Optional;

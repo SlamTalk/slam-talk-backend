@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.utils.CookieUtil;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.error.UserErrorResponseCode;
 
@@ -150,7 +150,7 @@ public class JwtTokenProvider implements InitializingBean {
                         .collect(Collectors.toList());
 
 
-        return new UsernamePasswordAuthenticationToken(userId, accessToken, authorities);
+        return new UsernamePasswordAuthenticationToken(userId, "", authorities);
     }
 
     /**

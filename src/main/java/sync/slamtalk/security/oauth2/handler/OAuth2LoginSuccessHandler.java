@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.oauth2.CustomOAuth2User;
 import sync.slamtalk.security.utils.CookieUtil;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.io.IOException;

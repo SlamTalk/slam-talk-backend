@@ -2,7 +2,7 @@ package sync.slamtalk.security.oauth2.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 
 import java.util.Random;
 

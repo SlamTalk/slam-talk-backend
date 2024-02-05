@@ -1,4 +1,4 @@
-package sync.slamtalk.user;
+package sync.slamtalk.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

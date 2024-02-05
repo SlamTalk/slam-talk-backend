@@ -11,7 +11,7 @@ import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;

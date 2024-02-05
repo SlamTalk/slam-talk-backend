@@ -18,6 +18,7 @@ import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.service.AuthService;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

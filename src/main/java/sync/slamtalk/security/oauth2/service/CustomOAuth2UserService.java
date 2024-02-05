@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.security.oauth2.CustomOAuth2User;
 import sync.slamtalk.security.oauth2.OAuthAttributes;
-import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.repository.UserRepository;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 
