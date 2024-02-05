@@ -18,7 +18,6 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,8 +49,8 @@ public class ChatController {
             description = "이 기능은 유저의 채팅리스트를 조회하는 기능입니다.",
             tags = {"채팅"}
     )
-    public ApiResponse list(@AuthenticationPrincipal User user){
-        List<ChatRoomDTO> chatLIst = chatService.getChatLIst(user.getId());
+    public ApiResponse list(@AuthenticationPrincipal Long userId){
+        List<ChatRoomDTO> chatLIst = chatService.getChatLIst(userId);
         return ApiResponse.ok(chatLIst);
     }
 
@@ -63,10 +62,10 @@ public class ChatController {
             description = "이 기능은 채팅방에 재입장 시 과거 마지막으로 읽은 메세지 이후에 발생한 메세지를 보내주는 기능입니다.",
             tags = {"채팅"}
     )
-    public ApiResponse participation(@Param("roomId")Long roomId,@AuthenticationPrincipal User user){
+    public ApiResponse participation(@Param("roomId")Long roomId,@AuthenticationPrincipal Long userId){
 
         // userChatRoom 에 있는 지 검사
-        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(user.getId(),roomId);
+        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId,roomId);
         if(!existUserChatRoom.isPresent()){
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }

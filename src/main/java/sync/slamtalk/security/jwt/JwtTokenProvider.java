@@ -131,7 +131,7 @@ public class JwtTokenProvider implements InitializingBean {
     }
 
     /**
-     * accessToken을 복호화 해서 유저정보를 얻어오는 메서드
+     * accessToken을 복호화 해서 userId를 얻어오는 메서드
      *
      * @param accessToken
      * @return Authentication
@@ -141,8 +141,7 @@ public class JwtTokenProvider implements InitializingBean {
         // Jwt 토큰 복호화
         Claims claims = getClaimsFromAccessToken(accessToken);
 
-        User user = userRepository.findById(Long.valueOf(claims.getSubject()))
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
+        Long userId = Long.valueOf(claims.getSubject());
 
         // 클레임에서 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities =
@@ -151,7 +150,7 @@ public class JwtTokenProvider implements InitializingBean {
                         .collect(Collectors.toList());
 
 
-        return new UsernamePasswordAuthenticationToken(user, accessToken, authorities);
+        return new UsernamePasswordAuthenticationToken(userId, accessToken, authorities);
     }
 
     /**
