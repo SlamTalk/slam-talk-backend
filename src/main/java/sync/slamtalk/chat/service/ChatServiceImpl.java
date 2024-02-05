@@ -186,6 +186,7 @@ public class ChatServiceImpl implements ChatService{
         // messageRepository 에서 가져온 메세지로 dto 생성하기
         for(Messages m : newMessages){
             ChatMessageDTO messageDTO = ChatMessageDTO.builder()
+                    .messageId(m.getId().toString())
                     .roomId(m.getChatRoom().getId().toString())
                     .senderNickname(m.getWriter())
                     .content(m.getContent())
