@@ -14,6 +14,8 @@ import java.io.Serializable;
 public class ChatRoomDTO implements Serializable {
     // 채팅방 고유 아이디
     private String roomId;
+    // 채팅방 상대방 아이디
+    private String partnerId;
     // 채팅방 이름
     private String name;
     // 채팅방 마지막 메세지

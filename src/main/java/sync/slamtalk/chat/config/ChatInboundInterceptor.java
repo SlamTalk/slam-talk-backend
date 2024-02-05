@@ -2,6 +2,7 @@ package sync.slamtalk.chat.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -9,11 +10,15 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketSession;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.UserChatRoom;
+import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.user.UserRepository;
@@ -36,6 +41,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final UserChatRoomRepository userChatRoomRepository;
 
 
     // 메세지가 전송되기 전에 실행
@@ -54,6 +60,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             Long authorization = tokenProvider.stompExtractUserIdFromToken(headerAccessor.getFirstNativeHeader("authorization").toString());
             Optional<User> userOptional = userRepository.findById(authorization);
             if(userOptional.isEmpty()){
+                log.debug("인증실패");
                 throw new RuntimeException("JWT");
             }
             log.debug("성공");
@@ -83,7 +90,25 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             Long roomId = extractRoomId(destination);
 
             //'사용자채팅방' 테이블에 추가하기
-            addUserChatRoom(headerAccessor);
+            Long visited = addUserChatRoom(headerAccessor);
+            log.debug("visited:{}",visited);
+            String customMessageContent = null;
+            Long userId = extractUserId(headerAccessor);
+            Optional<User> findUser = userRepository.findById(userId);
+
+            if(findUser.isPresent()){
+                String nickname = findUser.get().getNickname();
+
+                // TODO SUBSCRIBE 는 메세지를 따로 서버->클라이언트 안줌
+                // 첫 접속했을 때, 재차 접속했을 때 응답을 다르게 줘야하는데.. 고민해보기
+                if(visited.equals(0L)){ // 최초 접속!
+                    customMessageContent = nickname + "님이 입장하셨습니다.";
+                    byte[] payload = customMessageContent.getBytes(StandardCharsets.UTF_8);
+                    log.debug("payload:{}",payload);
+                    return MessageBuilder.withPayload(payload).copyHeadersIfAbsent(message.getHeaders()).build();
+                }
+            }
+
             log.debug("==SUBSCRIBE STEP3==");
         }
 
@@ -146,9 +171,12 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             if(destination.contains("exit")){
                 log.debug("exit");
                 Optional<UserChatRoom> userChatRoom = chatService.exitRoom(userId, roomId);
-                log.debug("{} 방을 나가셨습니다.",userChatRoom.get().getChat().getId());
 
+                Optional<User> exit = userRepository.findById(userId);
 
+                if(exit.isPresent()){
+                    log.debug("{} 님이 방을 나가셨습니다.",exit.get().getNickname());
+                }
             }
 
             // 일반 메세지
@@ -169,7 +197,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                             .roomId(roomId.toString())
                             .content(content)
                             .senderNickname(nickname)
-                            .timestamp(LocalDateTime.now())
+                            .timestamp(LocalDateTime.now().toString())
                             .build();
                     chatService.saveMessage(chatMessageDTO);
                     log.debug("==SEND STEP5==");
@@ -201,6 +229,9 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         if(StompCommand.DISCONNECT.equals(headerAccessor.getCommand())){
             log.debug("===DISCONNECT===");
         }
+
+
+
         return message;
     }
 
@@ -223,12 +254,12 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         List<String> authorization = accessor.getNativeHeader("authorization");
         String Token = authorization.get(0).toString();
         log.debug("Token:{}",Token);
-        Long l = tokenProvider.stompExtractUserIdFromToken(Token);
-        log.debug("tokenProvider:{}",l);
-        Optional<User> byId = userRepository.findById(l);
+        Long userid = tokenProvider.stompExtractUserIdFromToken(Token);
+        log.debug("tokenProvider:{}",userid);
+        Optional<User> byId = userRepository.findById(userid);
         log.debug("usernickname:{}",byId.get().getNickname());
 
-        return l;
+        return userid;
     }
 
 
@@ -312,13 +343,14 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
 
     // 사용자 채팅방에 추가
-    public void addUserChatRoom(StompHeaderAccessor accessor){
+    public Long addUserChatRoom(StompHeaderAccessor accessor){
         Long userId = extractUserId(accessor);
 
         String destination = accessor.getDestination();
         Long roomId = extractRoomId(destination);
 
-        chatService.setUserChatRoom(userId,roomId);
+        Long result = chatService.setUserChatRoom(userId, roomId);
+        return result;
     }
 
 

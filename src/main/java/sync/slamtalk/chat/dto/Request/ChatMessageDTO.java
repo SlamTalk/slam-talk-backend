@@ -21,11 +21,6 @@ public class ChatMessageDTO implements Serializable {
     @Nullable
     private String content; // 메세지 내용
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime timestamp; // 메세지를 보낸 시간
+    private String timestamp; // 메세지를 보낸 시간
 
-
-    // 생성될 때 현재 시간을 저장
-    public ChatMessageDTO(){
-        this.timestamp = LocalDateTime.now();
-    }
 }

@@ -36,7 +36,7 @@ public class UserChatRoom extends BaseEntity {
 
     // 채팅방 입장 최초/재접속 판단
     @Column(name="isFirst")
-    private Boolean isFirst;
+    private Boolean isFirst = true; // 초기화
 
 
     public void setUsers(User user){
@@ -59,5 +59,10 @@ public class UserChatRoom extends BaseEntity {
     // readIndex 값 업데이트하기
     public void updateReadIndex(Long newReadIndex) {
         this.readIndex = newReadIndex;
+    }
+
+    // 채팅방 입장 업데이트
+    public void updateIsFirst(Boolean isFirst){
+        this.isFirst = isFirst;
     }
 }
