@@ -18,7 +18,7 @@ public interface ChatService {
 
 
     // 채팅방에 유저 추가
-    void setUserChatRoom(Long userId, Long ChatRoomId);
+    Long setUserChatRoom(Long userId, Long ChatRoomId);
 
 
     // 메세지 저장

@@ -55,12 +55,15 @@ public class ChatServiceImpl implements ChatService{
     // 채팅방 입장(STOMP: SUBSCRIBE)
     // 매 접속시 실행!
     @Override
-    public void setUserChatRoom(Long userId, Long chatRoomId) {
+    public Long setUserChatRoom(Long userId, Long chatRoomId) {
 
         // userChatRoom 에 이미 있으면 바로 종료
         Optional<UserChatRoom> userChatRoomOptional = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
         if(userChatRoomOptional.isPresent()){
-            return;
+            UserChatRoom userChatRoom = userChatRoomOptional.get();
+            userChatRoom.updateIsFirst(false);
+            log.debug("Exist already");
+            return 1L;// 이미 접속한 적이 있다는 flag
         }
 
         // user 가져오기
@@ -81,10 +84,11 @@ public class ChatServiceImpl implements ChatService{
                     .build();
             // 저장
             userChatRoomRepository.save(userChatRoom);
-
             // ChatRoom 에도 userchatRoom 추가
             chatRoom.addUserChatRoom(userChatRoom);
         }
+        log.debug("처음 접속");
+        return 0L;// 처음 접속했다는 flag
     }
 
 
@@ -141,19 +145,23 @@ public class ChatServiceImpl implements ChatService{
         log.debug("userId:{}",userId);
         List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(userId);
         if(chatRoom.isEmpty()){
+            log.debug("nothing");
             return null;
         }
 
         // 유저가 가지고 있는 채팅방 리스트를 돌면서 가져오기
         for(UserChatRoom ucr : chatRoom){
 
+            boolean check = ucr.getIsDeleted().booleanValue();
+            log.debug("isDelete:{}",check);
             // 삭제 되지 않은 채팅방만 가져옴
-            if(ucr.getIsDeleted().equals(false)){
+            if(check){
                 ChatRoomDTO dto = ChatRoomDTO.builder()
                         .roomId(ucr.getId().toString())
                         .name(ucr.getChat().getName())
                         .roomId(ucr.getChat().getId().toString())
                         .build();
+                // 마지막 메세지
                 PageRequest pageRequest = PageRequest.of(0, 1);
                 Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
                 Stream<Messages> messagesStream = latestByChatRoomId.get();
@@ -181,6 +189,7 @@ public class ChatServiceImpl implements ChatService{
                     .roomId(m.getChatRoom().getId().toString())
                     .senderNickname(m.getWriter())
                     .content(m.getContent())
+                    .timestamp(m.getCreation_time())
                     .build();
             ansList.add(messageDTO);
         }
