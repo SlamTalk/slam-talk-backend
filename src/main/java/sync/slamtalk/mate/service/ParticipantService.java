@@ -179,7 +179,7 @@ public class ParticipantService {
         }catch(Exception e){
             throw new BaseException(PARTICIPANT_NOT_FOUND);
         }
-        if(!(matePost.getWriterId() == hostId)){
+        if(!(matePost.isCorrespondToUser(hostId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         } else {
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)) {  // 모집글 작성자는 대기 상태인 참여자만 거절할 수 있다.

@@ -10,7 +10,9 @@ import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +36,7 @@ public class MatePost extends BaseEntity {
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(nullable = false, name="writer_id")
         @Column(name="writer_id")
-        private User writer; // 글 작성자 아이디 * User 테이블과 매핑 필요
+        private User writer;
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -49,11 +51,14 @@ public class MatePost extends BaseEntity {
         @Enumerated(EnumType.STRING)
         private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 범위 BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
 
-        @Column(nullable = false, name="start_scheduled_time")
-        private LocalDateTime startScheduledTime; // 예정된 시작 시간
+        @Column(nullable = false)
+        private LocalDate scheduledDate; // 예정된 날짜
 
-        @Column(nullable = false, name="end_scheduled_time")
-        private LocalDateTime endScheduledTime; // 예정된 종료 시간
+        @Column(nullable = false)
+        private LocalTime startTime; // 예정된 시작 시간
+
+        @Column(nullable = false)
+        private LocalTime endTime; // 예정된 종료 시간
 
         @Column(nullable = true, name="chat_room_id") // 채팅방 아이디 * 매핑 필요
         private long chatRoomId;
@@ -129,7 +134,13 @@ public class MatePost extends BaseEntity {
 //                return false;
 //        }
 
-        //todo : convertToSkillLevelList() 메서드 구현 필요
+        public Long getWriterId(){
+                return this.writer.getId();
+        }
+
+        public String getWriterNickname(){
+                return this.writer.getNickname();
+        }
 
         public void updateTitle(String title){
                 this.title = title;
@@ -139,12 +150,16 @@ public class MatePost extends BaseEntity {
                 this.content = content;
         }
 
-        public void updateStartScheduledTime(LocalDateTime scheduledTime){
-                this.startScheduledTime = scheduledTime;
+        public void updateScheduledDate(LocalDate scheduledDate){
+                this.scheduledDate = scheduledDate;
         }
 
-        public void updateEndScheduledTime(LocalDateTime scheduledTime){
-                this.endScheduledTime = scheduledTime;
+        public void updateStartTime(LocalTime startTime){
+                this.startTime = startTime;
+        }
+
+        public void updateEndTime(LocalTime endTime){
+                this.endTime = endTime;
         }
 
         public void updateLocationDetail(String locationDetail){
@@ -282,8 +297,9 @@ public class MatePost extends BaseEntity {
                         ", title='" + title + '\'' +
                         ", content='" + content + '\'' +
                         ", skillLevel=" + skillLevel +
-                        ", startScheduledTime=" + startScheduledTime +
-                        ", endScheduledTime=" + endScheduledTime +
+                        ", scheduledDate=" + scheduledDate +
+                        ", startTime=" + startTime +
+                        ", endTime=" + endTime +
                         ", chatRoomId=" + chatRoomId +
                         ", recruitmentStatus=" + recruitmentStatus +
                         ", maxParticipantsForwards=" + maxParticipantsForwards +

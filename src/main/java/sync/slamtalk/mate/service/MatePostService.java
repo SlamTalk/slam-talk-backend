@@ -18,7 +18,9 @@ import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -74,8 +76,9 @@ public class MatePostService {
                 .writerNickname(writerNickname)
                 .title(post.getTitle())
                 .content(post.getContent())
-                .startScheduledTime(post.getStartScheduledTime())
-                .endScheduledTime(post.getEndScheduledTime())
+                .scheduledDate(post.getScheduledDate())
+                .startTime(post.getStartTime())
+                .endTime(post.getEndTime())
                 .locationDetail(post.getLocationDetail())
                 .skillLevelList(skillList)
                 .recruitmentStatus(post.getRecruitmentStatus())
@@ -119,8 +122,9 @@ public class MatePostService {
         String content = mateFormDTO.getContent();
         String title = mateFormDTO.getTitle();
         String locationDetail = mateFormDTO.getLocationDetail();
-        LocalDateTime startScheduledTime = mateFormDTO.getStartScheduledTime();
-        LocalDateTime endScheduledTime = mateFormDTO.getEndScheduledTime();
+        LocalDate scheduledDate = mateFormDTO.getScheduledDate();
+        LocalTime startTime = mateFormDTO.getStartTime();
+        LocalTime endTime = mateFormDTO.getEndTime();
         RecruitedSkillLevelType skillLevel = mateFormDTO.getSkillLevel();
         Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
         Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
@@ -139,12 +143,15 @@ public class MatePostService {
             post.updateLocationDetail(locationDetail);
         }
 
-        if(startScheduledTime != null){
-            post.updateStartScheduledTime(startScheduledTime);
-        }
 
-        if(endScheduledTime != null){
-            post.updateEndScheduledTime(endScheduledTime);
+        if(scheduledDate != null){
+            post.updateScheduledDate(scheduledDate);
+        }
+        if(startTime != null){
+            post.updateStartTime(startTime);
+        }
+        if(endTime != null){
+            post.updateEndTime(endTime);
         }
 
         if(skillLevel != null){
