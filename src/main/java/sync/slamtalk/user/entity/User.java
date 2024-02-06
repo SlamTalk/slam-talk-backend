@@ -112,6 +112,51 @@ public class User extends BaseEntity implements UserDetails {
         this.firstLoginCheck = false;
     }
 
+    /**
+     * 유저 프로필 업데이트하는 메서드
+     *
+     * @param imageUrl 이미지 URL
+     * */
+    public void updateProfileUrl(String imageUrl){
+        this.imageUrl = imageUrl;
+    }
+
+    /**
+     * 유저 프로필 업데이트하는 메서드
+     *
+     * @param nickname 닉네임
+     * */
+    public void updateNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    /**
+     * 유저 자기소개 한마디 업데이트 로직
+     *
+     * @param selfIntroduction 자기 소개 한마디
+     * */
+    public void updateSelfIntroduction(String selfIntroduction){
+        this.selfIntroduction = selfIntroduction;
+    }
+
+    /**
+     * 유저 포지션 업데이트 로직
+     *
+     * @param basketballPosition UserBasketballPositionType
+     * */
+    public void updatePosition(UserBasketballPositionType basketballPosition){
+        this.basketballPosition = basketballPosition;
+    }
+
+    /**
+     * 유저 자체 농구 실력 업데이트 로직
+     *
+     * @param basketballSkillLevel UserBasketballSkillLevelType
+     * */
+    public void updateBasketballSkillLevel(UserBasketballSkillLevelType basketballSkillLevel){
+        this.basketballSkillLevel = basketballSkillLevel;
+    }
+
     /* UserDetails 관련 메서드 */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

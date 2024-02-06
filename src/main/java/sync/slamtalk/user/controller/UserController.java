@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.user.dto.UpdateUserDetailInfoRequestDto;
 import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
 import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
 import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
@@ -103,4 +105,28 @@ public class UserController {
         userService.userAttendance(userId);
         return ApiResponse.ok();
     }
+
+    /**
+     * 유저 마이페이지 수정 기능
+     *
+     * @param  userId AuthenticationPrincipal 어노테이션
+     * @param file 파일 크기 1MB
+     * @param updateUserDetailInfoRequestDto 유저 프로필 업데이트 DTO
+     * */
+    @PatchMapping("/user/update")
+    @Operation(
+            summary = "마이페이지 수정 api",
+            description = "마이페이지 수정할 때 닉네임, 프로필, 한마디, 포지션, 농구실력 을 수정 가능합니다. " +
+                    "null 값으로 비워 둘 경우 업데이트가 되지않습니다!",
+            tags = {"유저 상세정보 조회"}
+    )
+    public ApiResponse<String> updateUserDetailInfo(
+            @AuthenticationPrincipal Long userId,
+            @RequestPart(name = "file", required = false) MultipartFile file,
+            @Valid @RequestPart(name = "data", required = false) UpdateUserDetailInfoRequestDto updateUserDetailInfoRequestDto
+    ) {
+        userService.updateUserDetailInfo(userId, file, updateUserDetailInfoRequestDto);
+        return ApiResponse.ok();
+    }
+
 }
