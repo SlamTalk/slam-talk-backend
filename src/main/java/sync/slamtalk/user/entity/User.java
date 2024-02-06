@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.team.entity.TeamMatching;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,11 +80,14 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
-/*
-    //todo : 동수님 연관관계 매핑 부분
-    @OneToMany(mappedBy = "writerId", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
     private List<MatePost> matePosts = new ArrayList<>();
-*/
+
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
+    private List<TeamMatching> teamMatchings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "opponent", fetch = FetchType.LAZY)
+    private List<TeamMatching> opponentTeamMatchings = new ArrayList<>();
 
     /* 출석 관련 매핑 */
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

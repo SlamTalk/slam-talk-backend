@@ -11,8 +11,11 @@ import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +28,18 @@ import java.util.List;
 public class MateFormDTO {
     private long matePostId; // 글 아이디
     private long writerId; // 작성자 아이디
+    private String writerNickname; // 작성자 닉네임
 
     private String title; // 제목
     private String content; // 본문
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startScheduledTime; // 예정된 시작 시간
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endScheduledTime; // 예정된 종료 시간
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate scheduledDate; // 예정된 날짜
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime startTime; // 예정된 시작 시간
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime endTime; // 예정된 종료 시간
+
     private String locationDetail; // 상세 시합
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus; // 모집 상태 - RECRUITING, COMPLETED, CANCEL
@@ -56,12 +64,13 @@ public class MateFormDTO {
     private List<MatePostApplicantDTO> participants = new ArrayList<>(); // 참여자 목록
 
     @JsonIgnore
-    public MatePost toEntity(long userId) { // * writerId를 User 객체로 대체할 것!
+    public MatePost toEntity(User user) { // * writerId를 User 객체로 대체할 것!
             return MatePost.builder()
-                    .writerId(userId)
+                    .writer(user)
                     .title(title)
-                    .startScheduledTime(startScheduledTime)
-                    .endScheduledTime(endScheduledTime)
+                    .scheduledDate(scheduledDate)
+                    .startTime(startTime)
+                    .endTime(endTime)
                     .locationDetail(locationDetail)
                     .content(content)
                     .maxParticipantsCenters(maxParticipantsCenters)

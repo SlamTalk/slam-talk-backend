@@ -17,7 +17,7 @@ public class Participant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "participant_table_id")
-    private long participantTableId; // 참여자 테이블 아이디
+    private Long participantTableId; // 참여자 테이블 아이디
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,7 +25,9 @@ public class Participant extends BaseEntity {
     private MatePost matePost; // 참여자가 참여한 글
 
     @Column(nullable = false, name="participant_id")
-    private long participantId; // 참여자 아이디 * 매핑 불필요
+    private Long participantId;
+    @Column(nullable = false)
+    private String participantNickname;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -38,9 +40,10 @@ public class Participant extends BaseEntity {
     public Participant() {
     }
 
-    public Participant(long participantId, PositionType position, SkillLevelType skillLevel) {
+    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
 
         this.participantId = participantId;
+        this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;
@@ -62,6 +65,10 @@ public class Participant extends BaseEntity {
         matePost.getParticipants().add(this);
         return true;
 
+    }
+
+    public boolean isCorrespondTo(Long userId){
+        return this.participantId.equals(userId);
     }
 
     public boolean disconnectParent() {

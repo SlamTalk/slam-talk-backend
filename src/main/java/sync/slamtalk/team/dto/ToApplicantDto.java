@@ -15,10 +15,12 @@ public class ToApplicantDto {
 
     Long teamApplicantTableId;
     Long applicantId;
+    String applicantNickname;
     Long chatroomId;
     Long TeamMatchingId;
+    @Enumerated(EnumType.STRING)
     ApplyStatusType applyStatusType;
-    String applicantNickname;
+
     String teamName;
     SkillLevelType skillLevel;
 }

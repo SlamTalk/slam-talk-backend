@@ -10,7 +10,9 @@ import lombok.Setter;
 import sync.slamtalk.mate.entity.Participant;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,11 +25,14 @@ public class MatePostDTO {
     @NonNull
     private long writerId;
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime startScheduledTime;
+    private String writerNickname;
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-    private LocalDateTime endScheduledTime;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate scheduledDate;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime startTime;
+    @JsonFormat(pattern = "HH:mm")
+    private LocalTime endTime;
     @NonNull
     private String title;
     @NonNull

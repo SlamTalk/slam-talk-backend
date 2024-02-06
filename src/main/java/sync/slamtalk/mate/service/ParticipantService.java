@@ -12,12 +12,14 @@ import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
 import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
+import static sync.slamtalk.user.error.UserErrorResponseCode.NOT_FOUND_USER;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +31,25 @@ public class ParticipantService {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
 
-    //
-    //todo : post가 null이면 어떤 값을 반환할 지 결정해야 한다.
-    public MatePostApplicantDTO addParticipant(long matePostId, long participantId, String participantNIckname, MatePostApplicantDTO matePostApplicantDTO){
-        Optional<MatePost> post = matePostRepository.findById(matePostId);
-        if(!post.isPresent()){
-            throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
+
+    public MatePostApplicantDTO addParticipant(long matePostId, long participantId, MatePostApplicantDTO matePostApplicantDTO){
+        MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND));
+
+        User user = userRepository.findById(participantId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
+        String participantNickname = user.getNickname();
+        if(post.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        Participant participant = new Participant(participantId, matePostApplicantDTO.getPosition(),
+        if(post.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED)){
+            throw new BaseException(MATE_POST_ALREADY_COMPLETED);
+        }
+        if(!post.isCorrespondToUser(participantId)){
+            throw new BaseException(USER_NOT_AUTHORIZED);
+        }
+
+        Participant participant = new Participant(participantId, participantNickname, matePostApplicantDTO.getPosition(),
                 matePostApplicantDTO.getSkillLevel());
-        participant.connectParent(post.get());
+        participant.connectParent(post);
         Participant resultParticipant = participantRepository.save(participant);
 
         MatePostApplicantDTO resultParticipantDTO = new MatePostApplicantDTO(resultParticipant.getParticipantTableId(), resultParticipant.getApplyStatus());
@@ -81,11 +92,14 @@ public class ParticipantService {
     // 모집 글 게시자가 참여자를 수락했을 때
     public ApiResponse acceptParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> OptionalMatePost = matePostRepository.findById(matePostId);
-        if(!OptionalMatePost.isPresent()){
+        if(OptionalMatePost.isEmpty()){
             throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
         MatePost matePost = OptionalMatePost.get();
-        if(matePost.getWriterId() != hostId){ // 접근자가 게시글 작성자가 아닐 때
+        if(matePost.getIsDeleted()){
+            throw new BaseException(MATE_POST_ALREADY_DELETED);
+        }
+        if(!matePost.isCorrespondToUser(hostId)){ // 접근자가 게시글 작성자가 아닐 때
             throw new BaseException(USER_NOT_AUTHORIZED);
         }else{
             Optional<Participant> optionalParticipant = participantRepository.findById(participantTableId);
@@ -132,7 +146,7 @@ public class ParticipantService {
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
 
-        if(!(participant.getParticipantId() == writerId)){
+        if(!(participant.isCorrespondTo(writerId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         } else{
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)){
@@ -154,7 +168,7 @@ public class ParticipantService {
     // todo : 현재 참여자 목록에서 완전히 삭제 하지 않았지만 재신청이 가능하다면 참여자 목록에서 삭제(hard delete)하는 것이 맞다고 생각한다.
     public ApiResponse rejectParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
-        if(!optionalMatePost.isPresent()){
+        if(optionalMatePost.isEmpty()){
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
         MatePost matePost = optionalMatePost.get();
@@ -165,7 +179,7 @@ public class ParticipantService {
         }catch(Exception e){
             throw new BaseException(PARTICIPANT_NOT_FOUND);
         }
-        if(!(matePost.getWriterId() == hostId)){
+        if(!(matePost.isCorrespondToUser(hostId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         } else {
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)) {  // 모집글 작성자는 대기 상태인 참여자만 거절할 수 있다.

@@ -5,11 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +27,7 @@ import static sync.slamtalk.mate.error.MateErrorResponseCode.INCREASE_POSITION_N
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class MatePost extends BaseEntity {
 
         @Id
@@ -30,10 +35,9 @@ public class MatePost extends BaseEntity {
         @Column(name = "mate_post_id")
         private long matePostId;
 
-//        @ManyToOne(fetch = FetchType.LAZY)
-//        @JoinColumn(nullable = false, name="writer_id")
-        @Column(name="writer_id")
-        private Long writerId; // 글 작성자 아이디 * User 테이블과 매핑 필요
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(nullable = false, name="writer_id")
+        private User writer;
 
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
@@ -48,11 +52,14 @@ public class MatePost extends BaseEntity {
         @Enumerated(EnumType.STRING)
         private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 범위 BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
 
-        @Column(nullable = false, name="start_scheduled_time")
-        private LocalDateTime startScheduledTime; // 예정된 시작 시간
+        @Column(nullable = false)
+        private LocalDate scheduledDate; // 예정된 날짜
 
-        @Column(nullable = false, name="end_scheduled_time")
-        private LocalDateTime endScheduledTime; // 예정된 종료 시간
+        @Column(nullable = false)
+        private LocalTime startTime; // 예정된 시작 시간
+
+        @Column(nullable = false)
+        private LocalTime endTime; // 예정된 종료 시간
 
         @Column(nullable = true, name="chat_room_id") // 채팅방 아이디 * 매핑 필요
         private long chatRoomId;
@@ -114,6 +121,13 @@ public class MatePost extends BaseEntity {
                 return true;
         }
 
+        public boolean isCorrespondToUser(Long userId){
+                log.debug("글 작성자 ID : {}", this.writer.getId());
+                log.debug("요청자 ID : {}", userId);
+                log.debug("글 작성자 ID와 요청자 ID 일치 여부 : {}", this.writer.getId().equals(userId));
+                return this.writer.getId().equals(userId);
+        }
+
         //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요
 //        public boolean connectParent(User user){
 //                this.user = user;
@@ -124,7 +138,13 @@ public class MatePost extends BaseEntity {
 //                return false;
 //        }
 
-        //todo : convertToSkillLevelList() 메서드 구현 필요
+        public Long getWriterId(){
+                return this.writer.getId();
+        }
+
+        public String getWriterNickname(){
+                return this.writer.getNickname();
+        }
 
         public void updateTitle(String title){
                 this.title = title;
@@ -134,12 +154,16 @@ public class MatePost extends BaseEntity {
                 this.content = content;
         }
 
-        public void updateStartScheduledTime(LocalDateTime scheduledTime){
-                this.startScheduledTime = scheduledTime;
+        public void updateScheduledDate(LocalDate scheduledDate){
+                this.scheduledDate = scheduledDate;
         }
 
-        public void updateEndScheduledTime(LocalDateTime scheduledTime){
-                this.endScheduledTime = scheduledTime;
+        public void updateStartTime(LocalTime startTime){
+                this.startTime = startTime;
+        }
+
+        public void updateEndTime(LocalTime endTime){
+                this.endTime = endTime;
         }
 
         public void updateLocationDetail(String locationDetail){
@@ -277,8 +301,9 @@ public class MatePost extends BaseEntity {
                         ", title='" + title + '\'' +
                         ", content='" + content + '\'' +
                         ", skillLevel=" + skillLevel +
-                        ", startScheduledTime=" + startScheduledTime +
-                        ", endScheduledTime=" + endScheduledTime +
+                        ", scheduledDate=" + scheduledDate +
+                        ", startTime=" + startTime +
+                        ", endTime=" + endTime +
                         ", chatRoomId=" + chatRoomId +
                         ", recruitmentStatus=" + recruitmentStatus +
                         ", maxParticipantsForwards=" + maxParticipantsForwards +

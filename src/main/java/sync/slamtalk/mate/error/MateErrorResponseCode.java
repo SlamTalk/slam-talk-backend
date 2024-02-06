@@ -15,7 +15,8 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
     MATE_POST_NOT_FOUND(SC_NOT_FOUND, 4041, "해당 모집 글을 찾을 수 없습니다."),
     PARTICIPANT_NOT_FOUND(SC_NOT_FOUND, 4042, "해당 참여자를 찾을 수 없습니다."),
 
-    MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4006, "이미 삭제된 모집 글입니다.");
+    MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4006, "이미 삭제된 모집 글입니다."),
+    MATE_POST_ALREADY_COMPLETED(SC_BAD_REQUEST, 4007, "이미 완료된 모집 글입니다.");
 
     MateErrorResponseCode(int code, int status, String message) {
         this.code = code;

@@ -93,9 +93,11 @@ public class MatePostEntityToDtoMapper {
     public static MatePostDTO toMatePostDto(MatePost matePost){
         MatePostDTO matePostDTO = new MatePostDTO();
         matePostDTO.setWriterId(matePost.getWriterId());
+        matePostDTO.setWriterNickname(matePost.getWriterNickname());
         matePostDTO.setMatePostId(matePost.getMatePostId());
-        matePostDTO.setStartScheduledTime(matePost.getStartScheduledTime());
-        matePostDTO.setEndScheduledTime(matePost.getEndScheduledTime());
+        matePostDTO.setScheduledDate(matePost.getScheduledDate());
+        matePostDTO.setStartTime(matePost.getStartTime());
+        matePostDTO.setEndTime(matePost.getEndTime());
         matePostDTO.setTitle(matePost.getTitle());
         matePostDTO.setContent(matePost.getContent());
         matePostDTO.setRecruitmentStatus(matePost.getRecruitmentStatus());

@@ -37,6 +37,7 @@ public class TeamApplicant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED, CANCELED
     private Long chatroomId;
+    @Enumerated(EnumType.STRING)
     private SkillLevelType skillLevel;
 
     public void connectTeamMatching(TeamMatching teamMatching) {
