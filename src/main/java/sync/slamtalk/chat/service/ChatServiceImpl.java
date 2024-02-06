@@ -152,10 +152,11 @@ public class ChatServiceImpl implements ChatService{
         // 유저가 가지고 있는 채팅방 리스트를 돌면서 가져오기
         for(UserChatRoom ucr : chatRoom){
 
-            boolean check = ucr.getIsDeleted().booleanValue();
-            log.debug("isDelete:{}",check);
+            boolean isDelete = ucr.getIsDeleted().booleanValue();
+            log.debug("isDelete:{}",isDelete);
+
             // 삭제 되지 않은 채팅방만 가져옴
-            if(check){
+            if(!isDelete){
                 ChatRoomDTO dto = ChatRoomDTO.builder()
                         .roomId(ucr.getId().toString())
                         .name(ucr.getChat().getName())
