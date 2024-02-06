@@ -78,7 +78,7 @@ public class AuthController {
      *
      * @return  JwtTokenResponseDto
      * */
-    @PatchMapping("/tokens/refresh")
+    @PostMapping("/tokens/refresh")
     @Operation(
             summary = "엑세스 및 리프레쉬 토큰 재발급",
             description = "리프레쉬 토큰은 httpOnly secure 쿠키로 보내주고 엑세스 토큰은 헤더와 파라미터에 넣어 보내줍니다.",
