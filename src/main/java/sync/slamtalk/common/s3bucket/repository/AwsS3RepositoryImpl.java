@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -21,11 +22,14 @@ import java.util.List;
 @Service
 public class AwsS3RepositoryImpl implements AwsS3Repository{
 
-    private final S3Client s3Client;
+        private final S3Client s3Client;
 
-    @Value("${spring.cloud.aws.s3.bucket}")
-    private String bucketName;
+        @Value("${spring.cloud.aws.s3.bucket}")
+        private String bucketName;
 
+        @Value("${s3.bucket.base.url}")
+        private String s3BucketBaseUrl;
+        private static final long MAX_FILE_SIZE = 1 * 1024 * 1024;
 
 
     @Override
@@ -45,6 +49,14 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
                     .contentLength(multipartFile.getSize()) // 사이즈 설정
                     .key(fileName)
                     .build();
+
+            // jpeg,png 확장자인지 검증
+            extensionValidator(multipartFile);
+
+            // 용량 초과 하지 않는지 검증
+            if(!capacityValidator(multipartFile)){
+                throw new BaseException(ErrorResponseCode.S3_BUCKET_EXCEEDED_CAPACITY);
+            }
 
             // 파일 업로드 요청
             RequestBody requestBody = RequestBody.fromBytes(multipartFile.getBytes()); // 파일 데이터를 바이트 배열로 변환하여 RequestBody 객체를 생성
@@ -76,6 +88,15 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
         // 특정
         String fileName = getFileName(multipartFile,folder);
         try{
+
+            // jpeg,png 확장자인지 검증
+            extensionValidator(multipartFile);
+
+            // 용량 초과 하지 않는지 검증
+            if(!capacityValidator(multipartFile)){
+                throw new BaseException(ErrorResponseCode.S3_BUCKET_EXCEEDED_CAPACITY);
+            }
+
             // multipartFile로부터 데이터를 읽은 후 PutObjectRequest 객체를 생성
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucketName) // 저장할 버킷명
@@ -110,6 +131,15 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
 
         multipartFiles.forEach(multipartFile -> {
             String uploadFile = uploadFile(multipartFile);
+
+            // jpeg,png 확장자인지 검증
+            extensionValidator(multipartFile);
+
+            // 용량 초과 하지 않는지 검증
+            if(!capacityValidator(multipartFile)){
+                throw new BaseException(ErrorResponseCode.S3_BUCKET_EXCEEDED_CAPACITY);
+            }
+
             urlList.add(uploadFile);
         });
         return urlList;
@@ -123,6 +153,15 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
 
         multipartFiles.forEach(multipartFile -> {
             String uploadFile = uploadFileToFolder(multipartFile,folder);
+
+            // jpeg,png 확장자인지 검증
+            extensionValidator(multipartFile);
+
+            // 용량 초과 하지 않는지 검증
+            if(!capacityValidator(multipartFile)){
+                throw new BaseException(ErrorResponseCode.S3_BUCKET_EXCEEDED_CAPACITY);
+            }
+
             urlList.add(uploadFile);
         });
         return urlList;
@@ -131,13 +170,16 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
 
     @Override
     // 저장된 파일 지우기
-    // TODO 권한 확인 후 수정
     public String deleteFile(String fileName) {
+
+        // key값만 추출
+        String targetKey = extractObjectKey(fileName);
+
         try {
             // 파일 삭제 요청 생성
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(fileName)
+                    .key(targetKey)
                     .build();
 
             // S3 클라이언트를 사용하여 파일 삭제 요청 실행
@@ -168,4 +210,38 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
         }
         return CommonUtils.buildFileName(multipartFile.getOriginalFilename(),folderName);
     }
+
+    // 올바른 파일 확장자인지 검증
+    // jpeg, png 이미지 파일 확장자만 가능
+    private void extensionValidator(MultipartFile multipartFile){
+        String contentType = multipartFile.getContentType();
+
+        // 확장자가 jpeg,png 인 파일들만 받아서 처리
+        if(ObjectUtils.isEmpty(contentType) || (!contentType.contains("image/jpeg") && !contentType.contains("image/png"))){
+            throw new BaseException(ErrorResponseCode.S3_BUCKET_INVALID_EXTENSION);
+        }
+    }
+
+    // 1MB 가 초과하지 않는 파일인지 검증
+    private boolean capacityValidator(MultipartFile multipartFile){
+        if(multipartFile.getSize()<=MAX_FILE_SIZE){
+            return true;
+        }
+        return  false;
+    }
+
+
+    // 객체 key 값 추출
+    // 파라미터로 이미지 url
+    private String extractObjectKey(String s3objectUrl){
+        if(s3objectUrl!=null && s3objectUrl.startsWith(s3BucketBaseUrl)){
+            log.debug("extractkey:{}",s3objectUrl.substring(s3BucketBaseUrl.length()));
+            return s3objectUrl.substring(s3BucketBaseUrl.length());
+        }
+        return null;
+    }
+
+
+
+
 }
