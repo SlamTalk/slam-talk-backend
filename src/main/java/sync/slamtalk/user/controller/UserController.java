@@ -8,10 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.user.dto.UpdateUserDetailInfoRequestDto;
-import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
-import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
-import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
+import sync.slamtalk.user.dto.*;
 import sync.slamtalk.user.service.UserService;
 
 /**
@@ -26,23 +23,42 @@ public class UserController {
 
     /**
      * 유저의 상세 정보 조회하는 api
-     * @param userId Pathvariable로 유저 id 받아오기
-     * @param loginUserId 시큐리티를 통해 user 정보를 받아옴
+     *
+     * @param userId 시큐리티를 통해 user 정보를 받아옴
      * @return UserDetailsInfoResponseDto 객체가 반환(개인정보 있는 버전, 없는 버전)
      * */
-    @GetMapping("/user/{userId}/info")
+    @GetMapping("/user/my-info")
     @Operation(
-            summary = "(미완성) 유저 상세 정보 조회 api",
-            description = "유저가 본인이 아닐경우 email을 제외하고 보내줍니다.",
+            summary = "유저 본인 상세 정보 조회 api",
+            description = "유저 본인의 상세정보 확인가능합니다.",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsInfoResponseDto> userDetailsInfo(
-            @PathVariable("userId") Long userId,
-            @AuthenticationPrincipal Long loginUserId
+    public ApiResponse<UserDetailsMyInfoResponseDto> userDetailsMyInfo(
+            @AuthenticationPrincipal Long userId
     ) {
-        UserDetailsInfoResponseDto userDetailsInfoResponseDto= userService.userDetailsInfo(userId, loginUserId);
+        UserDetailsMyInfoResponseDto userDetailsMyInfoResponseDto = userService.userDetailsMyInfo(userId);
 
-        return ApiResponse.ok(userDetailsInfoResponseDto);
+        return ApiResponse.ok(userDetailsMyInfoResponseDto);
+    }
+
+    /**
+     * 유저의 상세 정보 조회하는 api
+     * @param userId Pathvariable로 유저 id 받아오기
+     *
+     * @return UserDetailsInfoResponseDto 객체가 반환(개인정보 있는 버전, 없는 버전)
+     * */
+    @GetMapping("/user/{userId}/other-info")
+    @Operation(
+            summary = "다른 유저 상세 정보 조회 api",
+            description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다",
+            tags = {"유저 상세정보 조회"}
+    )
+    public ApiResponse<UserDetailsOtherInfoResponseDto> userDetailsOtherInfo(
+            @PathVariable("userId") Long userId
+    ) {
+        UserDetailsOtherInfoResponseDto userDetailsMyInfoResponseDto = userService.userDetailsOtherInfo(userId);
+
+        return ApiResponse.ok(userDetailsMyInfoResponseDto);
     }
 
     /**
@@ -58,7 +74,7 @@ public class UserController {
                     "닉네임은 특수문자를 제외한 2~13자리여야 합니다",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsInfoResponseDto> userUpdateNickname(
+    public ApiResponse<UserDetailsMyInfoResponseDto> userUpdateNickname(
             @Valid @RequestBody UserUpdateNicknameRequestDto userUpdateNicknameRequestDto,
             @AuthenticationPrincipal Long userId
     ) {
@@ -79,7 +95,7 @@ public class UserController {
             description = "해당 유저의 포지션, 실력을 업데이트 가능합니다.",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsInfoResponseDto> userUpdatePositionAndSkillLevel(
+    public ApiResponse<UserDetailsMyInfoResponseDto> userUpdatePositionAndSkillLevel(
             @Valid @RequestBody UserUpdatePositionAndSkillRequestDto userUpdatePositionAndSkillRequestDto,
             @AuthenticationPrincipal Long userId
     ) {

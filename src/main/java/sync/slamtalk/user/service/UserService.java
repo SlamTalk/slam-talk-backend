@@ -9,10 +9,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UpdateUserDetailInfoRequestDto;
-import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
-import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
-import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
+import sync.slamtalk.user.dto.*;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserAttendance;
 import sync.slamtalk.user.error.UserErrorResponseCode;
@@ -36,12 +33,10 @@ public class UserService {
     /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
      * @param userId 찾고자하는 userId
-     * @param loginUserId  로그인한 userId
      *
      * */
-    public UserDetailsInfoResponseDto userDetailsInfo(
-            Long userId,
-            Long loginUserId
+    public UserDetailsMyInfoResponseDto userDetailsMyInfo(
+            Long userId
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
@@ -59,17 +54,40 @@ public class UserService {
                 .orElse(0L);
         levelScore += userAttendCount * User.ATTEND_SCORE;
 
-        // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
-        if(loginUserId.equals(user.getId())){
-            return UserDetailsInfoResponseDto.generateMyProfile(
-                    user,
-                    levelScore,
-                    mateCompleteParticipationCount
-            );
-        }
+        // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
+        return UserDetailsMyInfoResponseDto.generateMyProfile(
+                user,
+                levelScore,
+                mateCompleteParticipationCount
+        );
+    }
+
+    /**
+     * 유저의 마이페이지 보기 조회시 사용되는 서비스
+     *
+     * @param userId 찾고자하는 userId
+     */
+    public UserDetailsOtherInfoResponseDto userDetailsOtherInfo(
+            Long userId
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+
+        // 레벨 score 계산하기
+        long levelScore = 0L;
+
+        // Mate 게시판 상태가 Complete
+        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(userId);
+        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
+
+        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
+
+        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+                .orElse(0L);
+        levelScore += userAttendCount * User.ATTEND_SCORE;
 
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
-        else return UserDetailsInfoResponseDto.generateOtherUserProfile(
+         return UserDetailsOtherInfoResponseDto.generateOtherUserProfile(
                 user,
                 levelScore,
                 mateCompleteParticipationCount
