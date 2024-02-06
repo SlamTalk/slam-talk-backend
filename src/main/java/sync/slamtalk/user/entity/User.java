@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.team.entity.TeamMatching;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +41,7 @@ public class User extends BaseEntity implements UserDetails {
     private String nickname;
     @Column(nullable = false)
     private String email;
-    @Column(name = "image_url")
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
     @Column(name = "refresh_token")
     private String refreshToken;
@@ -78,11 +80,18 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
-/*
-    //todo : 동수님 연관관계 매핑 부분
-    @OneToMany(mappedBy = "writerId", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
     private List<MatePost> matePosts = new ArrayList<>();
-*/
+
+    @OneToMany(mappedBy = "writer", fetch = FetchType.LAZY)
+    private List<TeamMatching> teamMatchings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "opponent", fetch = FetchType.LAZY)
+    private List<TeamMatching> opponentTeamMatchings = new ArrayList<>();
+
+    /* 출석 관련 매핑 */
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserAttendance> userAttendances = new ArrayList<>();
 
     /**
      * 비밀번호 암호화 메소드
@@ -106,6 +115,51 @@ public class User extends BaseEntity implements UserDetails {
      * */
     public void updateFirstLoginCheck(){
         this.firstLoginCheck = false;
+    }
+
+    /**
+     * 유저 프로필 업데이트하는 메서드
+     *
+     * @param imageUrl 이미지 URL
+     * */
+    public void updateProfileUrl(String imageUrl){
+        this.imageUrl = imageUrl;
+    }
+
+    /**
+     * 유저 프로필 업데이트하는 메서드
+     *
+     * @param nickname 닉네임
+     * */
+    public void updateNickname(String nickname){
+        this.nickname = nickname;
+    }
+
+    /**
+     * 유저 자기소개 한마디 업데이트 로직
+     *
+     * @param selfIntroduction 자기 소개 한마디
+     * */
+    public void updateSelfIntroduction(String selfIntroduction){
+        this.selfIntroduction = selfIntroduction;
+    }
+
+    /**
+     * 유저 포지션 업데이트 로직
+     *
+     * @param basketballPosition UserBasketballPositionType
+     * */
+    public void updatePosition(UserBasketballPositionType basketballPosition){
+        this.basketballPosition = basketballPosition;
+    }
+
+    /**
+     * 유저 자체 농구 실력 업데이트 로직
+     *
+     * @param basketballSkillLevel UserBasketballSkillLevelType
+     * */
+    public void updateBasketballSkillLevel(UserBasketballSkillLevelType basketballSkillLevel){
+        this.basketballSkillLevel = basketballSkillLevel;
     }
 
     /* UserDetails 관련 메서드 */

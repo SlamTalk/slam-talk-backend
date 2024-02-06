@@ -32,11 +32,18 @@ public enum ErrorResponseCode implements ResponseCodeDetails {
     /* s3 bucket 에러*/
 
     // 이미지 찾을 수 없을 때
-    S3_BUCKET_NOT_FOUND(SC_BAD_REQUEST,6000,"Image is null"),
+    S3_BUCKET_NOT_FOUND(SC_BAD_REQUEST,6000,"image is null"),
     // 이미지 업로드 실패
-    S3_BUCKET_CANNOT_UPLOAD(SC_BAD_REQUEST,6001,"failed Upload"),
+    S3_BUCKET_CANNOT_UPLOAD(SC_BAD_REQUEST,6001,"failed upload"),
     // 이미지 삭제 실패
-    S3_BUCKET_CANNOT_DELETE(SC_BAD_REQUEST,6002,"failed Delete");
+    S3_BUCKET_CANNOT_DELETE(SC_BAD_REQUEST,6002,"failed delete"),
+    // 지원 하지 않은 확장자 파일 업로드 시
+    S3_BUCKET_INVALID_EXTENSION(SC_BAD_REQUEST,6003,"invalid extension"),
+    // 파일 크기 제한 초과 시
+    S3_BUCKET_EXCEEDED_CAPACITY(SC_BAD_REQUEST,6004,"capacity exceeded")
+
+
+    ;
 
     private final int code;
     private int status;

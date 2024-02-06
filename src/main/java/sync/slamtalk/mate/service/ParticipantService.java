@@ -43,7 +43,7 @@ public class ParticipantService {
         if(post.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED)){
             throw new BaseException(MATE_POST_ALREADY_COMPLETED);
         }
-        if(post.isCorrespondToUser(participantId)){
+        if(!post.isCorrespondToUser(participantId)){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -92,7 +92,7 @@ public class ParticipantService {
     // 모집 글 게시자가 참여자를 수락했을 때
     public ApiResponse acceptParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> OptionalMatePost = matePostRepository.findById(matePostId);
-        if(!OptionalMatePost.isPresent()){
+        if(OptionalMatePost.isEmpty()){
             throw new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND);
         }
         MatePost matePost = OptionalMatePost.get();
@@ -146,7 +146,7 @@ public class ParticipantService {
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
 
-        if(!(participant.getParticipantId() == writerId)){
+        if(!(participant.isCorrespondTo(writerId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         } else{
             if(participant.getApplyStatus().equals(ApplyStatusType.WAITING)){
@@ -168,7 +168,7 @@ public class ParticipantService {
     // todo : 현재 참여자 목록에서 완전히 삭제 하지 않았지만 재신청이 가능하다면 참여자 목록에서 삭제(hard delete)하는 것이 맞다고 생각한다.
     public ApiResponse rejectParticipant(long matePostId, long participantTableId, long hostId){
         Optional<MatePost> optionalMatePost = matePostRepository.findById(matePostId);
-        if(!optionalMatePost.isPresent()){
+        if(optionalMatePost.isEmpty()){
             throw new BaseException(MATE_POST_NOT_FOUND);
         }
         MatePost matePost = optionalMatePost.get();

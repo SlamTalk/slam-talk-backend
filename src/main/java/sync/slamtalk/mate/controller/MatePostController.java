@@ -70,7 +70,7 @@ public class MatePostController {
         long userId = id;
 
         // * MatePost를 저장한다.
-        matePostService.updateMatePost(matePostId, mateFormDTO, userId); // todo : Localdatetime 수정
+        matePostService.updateMatePost(matePostId, mateFormDTO, userId);
 
         return ApiResponse.ok();
     }

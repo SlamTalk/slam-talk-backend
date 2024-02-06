@@ -168,6 +168,7 @@ public class TeamMatching extends BaseEntity {
 
     @Override
     public void delete() {
+        this.getTeamApplicants().forEach(TeamApplicant::delete);
         super.delete();
     }
 
@@ -191,13 +192,12 @@ public class TeamMatching extends BaseEntity {
             throw new BaseException(ALEADY_DECLARED_OPPONENT);
         }
         this.opponent = opponent;
+        this.opponent.getOpponentTeamMatchings().add(this);
     }
 
     public void connectParentUser(User user){ // * writerId를 User 객체로 대체할 것!
         this.writer = user;
-        //  this.writer.getTeamMatchings().add(this);
-        // * 연관관계 편의 메서드
-        // todo: User 객체에 있는 teamMatchingList에 현재 객체를 추가한다.
+        this.writer.getTeamMatchings().add(this);
     }
 
     // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.

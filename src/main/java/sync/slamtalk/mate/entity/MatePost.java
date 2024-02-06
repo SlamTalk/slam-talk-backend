@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
@@ -26,6 +27,7 @@ import static sync.slamtalk.mate.error.MateErrorResponseCode.INCREASE_POSITION_N
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Slf4j
 public class MatePost extends BaseEntity {
 
         @Id
@@ -35,7 +37,6 @@ public class MatePost extends BaseEntity {
 
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(nullable = false, name="writer_id")
-        @Column(name="writer_id")
         private User writer;
 
         @Column(nullable = true, name="location_detail")
@@ -121,7 +122,10 @@ public class MatePost extends BaseEntity {
         }
 
         public boolean isCorrespondToUser(Long userId){
-                return this.writer.getId() == userId;
+                log.debug("글 작성자 ID : {}", this.writer.getId());
+                log.debug("요청자 ID : {}", userId);
+                log.debug("글 작성자 ID와 요청자 ID 일치 여부 : {}", this.writer.getId().equals(userId));
+                return this.writer.getId().equals(userId);
         }
 
         //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요

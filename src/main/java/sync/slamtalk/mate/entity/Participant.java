@@ -17,7 +17,7 @@ public class Participant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "participant_table_id")
-    private long participantTableId; // 참여자 테이블 아이디
+    private Long participantTableId; // 참여자 테이블 아이디
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -25,7 +25,7 @@ public class Participant extends BaseEntity {
     private MatePost matePost; // 참여자가 참여한 글
 
     @Column(nullable = false, name="participant_id")
-    private long participantId;
+    private Long participantId;
     @Column(nullable = false)
     private String participantNickname;
 
@@ -65,6 +65,10 @@ public class Participant extends BaseEntity {
         matePost.getParticipants().add(this);
         return true;
 
+    }
+
+    public boolean isCorrespondTo(Long userId){
+        return this.participantId.equals(userId);
     }
 
     public boolean disconnectParent() {

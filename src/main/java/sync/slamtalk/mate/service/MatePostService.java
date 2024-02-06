@@ -98,7 +98,7 @@ public class MatePostService {
         if(post.getIsDeleted()){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        if(post.isCorrespondToUser(userId)){
+        if(!(post.isCorrespondToUser(userId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         post.softDeleteMatePost();
@@ -116,7 +116,7 @@ public class MatePostService {
         if(post.getIsDeleted()){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        if(post.isCorrespondToUser(userId)) {
+        if(!post.isCorrespondToUser(userId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         String content = mateFormDTO.getContent();

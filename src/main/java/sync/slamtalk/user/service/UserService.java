@@ -4,14 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.dto.UpdateUserDetailInfoRequestDto;
 import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
 import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
 import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.entity.UserAttendance;
 import sync.slamtalk.user.error.UserErrorResponseCode;
+import sync.slamtalk.user.repository.UserAttendanceRepository;
+
+import java.time.LocalDate;
 
 /**
  * 이 서비스는 유저의 crud 와 관련된 클래스입니다.
@@ -22,7 +29,9 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserAttendanceRepository userAttendanceRepository;
     private final MatePostRepository matePostRepository;
+    private final AwsS3RepositoryImpl awsS3Service;
 
     /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
@@ -46,7 +55,9 @@ public class UserService {
 
         // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
 
-        // todo : 출석부 개수 counting 하기
+        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+                .orElse(0L);
+        levelScore += userAttendCount * User.ATTEND_SCORE;
 
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
         if(loginUserId.equals(user.getId())){
@@ -111,5 +122,66 @@ public class UserService {
                 userUpdatePositionAndSkillRequestDto.getBasketballSkillLevel(),
                 userUpdatePositionAndSkillRequestDto.getBasketballPosition()
         );
+    }
+
+    /**
+     * 유저 출석체크를 위한 api
+     *
+     * @param userId 유저 아이디
+     * */
+    @Transactional
+    public void userAttendance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+
+        // 만약 이미 출석을 했다면 400 에러 반환
+        if(userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now())){
+            throw new BaseException(UserErrorResponseCode.ATTENDANCE_ALREADY_EXISTS);
+        }
+
+        UserAttendance saveAttendance = userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
+        saveAttendance.addUser(user);
+    }
+
+    /**
+     * 유저 마이페이지 수정 api
+     * @param userId 유저아이디
+     * @param file MultipartFile 업로드
+     * @param updateUserDetailInfoRequestDto UpdateUserDetailInfoRequestDto
+     * */
+    @Transactional
+    public void updateUserDetailInfo(
+            Long userId,
+            MultipartFile file,
+            UpdateUserDetailInfoRequestDto updateUserDetailInfoRequestDto
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        // 닉네임 검증
+        if(updateUserDetailInfoRequestDto.getNickname() != null) {
+            checkNicknameExistence(updateUserDetailInfoRequestDto.getNickname());
+            user.updateNickname(updateUserDetailInfoRequestDto.getNickname());
+        }
+
+        // 이미지 파일이 존재한다면 업데이트
+        if(file != null) {
+            String fileUrl = awsS3Service.uploadFile(file);
+            user.updateProfileUrl(fileUrl);
+        }
+
+        // 자기 소개 한마디
+        if(updateUserDetailInfoRequestDto.getSelfIntroduction() != null){
+            user.updateSelfIntroduction(updateUserDetailInfoRequestDto.getSelfIntroduction());
+        }
+
+        // 유저 포지션
+        if(updateUserDetailInfoRequestDto.getBasketballPosition() != null){
+            user.updatePosition(updateUserDetailInfoRequestDto.getBasketballPosition());
+        }
+
+        // 유저 스킬 레벨 업데이트
+        if(updateUserDetailInfoRequestDto.getBasketballSkillLevel() != null){
+            user.updateBasketballSkillLevel(updateUserDetailInfoRequestDto.getBasketballSkillLevel());
+        }
     }
 }

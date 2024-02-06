@@ -3,6 +3,7 @@ package sync.slamtalk.common.s3bucket;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/s3")
 @RequiredArgsConstructor
+@Slf4j
 public class FileUploadController {
 /*
    Controller Sample
@@ -32,6 +34,7 @@ public class FileUploadController {
     )
     public ApiResponse<String> uploadFile(@RequestParam("file")MultipartFile multipartFile){
         String loadFile= awsS3Service.uploadFile(multipartFile);
+        log.debug("====> capacity:{}",multipartFile.getSize());
         return ApiResponse.ok(loadFile,"업로드 완료");
     }
 
