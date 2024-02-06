@@ -22,14 +22,14 @@ import java.util.List;
 @Service
 public class AwsS3RepositoryImpl implements AwsS3Repository{
 
-    private final S3Client s3Client;
+        private final S3Client s3Client;
 
-    @Value("${spring.cloud.aws.s3.bucket}")
-    private String bucketName;
+        @Value("${spring.cloud.aws.s3.bucket}")
+        private String bucketName;
 
-    @Value("${s3.bucket.base.url}")
-    private String s3BucketBaseUrl;
-    private static final long MAX_FILE_SIZE = 1 * 1024 * 1024;
+        @Value("${s3.bucket.base.url}")
+        private String s3BucketBaseUrl;
+        private static final long MAX_FILE_SIZE = 1 * 1024 * 1024;
 
 
     @Override
