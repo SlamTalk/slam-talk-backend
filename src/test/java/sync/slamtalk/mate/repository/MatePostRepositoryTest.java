@@ -27,7 +27,7 @@ class MatePostRepositoryTest {
     @Autowired
     private ParticipantRepository participantRepository;
 
-    @Test
+/*    @Test
     @DisplayName("메이트 참여 완료된 사용자 개수 세는 레포")
     @Disabled
     void findMateCompleteParticipationCount() {
@@ -65,5 +65,5 @@ class MatePostRepositoryTest {
         
         Long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(1L);
         Assertions.assertEquals(mateCompleteParticipationCount, 1L);
-    }
+    }*/
 }
