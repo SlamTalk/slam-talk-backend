@@ -11,7 +11,11 @@ import sync.slamtalk.user.dto.UserDetailsInfoResponseDto;
 import sync.slamtalk.user.dto.UserUpdateNicknameRequestDto;
 import sync.slamtalk.user.dto.UserUpdatePositionAndSkillRequestDto;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.entity.UserAttendance;
 import sync.slamtalk.user.error.UserErrorResponseCode;
+import sync.slamtalk.user.repository.UserAttendanceRepository;
+
+import java.time.LocalDate;
 
 /**
  * 이 서비스는 유저의 crud 와 관련된 클래스입니다.
@@ -22,6 +26,7 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserAttendanceRepository userAttendanceRepository;
     private final MatePostRepository matePostRepository;
 
     /**
@@ -46,7 +51,9 @@ public class UserService {
 
         // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
 
-        // todo : 출석부 개수 counting 하기
+        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+                .orElse(0L);
+        levelScore += userAttendCount * User.ATTEND_SCORE;
 
         // 찾고자 하는 유저가 본인일 경우(상세한 개인정보 까지 공개)
         if(loginUserId.equals(user.getId())){
@@ -111,5 +118,24 @@ public class UserService {
                 userUpdatePositionAndSkillRequestDto.getBasketballSkillLevel(),
                 userUpdatePositionAndSkillRequestDto.getBasketballPosition()
         );
+    }
+
+    /**
+     * 유저 출석체크를 위한 api
+     *
+     * @param userId 유저 아이디
+     * */
+    @Transactional
+    public void userAttendance(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+
+        // 만약 이미 출석을 했다면 400 에러 반환
+        if(userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now())){
+            throw new BaseException(UserErrorResponseCode.ATTENDANCE_ALREADY_EXISTS);
+        }
+
+        UserAttendance saveAttendance = userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
+        saveAttendance.addUser(user);
     }
 }
