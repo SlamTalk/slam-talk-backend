@@ -28,7 +28,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.projectlombok:lombok:1.18.28'
+    testImplementation 'org.projectlombok:lombok:1.18.28'
 
 	runtimeOnly "com.mysql:mysql-connector-j" // mysql
 	runtimeOnly 'com.h2database:h2' // h2
@@ -55,8 +55,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'io.lettuce:lettuce-core'
 
-	/* AWS S3Bucket 연동 */
-	implementation 'io.awspring.cloud:spring-cloud-aws-s3:3.0.2'
 }
 
 tasks.named('test') {

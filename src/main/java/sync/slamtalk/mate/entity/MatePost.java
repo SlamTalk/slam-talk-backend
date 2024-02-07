@@ -103,6 +103,9 @@ public class MatePost extends BaseEntity {
          */
         public boolean softDeleteMatePost(){
                 softDeleteParticipantAll();
+                if(this.recruitmentStatus == RecruitmentStatusType.RECRUITING){
+                        this.recruitmentStatus = RecruitmentStatusType.CANCELED;
+                }
                 this.delete();
                 return true;
         }
@@ -118,6 +121,15 @@ public class MatePost extends BaseEntity {
                                 return false;
                         }
                 }
+                return true;
+        }
+
+        public boolean updateRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
+                if(this.recruitmentStatus == recruitmentStatus){
+                        log.debug("변경할 모집 상태와 현재 모집 상태가 같습니다.");
+                        return false;
+                }
+                this.recruitmentStatus = recruitmentStatus;
                 return true;
         }
 

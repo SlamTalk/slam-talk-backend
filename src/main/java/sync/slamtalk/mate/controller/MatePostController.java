@@ -113,4 +113,10 @@ public class MatePostController {
 
         return ApiResponse.ok(response);
     }
+
+    @PatchMapping("/{matePostId}/complete")
+    public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+        matePostService.completeRecruitment(matePostId, id);
+        return ApiResponse.ok();
+    }
 }

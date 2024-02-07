@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.mate.dto.PositionListDTO;
 
+import java.util.List;
 import java.util.Objects;
 
 
@@ -31,7 +33,7 @@ public class Participant extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ApplyStatusType applyStatus; // 참여자 신청 상태 "WAITING", "ACCEPTED", "REJECTED", "CANCEL"
+    private ApplyStatusType applyStatus; // 참여자 신청 상태 "WAITING", "ACCEPTED", "REJECTED", "CANCELED"
 
     private PositionType position; // 포지션 "CENTER", "GUARD", "FORWARD", "UNSPECIFIED", * 향후에 통일된 Enum으로 변경 예정
 
@@ -56,6 +58,7 @@ public class Participant extends BaseEntity {
     }
 
     public boolean softDeleteParticipant() {
+        this.applyStatus = ApplyStatusType.CANCELED;
         this.delete();
         return true;
     }
@@ -77,11 +80,26 @@ public class Participant extends BaseEntity {
         return true;
     }
 
+    public boolean checkCapabilities(List<PositionListDTO> requiredPosition, List<String> requiredSkillLevel) {
+        if(requiredSkillLevel.contains(this.skillLevel.getLevel()) == false){
+            return false;
+        }
+        for(PositionListDTO positionListDTO : requiredPosition){
+            if(positionListDTO.getPosition() == this.position){
+                if(positionListDTO.getMaxPosition() - positionListDTO.getCurrentPosition() <= 0){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     @Override
     public String toString() { // 양방향 연관 관계로 인한 순환 참조 고려한 toString
         return "Participant{" +
                 "participantTableId=" + participantTableId +
                 ", participantId='" + participantId + '\'' +
+                ", participantNickname='" + participantNickname + '\'' +
                 ", applyStatus=" + applyStatus +
                 ", position=" + position +
                 ", skillLevel=" + skillLevel +
@@ -93,11 +111,11 @@ public class Participant extends BaseEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Participant that = (Participant) o;
-        return Objects.equals(participantTableId, that.participantTableId);
+        return Objects.equals(participantId, that.participantId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(participantTableId);
+        return Objects.hash(participantId);
     }
 }

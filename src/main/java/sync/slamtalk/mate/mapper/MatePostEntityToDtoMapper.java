@@ -1,16 +1,19 @@
 package sync.slamtalk.mate.mapper;
 
 import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
+@Component
 public class MatePostEntityToDtoMapper {
 
     public static List<PositionListDTO> toPositionListDto(MatePost matePost){
@@ -40,33 +43,33 @@ public class MatePostEntityToDtoMapper {
         List<String> skillLevelTypeList = new ArrayList<>();
 
         if(postSkillType == RecruitedSkillLevelType.BEGINNER){
-            skillLevelTypeList.add("입문");
+            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.OVER_BEGINNER) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
+            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.UNDER_LOW) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
+            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.OVER_LOW) {
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
+            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.UNDER_MIDDLE) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
+            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.OVER_MIDDLE) {
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
+            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.UNDER_HIGH) {
-            skillLevelTypeList.add("입문");
-            skillLevelTypeList.add("초보");
-            skillLevelTypeList.add("중수");
-            skillLevelTypeList.add("고수");
+            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }else if(postSkillType == RecruitedSkillLevelType.HIGH) {
-            skillLevelTypeList.add("고수");
+            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }
 
         return skillLevelTypeList;
