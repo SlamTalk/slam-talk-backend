@@ -41,9 +41,12 @@ public class MatePostService {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
 
+    private static final int FIRST_PAGE = 0;
+    private static final int DEFAULT_PAGE_SIZE = 10;
+
     /*
-     * objective : 메이트찾기 게시글을 등록한다.
-     * flow :
+     * Objective : 메이트찾기 게시글을 등록한다.
+     * Flow :
      * 1. 매개변수로 입력 받은 userId로 userRepository를 조회하여 해당 User 객체를 가져온다.
      * 2. MateFormDTO를 MatePost로 변환한다.
      * 3. MatePost를 저장한다.
@@ -57,8 +60,8 @@ public class MatePostService {
     }
 
     /*
-     * objective : matePostId로 원하는 메이트찾기 글을 조회한다.
-     * flow :
+     * Objective : matePostId로 원하는 메이트찾기 글을 조회한다.
+     * Flow :
      * 1. 게시글 ID를 이용해서 저장된 게시글을 불러온다.(없을 경우 예외 처리)
      * 2. 게시글이 삭제된 게시글인지 확인한다.(삭제된 게시글일 경우 예외 처리)
      * 3. 게시글의 작성자 정보를 불러온다.(작성자(User) Id와 닉네임, 없을 경우 예외 처리)
@@ -103,8 +106,8 @@ public class MatePostService {
     }
 
     /*
-     * objective : 메이트찾기 글을 삭제한다.
-     * flow :
+     * Objective : 메이트찾기 글을 삭제한다.
+     * Flow :
      * 1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)
      * 2. 삭제(soft delete)된 글인지 확인한다. (삭제된 글일 경우 예외 처리)
      * 3. 글 작성자가 맞는지 확인한다. (글 작성자가 아닐 경우 예외 처리)
@@ -127,8 +130,8 @@ public class MatePostService {
     }
 
     /*
-     * objective : 메이트찾기 글을 수정한다.
-     * flow :
+     * Objective : 메이트찾기 글을 수정한다.
+     * Flow :
      * 1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)
      * 2. 삭제(soft delete)된 글인지 확인한다. (삭제된 글일 경우 예외 처리)
      * 3. 글 작성자가 맞는지 확인한다. (글 작성자가 아닐 경우 예외 처리)
@@ -216,15 +219,15 @@ public class MatePostService {
     }
 
     /*
-    objective : 커서 페이징 방식으로 메이트찾기 글 목록을 조회한다.
-    flow :
+    Objective : 커서 페이징 방식으로 메이트찾기 글 목록을 조회한다.
+    Flow :
         1. 커서를 이용하여 글 목록을 조회한다.
         2. 조회된 글 목록을 DTO로 변환하여 반환한다.
      */
-    public List<MatePostDTO> getMatePostsByCurser(String cursorStr, int limit) {
+    public List<MatePostDTO> getMatePostsByCurser(String cursorStr) {
         LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
         log.debug("cursor: {}", cursor);
-        Pageable pageable = PageRequest.of(0, limit);
+        Pageable pageable = PageRequest.of(FIRST_PAGE, DEFAULT_PAGE_SIZE);
         List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedNotOrderByCreatedAtDesc(cursor, true, pageable);
         log.debug("listedMatePosts: {}", listedMatePosts);
         List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
@@ -232,8 +235,8 @@ public class MatePostService {
     }
 
     /*
-    objective : 해당 메이트찾기 글의 모집을 완료한다.
-    flow :
+    Objective : 해당 메이트찾기 글의 모집을 완료한다.
+    Flow :
         1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)
         2. 글 작성자가 맞는지 확인한다. (글 작성자가 아닐 경우 예외 처리)
         3. 글의 모집 상태가 모집 중인지 확인한다. (모집 중이 아닐 경우 예외 처리)

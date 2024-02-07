@@ -102,7 +102,7 @@ public class MatePostController {
     @GetMapping("/list")
     public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor) {
         String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, 10);
+        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor);
 
         MatePostListDTO response = new MatePostListDTO();
         response.setMatePostList(listedMatePostDTO);
