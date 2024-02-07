@@ -12,14 +12,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UserDetailsAfterRefreshResponseDto;
 import sync.slamtalk.user.dto.UserLoginRequestDto;
-import sync.slamtalk.user.dto.UserLoginResponseDto;
 import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
@@ -37,12 +34,13 @@ import java.util.Optional;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final MatePostRepository matePostRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
+    @Value("${jwt.access.expiration}")
+    public int accessTokenExpirationPeriod;
     @Value("${jwt.refresh.header}")
     public String refreshAuthorizationCookieName;
     @Value("${jwt.refresh.expiration}")
@@ -59,7 +57,7 @@ public class AuthService {
      * @return JwtTokenDto
      */
     @Transactional
-    public UserLoginResponseDto login(
+    public void login(
             UserLoginRequestDto userLoginDto,
             HttpServletResponse response
     ) {
@@ -72,19 +70,10 @@ public class AuthService {
             JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
 
             response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
-            setRefreshTokenCookie(response, jwtTokenDto);
-
-            UserLoginResponseDto userLoginResponseDto = new UserLoginResponseDto(
-                    user.getId(),
-                    user.getNickname(),
-                    user.getImageUrl(),
-                    user.getFirstLoginCheck()
-            );
+            setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
             if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
-
-            return userLoginResponseDto;
 
         } catch (Exception e) {
             throw new BaseException(UserErrorResponseCode.BAD_CREDENTIALS);
@@ -99,7 +88,7 @@ public class AuthService {
      * @return JwtTokenResponseDto
      */
     @Transactional
-    public UserLoginResponseDto signUp(
+    public void signUp(
             UserSignUpRequestDto userSignUpDto,
             HttpServletResponse response
     ) {
@@ -113,7 +102,8 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return login(new UserLoginRequestDto(userSignUpDto.getEmail(), userSignUpDto.getPassword()), response);
+
+        login(new UserLoginRequestDto(userSignUpDto.getEmail(), userSignUpDto.getPassword()), response);
     }
 
     /**
@@ -124,18 +114,19 @@ public class AuthService {
      * @return JwtTokenResponseDto
      */
     @Transactional
-    public UserDetailsAfterRefreshResponseDto refreshToken(
+    public void refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
 
-        String refreshToken = tokenProvider.getRefreshTokenFromCookie(request);
+        String refreshToken = tokenProvider.getTokenFromCookie(request, refreshAuthorizationCookieName);
 
-        // 토큰 만료 검사
+        // 리프래쉬 토큰 만료 검사
         if(!tokenProvider.validateToken(refreshToken)){
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
+        // 엑세스 토큰 만료가 되었다면 RTR 방식으로 재발급 하기
         Optional<JwtTokenDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
 
         if (optionalJwtTokenResponseDto.isEmpty()) {
@@ -146,30 +137,6 @@ public class AuthService {
 
         /* 엑세스 토큰 헤더에 저장 및 리프레쉬 토큰 쿠키에 저장하는 로직 */
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
-        setRefreshTokenCookie(response, jwtTokenDto);
-
-
-        // UserLoginResponseDto 생성 로직.
-        User user = userRepository.findByRefreshToken(jwtTokenDto.getRefreshToken())
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.INVALID_TOKEN));
-
-        // 레벨 score 계산하기
-        long levelScore = 0L;
-
-        // Mate 게시판 상태가 Complete
-        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(user.getId());
-        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
-
-        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
-        long teamMatchingCompleteParticipationCount = 0L;
-        // todo : 출석부 개수 counting 하기
-
-
-        UserDetailsAfterRefreshResponseDto refreshResponseDto =
-                UserDetailsAfterRefreshResponseDto.from(
-                        user, levelScore, mateCompleteParticipationCount, teamMatchingCompleteParticipationCount);
-
-        return refreshResponseDto;
     }
 
     /**
@@ -220,16 +187,16 @@ public class AuthService {
     /**
      * 쿠키에 리프레쉬 토큰을 저장하는 메서드
      * @param response HttpServletResponse
-     * @param jwtTokenDto JwtTokenDto
+     * @param refreshToken refreshToken
      * */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
-            JwtTokenDto jwtTokenDto
+            String refreshToken
     ) {
         CookieUtil.addCookie(
                 response,
                 refreshAuthorizationCookieName,
-                jwtTokenDto.getRefreshToken(),
+                refreshToken,
                 refreshTokenExpirationPeriod,
                 domain
         );

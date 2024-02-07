@@ -9,7 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.user.dto.*;
+import sync.slamtalk.user.dto.UserLoginRequestDto;
+import sync.slamtalk.user.dto.UserSignUpRequestDto;
 import sync.slamtalk.user.service.AuthService;
 
 /**
@@ -40,15 +41,15 @@ public class AuthController {
             description = "자체 로그인 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<UserLoginResponseDto> authorize(
+    public ApiResponse<String> authorize(
             @Valid @RequestBody UserLoginRequestDto userLoginDto,
             HttpServletResponse response
     ) {
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        UserLoginResponseDto userLoginResponseDto = authService.login(userLoginDto, response);
+        authService.login(userLoginDto, response);
 
-        return ApiResponse.ok(userLoginResponseDto);
+        return ApiResponse.ok();
     }
 
     /**
@@ -63,11 +64,11 @@ public class AuthController {
             description = "자체 회원가입 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<UserLoginResponseDto> signUp(
+    public ApiResponse<String> signUp(
             @Valid @RequestBody UserSignUpRequestDto userSignUpDto,
             HttpServletResponse response) {
-        UserLoginResponseDto userLoginResponseDto = authService.signUp(userSignUpDto, response);
-        return ApiResponse.ok(userLoginResponseDto);
+        authService.signUp(userSignUpDto, response);
+        return ApiResponse.ok();
     }
 
     /**
@@ -77,17 +78,17 @@ public class AuthController {
      *
      * @return  JwtTokenResponseDto
      * */
-    @PatchMapping("/tokens/refresh")
+    @PostMapping("/tokens/refresh")
     @Operation(
             summary = "엑세스 및 리프레쉬 토큰 재발급",
             description = "리프레쉬 토큰은 httpOnly secure 쿠키로 보내주고 엑세스 토큰은 헤더와 파라미터에 넣어 보내줍니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<UserDetailsAfterRefreshResponseDto> refreshToken(
+    public ApiResponse<String> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ){
-        UserDetailsAfterRefreshResponseDto refreshResponseDto = authService.refreshToken(request, response);
-        return ApiResponse.ok(refreshResponseDto);
+        authService.refreshToken(request, response);
+        return ApiResponse.ok();
     }
 }
