@@ -229,8 +229,17 @@ public class JwtTokenProvider implements InitializingBean {
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElse(null);
 
+        // 권한 정보 가져오기
+        String authorities = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        log.debug("authorities = {}", authorities);
+
+        String accessToken = createAccessToken(user, authorities);
+
         if(user != null) {
-            return Optional.of(createToken(user));
+            return Optional.of(new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken));
         }
         return Optional.empty();
     }
@@ -260,13 +269,13 @@ public class JwtTokenProvider implements InitializingBean {
     }
 
     /**
-     * request 쿠키에서 RefreshToken 추출하는 메서드
+     * request 쿠키에서 Token 추출하는 메서드
      * @param request
      * @return String
      * */
-    public String getRefreshTokenFromCookie(HttpServletRequest request) {
+    public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
         /* Cookie 에서 Token 정보 가져오는 로직 */
-        Optional<Cookie> optionalAccessTokenCookie = CookieUtil.getCookie(request, refreshAuthorizationCookieName);
+        Optional<Cookie> optionalAccessTokenCookie = CookieUtil.getCookie(request, cookieName);
 
         if(optionalAccessTokenCookie.isPresent()){
             return optionalAccessTokenCookie.get().getValue();
@@ -274,4 +283,5 @@ public class JwtTokenProvider implements InitializingBean {
 
         return "";
     }
+
 }
