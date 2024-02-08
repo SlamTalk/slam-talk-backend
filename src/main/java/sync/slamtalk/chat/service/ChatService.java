@@ -55,6 +55,9 @@ public interface ChatService {
     // 특정방을 나갈 때 userChatRoom softDelete
     Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId);
 
+    // 팀 매칭/상대팀 매칭 완료 시 채팅방 생성후 chatRoomId와 매칭에 참여한 userId를 List 로 입력 받아 UserChatRoom에 저장 하는 메서드
+    void setUserListChatRoom(Long chatRoomId, List<Long> usersId);
+
 
 
 
