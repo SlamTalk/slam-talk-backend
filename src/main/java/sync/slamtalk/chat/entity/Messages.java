@@ -18,8 +18,12 @@ public class Messages extends BaseEntity {
     private Long id; // 식별 아이디
 
     // 작성자
-    @Column(name = "writer")
-    private String writer;
+    @Column(name = "sender_nickname")
+    private String senderNickname;
+
+    // 작성자 아이디
+    @Column(name = "sender_id")
+    private Long senderId;
 
     // 메세지(내용)
     @Column(name = "content")
