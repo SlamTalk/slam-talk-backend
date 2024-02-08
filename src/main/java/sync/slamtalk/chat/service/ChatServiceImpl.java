@@ -266,5 +266,45 @@ public class ChatServiceImpl implements ChatService{
     }
 
 
+    /**
+     * 팀매칭/상대팀 매칭완료 시 채팅방 생성 후 해당 채팅방 id에 User를 매핑 시켜주는 메서드
+     *
+     * @param chatRoomId 채팅방Id
+     * @param usersId 채팅방에 포함될 유저ID LIST
+     * */
+    @Override
+    @Transactional
+    public void setUserListChatRoom(Long chatRoomId, List<Long> usersId) {
+        log.debug("팀매칭 완료 시 채팅방 유저 생성 로직");
 
+        // chatRoom 가져오기
+        // UserChatRoom 추가하기
+        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(chatRoomId);
+        if(chatRoomOptional.isPresent()) {
+            ChatRoom chatRoom = chatRoomOptional.get();
+
+            List<User> users = userRepository.findAllById(usersId);
+
+            List<UserChatRoom> userChatRooms = users.stream().map(user -> {
+                // UserChatRoom 생성
+                UserChatRoom userChatRoom = UserChatRoom.builder()
+                        .readIndex(0L) // 초기화
+                        .isFirst(true) // 초기화
+                        .chat(chatRoom)
+                        .user(user)
+                        .build();
+
+                // ChatRoom 에도 userchatRoom 추가
+                chatRoom.addUserChatRoom(userChatRoom);
+                return userChatRoom;
+            }).toList();
+
+            // 저장
+            userChatRoomRepository.saveAll(userChatRooms);
+        } else{
+            log.debug("채팅방이 존재하지 않습니다.");
+            // 채팅방이 존재하지 않을때 REST API 커스텀 에러 반환
+            throw new BaseException(ErrorResponseCode.CHAT_FAIL);
+        }
+    }
 }
