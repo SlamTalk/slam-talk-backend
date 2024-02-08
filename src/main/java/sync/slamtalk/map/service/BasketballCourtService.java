@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.map.dto.BasketballCourtDto;
 import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
+import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
@@ -20,7 +21,7 @@ public class BasketballCourtService {
     private final BasketballCourtMapper basketballCourtMapper;
 
     // 저장된 모든 농구장의 간략 정보
-    public List<BasketballCourtDto> getAllCourtSummaryInfo() {
+    public List<BasketballCourtSummaryDto> getAllCourtSummaryInfo() {
         return basketballCourtRepository.findByAdminStatus(AdminStatus.ACCEPT).stream() //수락 상태의 정보만 조회
                 .map(basketballCourtMapper::toDto) // dto 변환
                 .collect(Collectors.toList());
