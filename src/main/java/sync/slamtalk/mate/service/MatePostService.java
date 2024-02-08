@@ -4,16 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
+import sync.slamtalk.chat.service.ChatService;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.*;
-import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
 import sync.slamtalk.user.UserRepository;
@@ -23,8 +24,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
@@ -40,6 +41,7 @@ public class MatePostService {
     private final ParticipantService participantService;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
+    private final ChatService chatService;
 
     private static final int FIRST_PAGE = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
@@ -47,7 +49,7 @@ public class MatePostService {
     /*
      * Objective : 메이트찾기 게시글을 등록한다.
      * Flow :
-     * 1. 매개변수로 입력 받은 userId로 userRepository를 조회하여 해당 User 객체를 가져온다.
+     * 1. 매개변수로 입력 받은 userId로 userRepository를 조회하여 해당 User 객체를 가져온다.(없을 경우 예외 처리)
      * 2. MateFormDTO를 MatePost로 변환한다.
      * 3. MatePost를 저장한다.
      * 4. 저장된 게시글의 아이디를 반환한다.
@@ -83,7 +85,7 @@ public class MatePostService {
         String writerNickname = writer.getNickname();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
-        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
+        EntityToDtoMapper mapper = new EntityToDtoMapper();
         List<String> skillList = mapper.toSkillLevelTypeList(post.getSkillLevel());
         List<PositionListDTO> positionList = mapper.toPositionListDto(post);
 
@@ -230,7 +232,7 @@ public class MatePostService {
         Pageable pageable = PageRequest.of(FIRST_PAGE, DEFAULT_PAGE_SIZE);
         List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedNotOrderByCreatedAtDesc(cursor, true, pageable);
         log.debug("listedMatePosts: {}", listedMatePosts);
-        List<MatePostDTO> response = listedMatePosts.stream().map(MatePostEntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
+        List<MatePostDTO> response = listedMatePosts.stream().map(EntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
         return response;
     }
 
@@ -242,11 +244,9 @@ public class MatePostService {
         3. 글의 모집 상태가 모집 중인지 확인한다. (모집 중이 아닐 경우 예외 처리)
         3-1. 모집 중이라면 참여자 목록을 불러온다.
         3-2. 참여자 목록이 비어있다면 예외 처리한다.
-        3-3. 참여자 목록이 비어있지 않다면 참여자 목록을 순회하며 수락된 참여자들에게 채팅방을 개설하고 채팅방 ID 정보를 포함한 알림을 보낸다. (필요 시 구현)
+        3-3. 참여자 목록이 비어있지 않다면 채팅방을 개설하고 참여자 목록을 정제하여 채팅방에 등록한다.
         3-4. 참여자 목록을 순회하며 수락되지 않은 참여자들을 데이터베이스에서 삭제한다. (hard delete)
         4. 글의 모집 상태를 완료로 변경한다.
-     Note :
-        채팅방 관련 기능은 추후에 구현할 수도 있다. (e.g 채팅방 개설, 채팅방 ID 정보를 포함한 알림 보내기 등)
      */
     public void completeRecruitment(long matePostId, long userId) {
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
@@ -260,15 +260,18 @@ public class MatePostService {
             if(participants.isEmpty()){
                 throw new BaseException(NO_ACCEPTED_PARTICIPANT);
             }
-
+            ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TOGETHER", post.getTitle());
+            Long chatroomId = chatService.createChatRoom(chatCreateDTO);
+            List<Long> users = new ArrayList<>();
             for(Participant participant : participants){
                 if(participant.getApplyStatus() == ApplyStatusType.ACCEPTED){
-                    // todo? : 채팅방을 개설하고 승락된 참여자들에게 채팅방 ID 정보를 포함한 알림을 보낸다. (필요 시 구현)
+                    users.add(participant.getParticipantId());
                 }else{
                     participant.disconnectParent();
                     participantRepository.delete(participant); // * 수락되지 않은 참여자들은 데이터베이스에서 삭제한다.(hard delete)
                 }
             }
+            chatService.setUserListChatRoom(chatroomId, users);
             post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);

@@ -11,7 +11,6 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
     USER_NOT_AUTHORIZED(SC_BAD_REQUEST, 4002, "접근한 유저는 해당 권한이 없습니다."),
     PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS(SC_BAD_REQUEST, 4003, "해당 참여자는 상태를 변경할 수 없습니다."),
     DECREASE_POSITION_NOT_AVAILABLE(SC_BAD_REQUEST, 4004, "해당 포지션의 모집 인원을 감소시킬 수 없습니다."),
-    INCREASE_POSITION_NOT_AVAILABLE(SC_BAD_REQUEST, 4005, "해당 포지션의 모집 인원을 증가시킬 수 없습니다."),
     MATE_POST_NOT_FOUND(SC_NOT_FOUND, 4041, "해당 모집 글을 찾을 수 없습니다."),
     PARTICIPANT_NOT_FOUND(SC_NOT_FOUND, 4042, "해당 참여자를 찾을 수 없습니다."),
 

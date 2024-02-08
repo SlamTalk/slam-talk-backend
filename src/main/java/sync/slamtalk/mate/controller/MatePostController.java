@@ -37,11 +37,7 @@ public class MatePostController {
     @PostMapping("/register")
     public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO, @AuthenticationPrincipal Long id){
 
-        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        long userId = id;
-
-        // MateFormDTO를 MatePost로 변환한다.
-        long matePostId = matePostService.registerMatePost(mateFormDTO, userId);
+        long matePostId = matePostService.registerMatePost(mateFormDTO, id);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("/api/mate/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
@@ -95,7 +91,7 @@ public class MatePostController {
             description = "메이트 찾기 글 목록을 조회하는 api 입니다. cursor(모집글 등록일)를 이용하여 최근 등록일 순으로 커서 페이징을 구현합니다. 제공되는 기본 페이지 수는 10 입니다. \n" +
                     "cursor가 없을 경우 현재 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
                     "cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
-                    "cursor는 yyyy-MM-dd HH:mm 형식으로 요청해야 합니다. \n" +
+                    "cursor는 yyyy-MM-dd HH:mm:SSS 형식으로 요청해야 합니다. \n" +
                     "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
             tags = {"메이트 찾기"}
     )
@@ -114,6 +110,11 @@ public class MatePostController {
         return ApiResponse.ok(response);
     }
 
+    @Operation(
+            summary = "메이트 찾기 글 모집 완료",
+            description = "해당 글을 모집 완료처리하는 api 입니다.",
+            tags = {"메이트 찾기"}
+    )
     @PatchMapping("/{matePostId}/complete")
     public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
         matePostService.completeRecruitment(matePostId, id);

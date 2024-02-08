@@ -14,7 +14,7 @@ import java.util.List;
 
 @NoArgsConstructor
 @Component
-public class MatePostEntityToDtoMapper {
+public class EntityToDtoMapper {
 
     public static List<PositionListDTO> toPositionListDto(MatePost matePost){
         List<PositionListDTO> positionList = new ArrayList<>();

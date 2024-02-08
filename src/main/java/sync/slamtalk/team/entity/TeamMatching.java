@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
@@ -19,8 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static sync.slamtalk.team.error.TeamErrorResponseCode.ALEADY_DECLARED_OPPONENT;
-import static sync.slamtalk.team.error.TeamErrorResponseCode.PROHIBITED_TO_APPLY_TO_YOUR_POST;
+import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -81,8 +81,14 @@ public class TeamMatching extends BaseEntity {
 //        this.writerId = writerId;
 //    }
 
+    private static final int MAX_APPLICANTS = 5;
+
     public void declareOpponent(User opponent){
         this.opponent = opponent;
+    }
+
+    public void cancelOpponent(){
+        this.opponent = null;
     }
 
     @Override
@@ -147,7 +153,7 @@ public class TeamMatching extends BaseEntity {
     * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
      */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
-        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
+        EntityToDtoMapper mapper = new EntityToDtoMapper();
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
@@ -169,15 +175,21 @@ public class TeamMatching extends BaseEntity {
     @Override
     public void delete() {
         this.getTeamApplicants().forEach(TeamApplicant::delete);
+        this.recruitmentStatus = RecruitmentStatusType.CANCELED;
         super.delete();
     }
 
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
-        return this.writer.getId() == loginId;
+        return this.writer.getId().equals(loginId);
     }
-
+    public void connectApplicant(TeamApplicant teamApplicant){
+        if(teamApplicants.stream().filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING).count() > MAX_APPLICANTS){
+            throw new BaseException(OVER_LIMITED_NUMBERS);
+        }
+        this.teamApplicants.add(teamApplicant);
+    }
     public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
         //todo : 같은 모집 상태로 변경 시 예외 처리
 

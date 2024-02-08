@@ -10,11 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.team.dto.*;
-import sync.slamtalk.team.entity.TeamMatching;
-import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.team.service.TeamMatchingService;
 
 import java.net.URI;
@@ -23,7 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-import static sync.slamtalk.mate.error.MateErrorResponseCode.USER_NOT_AUTHORIZED;
 
 @Slf4j
 @RestController
@@ -97,10 +93,10 @@ public class TeamMatchingController {
 
     @Operation(
             summary = "팀 매칭 리스트 조회",
-            description = "커서 페이징 방식으로 팀 매칭 글 리스트를 조회하는 api 입니다. " +
-                    "다음 글 목록을 불러오려면 이전 요청 응답 모델에 넣었던 cursor값을 쿼리파라미터의 cursor에 적어주세요. (yyyy-MM-dd HH:mm:ss.SSS)"
+            description = "커서 페이징 방식으로 팀 매칭 글 리스트를 조회하는 api 입니다. \n" +
+                    "다음 글 목록을 불러오려면 이전 요청 응답 모델에 넣었던 cursor값을 쿼리파라미터의 cursor에 적어주세요. (yyyy-MM-dd HH:mm:ss.SSS)\n"
                     + "limit은 한번 조회할 때 가져올 수 있는 최대 글 개수이며, 기본값은 10개입니다.",
-            tags = {"팀 매칭"}
+            tags = {"팀 매칭","GUEST"}
     )
     @GetMapping("/list")
     public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
@@ -126,20 +122,53 @@ public class TeamMatchingController {
     @Operation(
             summary = "팀 매칭 신청",
             description = "팀 매칭 글에 신청하는 api 입니다.",
-            tags = {"팀 매칭 / 신청자 목록",}
+            tags = {"팀 매칭 / 신청자 목록"}
     )
     @PostMapping("/{teamMatchingId}/apply")
     public ApiResponse applyTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @RequestBody FromApplicantDto fromApplicantDto,
                                          @AuthenticationPrincipal Long id){
-        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        Long userId = id;
+        Long chatroomId = teamMatchingService.applyTeamMatching(teamMatchingId, fromApplicantDto, id);
 
-        ToApplicantDto dto = teamMatchingService.applyTeamMatching(teamMatchingId, fromApplicantDto, userId);
-
-        return ApiResponse.ok(dto);
+        return ApiResponse.ok(chatroomId);
     }
 
+    @Operation(
+            summary = "팀 매칭 신청자 관련 동작 api",
+            description = "팀 매칭 신청자와 대화하기(COMMUNICATING) : 해당 신청자와 대화하기를 누르면 해당 api를 호출하여 신청자의 채팅방에 접속하여 각자의 채팅방 리스트에 추가합니다. \n" +
+            "거절하기(REJECTED) : 해당 신청자를 거절합니다. \n" +
+            "취소하기(CANCELED) : 해당 신청자의 신청을 취소합니다. \n" +
+            "수락하기(ACCEPTED) : 해당 신청자를 수락합니다. 수락된 신청자는 취소하기를 통해 CANCELED 상태로 변경할 수 있습니다. \n",
+            tags = {"팀 매칭 / 신청자 목록"}
+    )
+    @PatchMapping("/{teamMatchingId}/apply/{teamApplicantId}")
+    public ApiResponse updateTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @PathVariable("teamApplicantId") Long teamApplicantId,
+                                          @RequestParam("applyStatus") ApplyStatusType applyStatus, @AuthenticationPrincipal Long id){
 
+
+        if(applyStatus == ApplyStatusType.COMMUNICATING){
+            teamMatchingService.communicateApplicant(teamMatchingId, teamApplicantId, id);
+        }else if(applyStatus == ApplyStatusType.REJECTED){
+            teamMatchingService.rejectApplicant(teamMatchingId, teamApplicantId, id);
+        }else if(applyStatus == ApplyStatusType.CANCELED){
+            teamMatchingService.cancelApplicant(teamMatchingId, teamApplicantId, id);
+        }else if(applyStatus == ApplyStatusType.ACCEPTED) {
+            teamMatchingService.acceptApplicant(teamMatchingId, teamApplicantId, id);
+        }else{
+            return ApiResponse.fail("잘못된 요청입니다.");
+        }
+        return ApiResponse.ok();
+    }
+
+    @Operation(
+            summary = "팀 매칭 모집 완료",
+            description = "팀 매칭 글의 모집을 완료하는 api 입니다.",
+            tags = {"팀 매칭 / 신청자 목록"}
+    )
+    @PatchMapping("/{teamMatchingId}/apply/{teamApplicantId}/complete")
+    public ApiResponse completeTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @PathVariable("teamApplicantId")Long teamApplicantId, @AuthenticationPrincipal Long id){
+        teamMatchingService.completeTeamMatching(teamMatchingId, teamApplicantId, id);
+        return ApiResponse.ok();
+    }
 
 
 

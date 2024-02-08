@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.team.dto.ToApplicantDto;
@@ -41,11 +42,24 @@ public class TeamApplicant extends BaseEntity {
     private SkillLevelType skillLevel;
 
     public void connectTeamMatching(TeamMatching teamMatching) {
+        teamMatching.connectApplicant(this);
         this.teamMatching = teamMatching;
-        teamMatching.getTeamApplicants().add(this);
+    }
+
+    public void disconnectTeamMatching() {
+        this.teamMatching.getTeamApplicants().remove(this);
+        this.teamMatching = null;
     }
 
 
+
+
+    public boolean checkCapabilities(List<String> requiredSkillLevel) {
+        if(requiredSkillLevel.contains(this.skillLevel.getLevel()) == false){
+            return false;
+        }
+        return true;
+    }
 
     public ToApplicantDto makeDto(){
         ToApplicantDto dto = new ToApplicantDto();
@@ -87,4 +101,11 @@ public class TeamApplicant extends BaseEntity {
                 '}';
     }
 
+    public void updateApplyStatus(ApplyStatusType applyStatus) {
+        this.applyStatus = applyStatus;
+    }
+
+    public boolean isCorrespondTo(Long userId){
+        return this.applicantId.equals(userId);
+    }
 }

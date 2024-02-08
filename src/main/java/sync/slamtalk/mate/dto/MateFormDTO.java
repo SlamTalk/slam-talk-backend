@@ -9,12 +9,9 @@ import lombok.*;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.mate.entity.SkillLevelType;
-import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
 import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;

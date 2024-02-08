@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.DECREASE_POSITION_NOT_AVAILABLE;
-import static sync.slamtalk.mate.error.MateErrorResponseCode.INCREASE_POSITION_NOT_AVAILABLE;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.OVER_LIMITED_NUMBERS;
 
 @Entity
 @Getter
@@ -223,28 +223,28 @@ public class MatePost extends BaseEntity {
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(OVER_LIMITED_NUMBERS);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(OVER_LIMITED_NUMBERS);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(OVER_LIMITED_NUMBERS);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(OVER_LIMITED_NUMBERS);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }

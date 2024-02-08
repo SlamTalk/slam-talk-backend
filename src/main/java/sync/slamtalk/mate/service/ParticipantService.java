@@ -10,7 +10,7 @@ import sync.slamtalk.mate.dto.MatePostApplicantDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
-import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
 import sync.slamtalk.user.UserRepository;
@@ -18,7 +18,6 @@ import sync.slamtalk.user.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 import static sync.slamtalk.user.error.UserErrorResponseCode.NOT_FOUND_USER;
@@ -32,7 +31,7 @@ public class ParticipantService {
     private final MatePostRepository matePostRepository;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
-    private final MatePostEntityToDtoMapper matePostEntityToDtoMapper;
+    private final EntityToDtoMapper entityToDtoMapper;
 
     /*
     해당 글의 참여자 목록에 신청자를 등록한다.
@@ -113,8 +112,8 @@ public class ParticipantService {
             Participant participant = participantRepository.findById(participantTableId).orElseThrow(()->new BaseException(PARTICIPANT_NOT_FOUND));
 
             if(participant.getApplyStatus() == ApplyStatusType.WAITING){
-                List<PositionListDTO> allowedPosition = matePostEntityToDtoMapper.toPositionListDto(matePost);
-                List<String> allowedSkillLevel= matePostEntityToDtoMapper.toSkillLevelTypeList(matePost.getSkillLevel());
+                List<PositionListDTO> allowedPosition = entityToDtoMapper.toPositionListDto(matePost);
+                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(matePost.getSkillLevel());
                 if(participant.checkCapabilities(allowedPosition, allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
                     participant.updateApplyStatus(ApplyStatusType.ACCEPTED);
                     matePost.increasePositionNumbers(participant.getPosition());
