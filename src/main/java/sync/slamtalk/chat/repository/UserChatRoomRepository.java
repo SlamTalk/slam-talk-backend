@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long> {
 
     // UserChatRoom 테이블에서 chatRoomId 로 데이터 가져오기
-    Optional<UserChatRoom> findByChat_Id(Long chatRoomId);
+    List<UserChatRoom> findByChat_Id(Long chatRoomId);
 
 
     // 특정 User_Id에 해당하는 모든 UserChatRoom 엔터티를 찾는 메서드
