@@ -2,6 +2,7 @@ package sync.slamtalk.map.mapper;
 
 import org.springframework.stereotype.Component;
 import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
 
@@ -9,11 +10,11 @@ import sync.slamtalk.map.entity.BasketballCourt;
 public class BasketballCourtMapper {
 
     // entity -> dto 변환
-    public BasketballCourtDto toDto(BasketballCourt basketballCourt) {
+    public BasketballCourtSummaryDto toDto(BasketballCourt basketballCourt) {
         if (basketballCourt == null) {
             return null;
         }
-        return new BasketballCourtDto(
+        return new BasketballCourtSummaryDto(
                 basketballCourt.getCourtId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
