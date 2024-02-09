@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.service.BasketballCourtService;
@@ -35,8 +36,8 @@ public class BasketballCourtController {
             description = "이 기능은 마커에 띄울 전체 농구장의 간략 정보 응답을 보내는 기능입니다.", // 기능 설명
             tags = {"지도","게스트"}
     )
-    public ApiResponse<List<BasketballCourtDto>> getAllCourtSummaryInfo() {
-        List<BasketballCourtDto> courtDetails = basketballCourtService.getAllCourtSummaryInfo();
+    public ApiResponse<List<BasketballCourtSummaryDto>> getAllCourtSummaryInfo() {
+        List<BasketballCourtSummaryDto> courtDetails = basketballCourtService.getAllCourtSummaryInfo();
         return (ApiResponse.ok(courtDetails, "농구장 목록을 성공적으로 가져왔습니다."));
     }
 

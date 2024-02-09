@@ -14,16 +14,22 @@ import java.io.Serializable;
 public class ChatRoomDTO implements Serializable {
     // 채팅방 고유 아이디
     private String roomId;
+    // 채팅방 타입
+    private String roomType;
     // 채팅방 상대방 아이디
     private String partnerId;
     // 채팅방 이름
     private String name;
+    // 채팅방 이미지
+    private String imgUrl;
     // 채팅방 마지막 메세지
-    private String last_message;
+    private String lastMessage;
+    // 농구장 아이디
+    private Long courtId;
 
 
     // 채팅방 마지막 메세지 업데이트
-    public void setLast_message(String last_message) {
-        this.last_message = last_message;
+    public void setLast_message(String lastMessage) {
+        this.lastMessage = lastMessage;
     }
 }

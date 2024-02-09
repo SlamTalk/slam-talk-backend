@@ -28,6 +28,18 @@ public class UserChatRoom extends BaseEntity {
     @JoinColumn(name = "chatroom_id",nullable = false)
     private ChatRoom chat;
 
+    // 채팅방 타입
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chatroom_type")
+    private RoomType roomType;
+
+    @Column(name = "chatroom_source")
+    private Long source; // 1:1채팅의 경우 상대방 userId, 농구장채팅인 경우 court_id;
+
+
+    @Column(name = "chatroom_img")
+    private String imageUrl; // 채팅리스트에 뜨는 이미지
+
 
     // 사용자가 마지막으로 읽은 메세지의 아이디 값 저장
     @Column(name = "read_index")
