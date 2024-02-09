@@ -192,9 +192,14 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 String nickname = extractNickname(messageContent);
                 log.debug("extract message nickname:{}",nickname);
 
+                // 메세지 보낸 유저의 아이디 추출
+                String uid = extractUserId(messageContent);
+                Long userid = Long.parseLong(uid);
+
                 if (content != null) {
                     ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
                             .roomId(roomId.toString())
+                            .senderId(userid)
                             .content(content)
                             .senderNickname(nickname)
                             .timestamp(LocalDateTime.now().toString())
@@ -340,6 +345,19 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     }
 
 
+    // 채팅 유저 아이디 추출
+    private String extractUserId(String json){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(json);
+            if(rootNode.has("senderId")){
+                return rootNode.get("senderId").toString();
+            }
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+        return null;
+    }
 
 
     // 사용자 채팅방에 추가

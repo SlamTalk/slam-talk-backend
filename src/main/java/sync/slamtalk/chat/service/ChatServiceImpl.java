@@ -20,6 +20,8 @@ import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
+import sync.slamtalk.map.entity.BasketballCourt;
+import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -38,11 +40,44 @@ public class ChatServiceImpl implements ChatService{
     private final MessagesRepository messagesRepository;
     private final UserChatRoomRepository userChatRoomRepository;
     private final UserRepository userRepository;
+    private final BasketballCourtRepository basketballCourtRepository;
 
     // 채팅방 생성(농구장:미리해놓기, 그외 모두 SUBSCRIBE 시에)
     @Override
     public long createChatRoom(ChatCreateDTO chatCreateDTO) {
         // chatRoom create
+        if(chatCreateDTO.getRoomType().equals(RoomType.DIRECT)){
+            ChatRoom chatRoom = ChatRoom.builder()
+                    .roomType(typeOfRoom(chatCreateDTO))
+                    .build();
+            ChatRoom save = chatRoomRepository.save(chatRoom);
+        }
+
+        if(chatCreateDTO.getRoomType().equals(RoomType.MATCHING)){
+            ChatRoom chatRoom = ChatRoom.builder()
+                    .roomType(typeOfRoom(chatCreateDTO))
+                    .name(chatCreateDTO.getName()) // "호랑이팀 vs 거북이팀" 이런식으로
+                    .build();
+            ChatRoom save = chatRoomRepository.save(chatRoom);
+        }
+
+        if(chatCreateDTO.getRoomType().equals(RoomType.BASKETBALL)){
+            ChatRoom chatRoom = ChatRoom.builder()
+                    .roomType(typeOfRoom(chatCreateDTO))
+                    .name(chatCreateDTO.getName())
+                    .build();
+            ChatRoom save = chatRoomRepository.save(chatRoom);
+
+        }
+        if(chatCreateDTO.getRoomType().equals(RoomType.TOGETHER)){
+            ChatRoom chatRoom = ChatRoom.builder()
+                    .roomType(typeOfRoom(chatCreateDTO))
+                    .name(chatCreateDTO.getName()) // 게시글 이름?
+                    .build();
+            ChatRoom save = chatRoomRepository.save(chatRoom);
+        }
+
+
         ChatRoom chatRoom = ChatRoom.builder()
                 .roomType(typeOfRoom(chatCreateDTO))
                 .name(nameOfRoom(chatCreateDTO))
@@ -79,6 +114,7 @@ public class ChatServiceImpl implements ChatService{
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .readIndex(0L) // 초기화
                     .isFirst(true) // 초기화
+                    .roomType(chatRoom.getRoomType())
                     .chat(chatRoom)
                     .user(userOptional.get())
                     .build();
@@ -102,13 +138,13 @@ public class ChatServiceImpl implements ChatService{
             // Message create
             Messages messages = Messages.builder()
                     .chatRoom(Room)
-                    .writer(chatMessageDTO.getSenderNickname())
+                    .senderId(chatMessageDTO.getSenderId())
+                    .senderNickname(chatMessageDTO.getSenderNickname())
                     .content(chatMessageDTO.getContent())
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
         }else{
-            // TODO Exceptioin 처리
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
     }
@@ -155,13 +191,32 @@ public class ChatServiceImpl implements ChatService{
             boolean isDelete = ucr.getIsDeleted().booleanValue();
             log.debug("isDelete:{}",isDelete);
 
+
             // 삭제 되지 않은 채팅방만 가져옴
             if(!isDelete){
+
+                String profile = null;
+
+                // 1:1 인 경우 상대방 프로필
+                // 1:1, 팀매칭만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
+                if(ucr.getRoomType().equals(RoomType.DIRECT) || ucr.getRoomType().equals(RoomType.MATCHING)){
+                    List<UserChatRoom> optionalList = userChatRoomRepository.findByChat_Id(ucr.getChat().getId());
+                    for(UserChatRoom x : optionalList){
+                        if(!x.getUser().getId().equals(userId) && x.getIsDeleted().equals(false)){
+                            // 자기 자신이 아니고, 삭제가 되지 않은 경우
+                            profile = x.getImageUrl();
+                        }
+                    }
+                }
+
                 ChatRoomDTO dto = ChatRoomDTO.builder()
                         .roomId(ucr.getId().toString())
+                        .roomType(ucr.getRoomType().toString())
+                        .imgUrl(profile)
                         .name(ucr.getChat().getName())
                         .roomId(ucr.getChat().getId().toString())
                         .build();
+
                 // 마지막 메세지
                 PageRequest pageRequest = PageRequest.of(0, 1);
                 Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
@@ -184,12 +239,26 @@ public class ChatServiceImpl implements ChatService{
         // 특정 방 메세지 중 현재 messageId 보다 큰 Id값을 가진 메세지들 가져오기
         List<Messages> newMessages = messagesRepository.findByChatRoomIdAndIdGreaterThan(chatRoomId, messageId);
 
+
         // messageRepository 에서 가져온 메세지로 dto 생성하기
         for(Messages m : newMessages){
+
+            // 작성자 이미지 가져오기
+            Long senderId = m.getSenderId();
+            Optional<User> optionalUser = userRepository.findById(senderId);
+            String imageUrl = "";
+            if(optionalUser.isPresent()){
+                User user = optionalUser.get();
+                imageUrl = user.getImageUrl();
+            }else{
+                imageUrl = "null";
+            }
             ChatMessageDTO messageDTO = ChatMessageDTO.builder()
                     .messageId(m.getId().toString())
                     .roomId(m.getChatRoom().getId().toString())
-                    .senderNickname(m.getWriter())
+                    .senderId(m.getSenderId())
+                    .senderNickname(m.getSenderNickname())
+                    .imgUrl(imageUrl)
                     .content(m.getContent())
                     .timestamp(m.getCreation_time())
                     .build();
