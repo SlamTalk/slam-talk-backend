@@ -113,7 +113,7 @@ public class ParticipantService {
 
             if(participant.getApplyStatus() == ApplyStatusType.WAITING){
                 List<PositionListDTO> allowedPosition = entityToDtoMapper.toPositionListDto(matePost);
-                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(matePost.getSkillLevel());
+                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(matePost);
                 if(participant.checkCapabilities(allowedPosition, allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
                     participant.updateApplyStatus(ApplyStatusType.ACCEPTED);
                     matePost.increasePositionNumbers(participant.getPosition());

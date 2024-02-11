@@ -85,7 +85,7 @@ public class Participant extends BaseEntity {
             return false;
         }
         for(PositionListDTO positionListDTO : requiredPosition){
-            if(positionListDTO.getPosition() == this.position){
+            if(positionListDTO.getPosition().equals(this.position.getPosition())){
                 if(positionListDTO.getMaxPosition() - positionListDTO.getCurrentPosition() <= 0){
                     return false;
                 }

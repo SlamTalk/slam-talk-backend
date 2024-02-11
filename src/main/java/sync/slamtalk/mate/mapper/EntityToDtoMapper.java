@@ -4,10 +4,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.PositionListDTO;
-import sync.slamtalk.mate.entity.MatePost;
-import sync.slamtalk.mate.entity.PositionType;
-import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
-import sync.slamtalk.mate.entity.SkillLevelType;
+import sync.slamtalk.mate.entity.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,76 +17,104 @@ public class EntityToDtoMapper {
         List<PositionListDTO> positionList = new ArrayList<>();
 
         if(matePost.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER, matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD, matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD, matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED, matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
 
         return positionList;
     }
 
-    public static List<String> toSkillLevelTypeList(RecruitedSkillLevelType postSkillType){
+    public static List<String> toSkillLevelTypeList(Post post){
         List<String> skillLevelTypeList = new ArrayList<>();
 
-        if(postSkillType == RecruitedSkillLevelType.BEGINNER){
+        if(post.isSkillLevelBeginner()) {
             skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.OVER_BEGINNER) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+        }
+
+        if(post.isSkillLevelLow()) {
             skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+        }
+
+        if(post.isSkillLevelMiddle()) {
             skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.UNDER_LOW) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.OVER_LOW) {
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.UNDER_MIDDLE) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.OVER_MIDDLE) {
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.UNDER_HIGH) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }else if(postSkillType == RecruitedSkillLevelType.HIGH) {
+        }
+
+        if(post.isSkillLevelHigh()) {
             skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
         }
+
 
         return skillLevelTypeList;
     }
-
+    public static SkillLevelList fromRecruitSkillLevel(RecruitedSkillLevelType skillLevel){
+        SkillLevelList skillLevelList = new SkillLevelList();
+        switch(skillLevel) {
+            case HIGH:
+                skillLevelList.setSkillLevelHigh(true);
+                break;
+            case UNDER_HIGH:
+                skillLevelList.setSkillLevelHigh(true);
+                skillLevelList.setSkillLevelMiddle(true);
+                skillLevelList.setSkillLevelLow(true);
+                skillLevelList.setSkillLevelBeginner(true);
+                break;
+            case OVER_MIDDLE:
+                skillLevelList.setSkillLevelHigh(true);
+                skillLevelList.setSkillLevelMiddle(true);
+                break;
+            case UNDER_MIDDLE:
+                skillLevelList.setSkillLevelMiddle(true);
+                skillLevelList.setSkillLevelLow(true);
+                skillLevelList.setSkillLevelBeginner(true);
+                break;
+            case OVER_LOW:
+                skillLevelList.setSkillLevelHigh(true);
+                skillLevelList.setSkillLevelMiddle(true);
+                skillLevelList.setSkillLevelLow(true);
+                break;
+            case UNDER_LOW:
+                skillLevelList.setSkillLevelLow(true);
+                skillLevelList.setSkillLevelBeginner(true);
+                break;
+            case OVER_BEGINNER:
+                skillLevelList.setSkillLevelHigh(true);
+                skillLevelList.setSkillLevelMiddle(true);
+                skillLevelList.setSkillLevelLow(true);
+                skillLevelList.setSkillLevelBeginner(true);
+                break;
+            case BEGINNER:
+                skillLevelList.setSkillLevelBeginner(true);
+                break;
+        }
+        return skillLevelList;
+    }
     public static void toPositionListDTO(MatePost matePost, MatePostDTO matePostDTO){
         if(matePost.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER, matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             matePostDTO.getPositionList().add(positionListDTO);
         }
         if(matePost.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD, matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             matePostDTO.getPositionList().add(positionListDTO);
         }
         if(matePost.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD, matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
             matePostDTO.getPositionList().add(positionListDTO);
         }
         if(matePost.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED, matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
             matePostDTO.getPositionList().add(positionListDTO);
         }
     }
@@ -107,7 +132,7 @@ public class EntityToDtoMapper {
         matePostDTO.setLocationDetail(matePost.getLocationDetail());
         matePostDTO.setParticipants(matePost.getParticipants());
         toPositionListDTO(matePost, matePostDTO);
-        matePostDTO.setSkillList(toSkillLevelTypeList(matePost.getSkillLevel()));
+        matePostDTO.setSkillList(toSkillLevelTypeList(matePost));
         matePostDTO.setPositionList(toPositionListDto(matePost));
         matePostDTO.setCreatedAt(matePost.getCreatedAt());
         return matePostDTO;

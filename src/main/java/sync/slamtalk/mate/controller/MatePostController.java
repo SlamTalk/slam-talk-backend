@@ -13,6 +13,8 @@ import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.MatePostListDTO;
 import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.mate.entity.PositionType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
@@ -96,9 +98,14 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @GetMapping("/list")
-    public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor) {
+    public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor, @RequestParam(name = "location" , required = false) Optional<String> location,
+                                                        @RequestParam(name = "skillLevel", required = false) Optional<SkillLevelType> skillLevel, @RequestParam(name = "position", required = false) Optional<PositionType> position) {
         String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor);
+        String effectiveLocation = location.orElse("all");
+        SkillLevelType effectiveSkillLevel = skillLevel.orElse(SkillLevelType.UNSPECIFIED);
+        PositionType effectivePosition = position.orElse(PositionType.UNSPECIFIED);
+
+        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, effectiveLocation, effectiveSkillLevel, effectivePosition);
 
         MatePostListDTO response = new MatePostListDTO();
         response.setMatePostList(listedMatePostDTO);

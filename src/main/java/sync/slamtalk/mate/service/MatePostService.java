@@ -70,6 +70,7 @@ public class MatePostService {
      * 4. 해당 글의 참여자 목록을 불러와서 Dto로 변환한다.
      * 5. 게시글의 정보를 Dto로 변환하여 반환한다.
      */
+    @Transactional(readOnly = true)
     public MateFormDTO getMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
@@ -85,9 +86,8 @@ public class MatePostService {
         String writerNickname = writer.getNickname();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
-        EntityToDtoMapper mapper = new EntityToDtoMapper();
-        List<String> skillList = mapper.toSkillLevelTypeList(post.getSkillLevel());
-        List<PositionListDTO> positionList = mapper.toPositionListDto(post);
+        List<String> skillList = EntityToDtoMapper.toSkillLevelTypeList(post);
+        List<PositionListDTO> positionList = EntityToDtoMapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
@@ -98,7 +98,7 @@ public class MatePostService {
                 .scheduledDate(post.getScheduledDate())
                 .startTime(post.getStartTime())
                 .endTime(post.getEndTime())
-                .locationDetail(post.getLocationDetail())
+                .locationDetail(post.getLocation() + " " + post.getLocationDetail())
                 .skillLevelList(skillList)
                 .recruitmentStatus(post.getRecruitmentStatus())
                 .positionList(positionList)
@@ -147,20 +147,22 @@ public class MatePostService {
         if(post.getIsDeleted()){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        if(!post.isCorrespondToUser(userId)) {
+        if(post.isCorrespondToUser(userId) == false) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         String content = mateFormDTO.getContent();
         String title = mateFormDTO.getTitle();
+        String location = mateFormDTO.getLocationDetail().split(" ")[0];
         String locationDetail = mateFormDTO.getLocationDetail();
         LocalDate scheduledDate = mateFormDTO.getScheduledDate();
         LocalTime startTime = mateFormDTO.getStartTime();
         LocalTime endTime = mateFormDTO.getEndTime();
-        RecruitedSkillLevelType skillLevel = mateFormDTO.getSkillLevel();
+        EntityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
         Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
         Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
         Integer maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
         Integer maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
+        SkillLevelList skillLevel = EntityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
 
         if(content != null && !content.equals("")){ // * 내용이 비어있지 않다면
             post.updateContent(content);
@@ -170,10 +172,13 @@ public class MatePostService {
             post.updateTitle(title);
         }
 
+        if(location != null && !location.equals("")){ // * 시합 장소가 비어있지 않다면
+            post.updateLocation(location);
+        }
+
         if(locationDetail != null && !locationDetail.equals("")){ // * 상세 시합 장소가 비어있지 않다면
             post.updateLocationDetail(locationDetail);
         }
-
 
         if(scheduledDate != null){
             post.updateScheduledDate(scheduledDate);
@@ -186,33 +191,33 @@ public class MatePostService {
         }
 
         if(skillLevel != null){
-            post.updateSkillLevel(skillLevel);
+            post.configureSkillLevel(skillLevel);
         }
 
         if(maxParticipantsCenters != null){
             if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
-                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
             }
             post.updateMaxParticipantsCenters(maxParticipantsCenters);
         }
 
         if(maxParticipantsGuards != null){
             if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
-                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
             }
             post.updateMaxParticipantsGuards(maxParticipantsGuards);
         }
 
         if(maxParticipantsForwards != null){
             if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
-                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
             }
             post.updateMaxParticipantsForwards(maxParticipantsForwards);
         }
 
         if(maxParticipantsOthers != null){
             if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
-                throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
             }
             post.updateMaxParticipantsOthers(maxParticipantsOthers);
         }
@@ -226,7 +231,8 @@ public class MatePostService {
         1. 커서를 이용하여 글 목록을 조회한다.
         2. 조회된 글 목록을 DTO로 변환하여 반환한다.
      */
-    public List<MatePostDTO> getMatePostsByCurser(String cursorStr) {
+    @Transactional(readOnly = true)
+    public List<MatePostDTO> getMatePostsByCurser(String cursorStr, String location, SkillLevelType skillLevel, PositionType position){
         LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
         log.debug("cursor: {}", cursor);
         Pageable pageable = PageRequest.of(FIRST_PAGE, DEFAULT_PAGE_SIZE);
@@ -260,18 +266,18 @@ public class MatePostService {
             if(participants.isEmpty()){
                 throw new BaseException(NO_ACCEPTED_PARTICIPANT);
             }
-            ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TOGETHER", post.getTitle());
-            Long chatroomId = chatService.createChatRoom(chatCreateDTO);
-            List<Long> users = new ArrayList<>();
+            //ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TOGETHER", post.getTitle());
+            //Long chatroomId = chatService.createChatRoom(chatCreateDTO);
+            List<Long> usersId = new ArrayList<>();
             for(Participant participant : participants){
                 if(participant.getApplyStatus() == ApplyStatusType.ACCEPTED){
-                    users.add(participant.getParticipantId());
+                    usersId.add(participant.getParticipantId());
                 }else{
                     participant.disconnectParent();
                     participantRepository.delete(participant); // * 수락되지 않은 참여자들은 데이터베이스에서 삭제한다.(hard delete)
                 }
             }
-            chatService.setUserListChatRoom(chatroomId, users);
+            //chatService.setUserListChatRoom(chatroomId, usersId);
             post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);

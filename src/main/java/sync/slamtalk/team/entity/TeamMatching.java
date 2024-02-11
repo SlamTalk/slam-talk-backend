@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.entity.ApplyStatusType;
-import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
-import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
@@ -27,12 +25,12 @@ import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "teammatchinglist")
 @Getter
+@Builder
 @NamedEntityGraph(
         name = "TeamMatching.forEagerApplicants",
         attributeNodes = @NamedAttributeNode("teamApplicants")
-
 )
-public class TeamMatching extends BaseEntity {
+public class TeamMatching extends BaseEntity implements Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamMatchingId;
@@ -44,6 +42,14 @@ public class TeamMatching extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opponent_id")
     private User opponent;
+
+    boolean skillLevelHigh = false;
+
+    boolean skillLevelMiddle = false;
+
+    boolean skillLevelLow = false;
+
+    boolean skillLevelBeginner = false;
 
     private String teamName;
 
@@ -85,10 +91,19 @@ public class TeamMatching extends BaseEntity {
 
     public void declareOpponent(User opponent){
         this.opponent = opponent;
+        this.opponent.getOpponentTeamMatchings().add(this);
     }
 
     public void cancelOpponent(){
+        this.opponent.getOpponentTeamMatchings().remove(this);
         this.opponent = null;
+    }
+
+    public void configureSkillLevel(SkillLevelList list){
+        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+        if(list.isSkillLevelLow()) this.skillLevelLow = true;
+        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
     }
 
     @Override
@@ -160,7 +175,7 @@ public class TeamMatching extends BaseEntity {
         dto.setWriterId(this.writer.getId());
         dto.setNickname(this.writer.getNickname());
         dto.setLocationDetail(this.locationDetail);
-        dto.setSkillLevel(mapper.toSkillLevelTypeList(this.skillLevel));
+        dto.setSkillLevel(mapper.toSkillLevelTypeList(this));
         dto.setScheduledDate(this.scheduledDate);
         dto.setStartTime(this.startTime);
         dto.setEndTime(this.endTime);

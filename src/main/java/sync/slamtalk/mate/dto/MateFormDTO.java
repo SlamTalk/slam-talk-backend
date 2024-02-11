@@ -3,12 +3,16 @@ package sync.slamtalk.mate.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.SkillLevelList;
+import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
@@ -37,7 +41,9 @@ public class MateFormDTO {
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime; // 예정된 종료 시간
 
+    @NonNull
     private String locationDetail; // 상세 시합
+
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus; // 모집 상태 - RECRUITING, COMPLETED, CANCEL
     @Enumerated(EnumType.STRING)
@@ -62,12 +68,15 @@ public class MateFormDTO {
 
     @JsonIgnore
     public MatePost toEntity(User user) { // * writerId를 User 객체로 대체할 것!
-            return MatePost.builder()
+        SkillLevelList tempSkillList = EntityToDtoMapper.fromRecruitSkillLevel(skillLevel);
+        String location = locationDetail.split(" ")[0];
+            MatePost resultMatePost = MatePost.builder()
                     .writer(user)
                     .title(title)
                     .scheduledDate(scheduledDate)
                     .startTime(startTime)
                     .endTime(endTime)
+                    .location(location)
                     .locationDetail(locationDetail)
                     .content(content)
                     .maxParticipantsCenters(maxParticipantsCenters)
@@ -78,10 +87,11 @@ public class MateFormDTO {
                     .currentParticipantsForwards(0)
                     .maxParticipantsOthers(maxParticipantsOthers)
                     .currentParticipantsOthers(0)
-                    .skillLevel(skillLevel)
                     .recruitmentStatus(RecruitmentStatusType.RECRUITING)
                     .participants(new ArrayList<>())
                     .build();
+            resultMatePost.configureSkillLevel(tempSkillList);
+            return resultMatePost;
     }
 
 }

@@ -57,6 +57,7 @@ public class TeamMatchingService {
      */
     public long registerTeamMatching(FromTeamFormDTO dto, long userId){
         User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+        log.debug("[TeamMatchingService] user : {}", user.getTeamMatchings());
         TeamMatching teamMatchingEntity = new TeamMatching();
         teamMatchingEntity.createTeamMatching(dto, user);
         TeamMatching resultTeamMatchingEntity = teamMatchingRepository.save(teamMatchingEntity);
@@ -163,6 +164,7 @@ public class TeamMatchingService {
      * 5. 채팅방을 생성해서 채팅방 id를 가져온다.
      * 6. 모집 상태가 모집 중인지 확인한다.
      * 6-1. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
+     * 6-2. 요구 실력을 충족하지 못할 경우 BaseException을 발생시킨다.
      * 7. TeamApplicant 객체를 생성하여 저장한다.
      * Note :
      * 해당 글에 지원한 신청자의 상태가 WAITING인 수가 5명을 초과할 경우 BaseException을 발생시킨다.
@@ -182,21 +184,24 @@ public class TeamMatchingService {
             }
         });
 
-        ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TEAM", entity.getTitle());
-        Long chatroomId = chatService.createChatRoom(chatCreateDTO);
-
+        //ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TEAM", entity.getTitle());// todo : 채팅방 관련 구현
+        //Long chatroomId = chatService.createChatRoom(chatCreateDTO);
+        long chatroomId = 1L;
         if(entity.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
 
             User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
             String userNickname = user.getNickname();
 
+            if(entityToDtoMapper.toSkillLevelTypeList(entity).contains(fromApplicantDto.getSkillLevel().getLevel()) == false){
+                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+            }
 
             // todo : 유저 채팅방 리스트에 해당 채팅방을 추가한다.
             TeamApplicant applicant = TeamApplicant.builder()
                     .applicantId(userId)
                     .applicantNickname(userNickname)
                     .applyStatus(ApplyStatusType.WAITING)
-                    .chatroomId(chatroomId)
+                    //.chatroomId(chatroomId)
                     .teamName(fromApplicantDto.getTeamName())
                     .skillLevel(fromApplicantDto.getSkillLevel())
                     .build();
@@ -234,10 +239,10 @@ public class TeamMatchingService {
             TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
 
             if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
-                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(teamPost.getSkillLevel());
+                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(teamPost);
                 if(applicant.checkCapabilities(allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
-                    chatService.setUserChatRoom(applicant.getApplicantId(), applicant.getChatroomId());
-                    chatService.setUserChatRoom(hostId, applicant.getChatroomId());
+                    List<Long> userIdList = List.of(applicant.getApplicantId(), hostId);
+                    chatService.setUserListChatRoom(applicant.getChatroomId(), userIdList);
                     applicant.updateApplyStatus(ApplyStatusType.COMMUNICATING);
                 }else{
                     throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
