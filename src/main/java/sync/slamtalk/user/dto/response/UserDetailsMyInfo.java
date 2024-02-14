@@ -1,13 +1,18 @@
-package sync.slamtalk.user.dto;
+package sync.slamtalk.user.dto.response;
 
 import lombok.*;
+import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Builder
-public class UserDetailsOtherInfoResponseDto {
+public class UserDetailsMyInfo {
+    /* 개인 정보 관련 */
+    private String email;
+    private SocialType socialType;
+
     /* 공개되어도 상관없는 부분 */
     private Long id;
     private String nickname;
@@ -24,28 +29,31 @@ public class UserDetailsOtherInfoResponseDto {
     private Long mateCompleteParticipationCount = 0L;
     private Long teamMatchingCompleteParticipationCount = 0L;
 
+
     /**
-     * 상대방 프로필 조회 시 필요한 정보를 반환하는 생성자
+     * 나의 프로필 조회 시 필요한 정보를 반환하는 생성자
      *
      * @param user db에서 조회한 user 객체
-     * @param mateCompleteParticipationCount
-     * @return UserDetailsInfoResponseDto 개인정보 제외된 정보
+     * @param mateCompleteParticipationCount 메이트 참여완료 횟수
+     * @return UserDetailsInfoResponseDto 개인정보 포함된 정보
      */
-    public static UserDetailsOtherInfoResponseDto generateOtherUserProfile(
+    public static UserDetailsMyInfo generateMyProfile(
             User user,
             long levelScore,
             long mateCompleteParticipationCount
-    ) { return UserDetailsOtherInfoResponseDto.builder()
+    ){ return UserDetailsMyInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .selfIntroduction(user.getSelfIntroduction())
                 .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
                 .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
+                .level(levelScore/User.LEVEL_THRESHOLD)
                 .levelScore(levelScore)
-                .level(levelScore / User.LEVEL_THRESHOLD)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(0L)
+                .email(user.getEmail())
+                .socialType(user.getSocialType())
                 .build();
 
     }

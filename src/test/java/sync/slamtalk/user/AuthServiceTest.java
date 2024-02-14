@@ -1,22 +1,14 @@
 package sync.slamtalk.user;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
-import sync.slamtalk.user.dto.UserLoginRequestDto;
-import sync.slamtalk.user.dto.UserLoginResponseDto;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
-import sync.slamtalk.user.entity.SocialType;
-import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.dto.request.UserLoginReq;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.service.AuthService;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,17 +29,17 @@ class AuthServiceTest {
     public String email = "test1@naver.com";
     public String password = "123@password!";
     public String nickname = "nickname";
-    public UserLoginRequestDto userLoginRequestDto = new UserLoginRequestDto(email, password);
+    public UserLoginReq userLoginReq = new UserLoginReq(email, password);
 
     @DisplayName("회원가입")
     @Test
     void signUp() {
         //given
         MockHttpServletResponse response = new MockHttpServletResponse();
-        UserSignUpRequestDto userSignUpRequestDto = new UserSignUpRequestDto(email, password, nickname);
+        UserSignUpReq userSignUpReq = new UserSignUpReq(email, password, nickname);
 
         // when
-        authService.signUp(userSignUpRequestDto, response);
+        authService.signUp(userSignUpReq, response);
 
     }
 
@@ -58,7 +50,7 @@ class AuthServiceTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         // when
-        authService.login(userLoginRequestDto, response);
+        authService.login(userLoginReq, response);
 
         // then
 

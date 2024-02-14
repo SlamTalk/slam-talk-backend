@@ -11,8 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UserDetailsMyInfoResponseDto;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.repository.UserAttendanceRepository;
 
@@ -44,7 +43,7 @@ class UserServiceTest {
     @Disabled
     void testGenerateNickname() {
         // given
-        User user = new UserSignUpRequestDto(email, password, nickname).toEntity();
+        User user = new UserSignUpReq(email, password, nickname).toEntity();
 
         //when
         Mockito.when(userRepository.findById(loginUserId))
