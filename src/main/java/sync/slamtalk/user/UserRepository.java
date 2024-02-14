@@ -44,4 +44,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("basketball_skill_level") UserBasketballSkillLevelType basketballSkillLevel,
             @Param("basketball_position") UserBasketballPositionType basketballPosition
     );
+
+    Optional<User> findByEmail(@Param("email") String email);
+
+    @Query(value = "SELECT * FROM users WHERE email = :email AND social_type = :socialType", nativeQuery = true)
+    Optional<User> findUserByEmailAndSocialTypeIgnoringWhere(@Param("email") String email, @Param("socialType") String socialType);
 }
