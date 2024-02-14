@@ -49,7 +49,7 @@ public class MatePostController {
     @Operation(
             summary = "메이트 찾기 글 조회",
             description = "글 아이디를 요청하면 글을 조회하는 api 입니다.",
-            tags = {"메이트 찾기"}
+            tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/read/{matePostId}")
     public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
@@ -96,7 +96,7 @@ public class MatePostController {
                     "cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
                     "cursor는 yyyy-MM-dd HH:mm:SSS 형식으로 요청해야 합니다. \n" +
                     "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
-            tags = {"메이트 찾기"}
+            tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/list")
     public ApiResponse<MatePostListDTO> getMatePostList(MateSearchCondition condition){

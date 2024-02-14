@@ -50,7 +50,7 @@ public class TeamMatchingController {
     @Operation(
             summary = "팀 매칭 조회",
             description = "팀 매칭 글을 조회하는 api 입니다.",
-            tags = {"팀 매칭"}
+            tags = {"팀 매칭", "게스트"}
     )
     @GetMapping("/read/{teamMatchingId}/")
     public ApiResponse<ToTeamFormDTO> getTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId){
@@ -96,7 +96,7 @@ public class TeamMatchingController {
             description = "커서 페이징 방식으로 팀 매칭 글 리스트를 조회하는 api 입니다. \n" +
                     "다음 글 목록을 불러오려면 이전 요청 응답 모델에 넣었던 cursor값을 쿼리파라미터의 cursor에 적어주세요. (yyyy-MM-dd HH:mm:ss.SSS)\n"
                     + "limit은 한번 조회할 때 가져올 수 있는 최대 글 개수이며, 기본값은 10개입니다.",
-            tags = {"팀 매칭","GUEST"}
+            tags = {"팀 매칭","게스트"}
     )
     @GetMapping("/list")
     public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
