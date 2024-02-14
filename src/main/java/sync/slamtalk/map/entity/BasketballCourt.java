@@ -71,13 +71,13 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "parking_available")
     private Boolean parkingAvailable; // 주차 가능 여부
 
-    @Column(name = "phone_num", nullable = false, length = 20)
+    @Column(name = "phone_num", length = 20)
     private String phoneNum; // 전화번호
 
-    @Column(name = "website", nullable = false, length = 50)
+    @Column(name = "website", length = 50)
     private String website; // 홈페이지 링크
 
-    @Column(name = "convenience", nullable = false, length = 50)
+    @Column(name = "convenience", length = 50)
     private String convenience; // 편의 시설
 
     @Column(name = "additional_info", columnDefinition = "TEXT")
@@ -86,7 +86,7 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "photo_url", length = 255)
     private String photoUrl; // 농구장 사진 url
 
-    @Column(name = "admin_status", nullable = false)
+    @Column(name = "admin_status")
     @Enumerated(EnumType.STRING)
     private AdminStatus adminStatus; // 관리자 상태
 
