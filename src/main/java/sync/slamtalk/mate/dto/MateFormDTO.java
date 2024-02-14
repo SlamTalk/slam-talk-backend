@@ -73,13 +73,12 @@ public class MateFormDTO {
     private List<MatePostApplicantDTO> participants = new ArrayList<>(); // 참여자 목록
 
     @JsonIgnore
-    public MatePost toEntity(User user) {
+    public MatePost toEntity() {
         SkillLevelList tempSkillList = entityToDtoMapper.fromRecruitSkillLevel(skillLevel);
         String[] temp = locationDetail.split(" ", 2);
         String location = temp[0];
         String locationDetail = temp.length > 1 ? temp[1] : "";
             MatePost resultMatePost = MatePost.builder()
-                    .writer(user)
                     .title(title)
                     .scheduledDate(scheduledDate)
                     .startTime(startTime)
@@ -87,6 +86,7 @@ public class MateFormDTO {
                     .location(location)
                     .locationDetail(locationDetail)
                     .content(content)
+                    .skillLevel(skillLevel)
                     .maxParticipantsCenters(maxParticipantsCenters)
                     .currentParticipantsCenters(0)
                     .maxParticipantsGuards(maxParticipantsGuards)

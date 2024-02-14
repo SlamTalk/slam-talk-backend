@@ -1,10 +1,7 @@
 package sync.slamtalk.mate.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
@@ -22,6 +19,7 @@ import static sync.slamtalk.mate.error.MateErrorResponseCode.EXCEED_OR_UNDER_LIM
 
 @Entity
 @Getter
+@Setter
 @Table(name = "matepost")
 @Builder
 @AllArgsConstructor
@@ -49,6 +47,8 @@ public class MatePost extends BaseEntity implements Post{
 
         @Column(nullable = false)
         private String content; // 글 내용
+
+        private RecruitedSkillLevelType skillLevel;
 
         private boolean skillLevelHigh = false;
 
@@ -147,14 +147,11 @@ public class MatePost extends BaseEntity implements Post{
         }
 
         //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요
-//        public boolean connectParent(User user){
-//                this.user = user;
-//                if(!user.getMatePosts().contains(this)){
-//                        user.getMatePosts().add(this);
-//                        return true;
-//                }
-//                return false;
-//        }
+        public boolean connectParent(User user){
+                this.writer = user;
+                user.getMatePosts().add(this);
+                return true;
+        }
 
         public void configureSkillLevel(SkillLevelList list){
                 this.skillLevelBeginner = false;
@@ -304,6 +301,27 @@ public class MatePost extends BaseEntity implements Post{
                 return ApiResponse.ok("성공적으로 인원을 줄였습니다.");
         }
 
+        public List<String> toSkillLevelTypeList(){
+                List<String> skillLevelTypeList = new ArrayList<>();
+
+                if(this.isSkillLevelBeginner()) {
+                        skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                }
+
+                if(this.isSkillLevelLow()) {
+                        skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                }
+
+                if(this.isSkillLevelMiddle()) {
+                        skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                }
+
+                if(this.isSkillLevelHigh()) {
+                        skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                }
+
+                return skillLevelTypeList;
+        }
         // todo : 참여자 목록의 최대 포지션 인원을 일정 수치 이상 올리지 못하도록 하는 기능 구현 필요
 
         // todo : 해당 모집 글의 요구 실력에 미달하거나 초과할 경우 참여자 목록에 추가하지 못하도록 하는 기능 구현 필요

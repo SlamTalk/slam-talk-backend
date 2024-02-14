@@ -1,5 +1,6 @@
 package sync.slamtalk.mate.service;
 
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -55,7 +56,8 @@ public class MatePostService {
      */
     public long registerMatePost(MateFormDTO mateFormDTO, long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
-        MatePost matePost = mateFormDTO.toEntity(user);
+        MatePost matePost = mateFormDTO.toEntity();
+        matePost.connectParent(user);
         MatePost result = matePostRepository.save(matePost);
         return result.getMatePostId(); // * 저장된 게시글의 아이디를 반환한다.
     }
@@ -84,7 +86,7 @@ public class MatePostService {
         String writerImageUrl = writer.getImageUrl();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
-        List<String> skillList = entityToDtoMapper.toSkillLevelTypeList(post);
+        List<String> skillList = post.toSkillLevelTypeList();
         List<PositionListDTO> positionList = entityToDtoMapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
@@ -233,11 +235,18 @@ public class MatePostService {
     @Transactional(readOnly = true)
     public MatePostListDTO getMatePostsByCurser(MateSearchCondition condition){
         log.debug("condition: {}", condition);
-        List<MatePostDTO> listedMatePosts = queryRepository.findMatePostList(condition);
+        List<UnrefinedMatePostDTO> listedMatePosts = queryRepository.findMatePostList(condition);
 
         log.debug("listedMatePosts: {}", listedMatePosts);
+        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().FromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
+        List<MatePostToDto> result = refinedDto.stream().map(dto -> {
+                    List<FromParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
+                     dto.setParticipants(refined);
+                        return dto;
+                }
+        ).toList();
         MatePostListDTO response = new MatePostListDTO();
-        response.setMatePostList(listedMatePosts);
+        response.setMatePostList(result);
         if(listedMatePosts.isEmpty() == false) {
             response.setNextCursor(listedMatePosts.get(listedMatePosts.size() - 1).getCreatedAt().toString());
         }
