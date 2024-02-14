@@ -11,9 +11,11 @@ public enum CommunityErrorResponseCode implements ResponseCodeDetails {
     POST_FAIL(SC_BAD_REQUEST,4031,"Failed Post"),
     POST_NOT_FOUND(SC_NOT_FOUND,4032,"Post Not Found"),
     USER_NOT_FOUND(SC_NOT_FOUND, 4032, "User Not Found"),
-    UNAUTHORIZED_USER(SC_UNAUTHORIZED, 4033, "User Not Unauthorized");
+    UNAUTHORIZED_USER(SC_UNAUTHORIZED, 4033, "User Not Unauthorized"),
+    COMMENT_FAIL(SC_BAD_REQUEST, 4034, "Empty Comment"),
+    COMMENT_NOT_FOUND(SC_NOT_FOUND, 4035, "Comment Not Found");
     private final int code;
-    private int status;
+    private final int status;
     private final String message;
 
     CommunityErrorResponseCode(int code, int status, String message) {
@@ -24,16 +26,16 @@ public enum CommunityErrorResponseCode implements ResponseCodeDetails {
 
     @Override
     public int getStatus() {
-        return 0;
+        return status;
     }
 
     @Override
     public int getCode() {
-        return 0;
+        return code;
     }
 
     @Override
     public String getMessage() {
-        return null;
+        return message;
     }
 }

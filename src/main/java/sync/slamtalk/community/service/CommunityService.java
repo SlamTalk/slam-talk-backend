@@ -119,6 +119,7 @@ public class CommunityService {
     }
 
     //단일 게시글 조회
+    @Transactional(readOnly = true)
     public CommunityResponseDTO getPost(Long communityId) {
         Community community = communityRepository.findByCommunityIdAndIsDeletedFalse(communityId)
                 .orElseThrow(() -> new BaseException(CommunityErrorResponseCode.POST_NOT_FOUND));
@@ -127,6 +128,7 @@ public class CommunityService {
     }
 
     // 게시글 삭제
+    @Transactional
     public void deleteCommunity(Long communityId, Long userId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new BaseException(CommunityErrorResponseCode.POST_NOT_FOUND));

@@ -54,6 +54,9 @@ public class Community extends BaseEntity {
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityImage> images; // 게시글과 연관된 이미지 리스트
 
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
+
     // 제목 수정
     public void editTitle(String title) {
         this.title = title;
