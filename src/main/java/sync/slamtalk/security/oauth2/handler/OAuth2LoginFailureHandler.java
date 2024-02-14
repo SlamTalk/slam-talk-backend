@@ -20,7 +20,7 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
             AuthenticationException exception
     ) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        response.getWriter().write("소셜 로그인 실패! 서버 로그를 확인해주세요.");
+        response.getWriter().write("회원탈퇴 혹은 유효하지 않은 계정입니다. 고객센터에 문의 하기 바랍니다.");
         log.debug("소셜 로그인에 실패했습니다. 에러 메시지 : {}", exception.getMessage());
     }
 }

@@ -1,11 +1,11 @@
-package sync.slamtalk.user.dto;
+package sync.slamtalk.user.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UserLoginResponseDto {
+public class UserLogin {
     private Long userId;
     private String nickname;
     private String imageUrl;

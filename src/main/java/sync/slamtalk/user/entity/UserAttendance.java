@@ -3,6 +3,7 @@ package sync.slamtalk.user.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sync.slamtalk.common.BaseEntity;
 
 import java.time.LocalDate;
 
@@ -10,7 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Table(name = "attendance")
 @NoArgsConstructor
-public class UserAttendance {
+public class UserAttendance extends BaseEntity {
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;

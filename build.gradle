@@ -57,6 +57,9 @@ dependencies {
 
 	/* AWS S3Bucket 연동 */
 	implementation 'io.awspring.cloud:spring-cloud-aws-s3:3.0.2'
+
+	/* 이메일인증 */
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

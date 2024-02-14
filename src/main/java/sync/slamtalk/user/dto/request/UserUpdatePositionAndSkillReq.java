@@ -1,4 +1,4 @@
-package sync.slamtalk.user.dto;
+package sync.slamtalk.user.dto.request;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -14,7 +14,7 @@ import sync.slamtalk.user.entity.UserBasketballSkillLevelType;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserUpdatePositionAndSkillRequestDto {
+public class UserUpdatePositionAndSkillReq {
     @NotNull
     @Enumerated(EnumType.STRING)
     private UserBasketballSkillLevelType basketballSkillLevel;

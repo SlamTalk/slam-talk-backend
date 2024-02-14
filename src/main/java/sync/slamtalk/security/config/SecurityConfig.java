@@ -76,7 +76,10 @@ public class SecurityConfig {
                                     "/ws/slamtalk/**",
                                     "/swagger-ui/**",
                                     "/v3/api-docs/**",
-                                    "/favicon.ico"
+                                    "/favicon.ico",
+                                    "/api/send-mail",
+                                    "/api/mail-check",
+                                    "/api/user/change-password"
                             ).permitAll();
 
                             // 게스트 권환 설정
@@ -104,6 +107,7 @@ public class SecurityConfig {
                         .logoutSuccessHandler((request, response, authentication) ->
                                 response.setStatus(HttpStatus.OK.value())
                         )
+                        .deleteCookies("JSESSIONID")
                 )
                 .addFilterBefore(jwtFilter, LogoutFilter.class);
         // JwtFilter를 addFiterBefore로 등록했던 JwtSecurityConfig 클래스도 적용
