@@ -59,7 +59,7 @@ public class BasketballCourtMapper {
         );
     }
 
-    public BasketballCourt toEntity(BasketballCourtRequestDTO dto, Long userId) {
+    public BasketballCourt toEntity(BasketballCourtRequestDTO dto, String photoUrl , Long userId) {
         if (dto == null) {
             return null;
         }
@@ -81,7 +81,7 @@ public class BasketballCourtMapper {
                 .website((dto.getWebsite()))
                 .convenience(dto.getConvenience())
                 .additionalInfo(dto.getAdditionalInfo())
-                .photoUrl(dto.getPhotoUrl())
+                .photoUrl(photoUrl)
                 .adminStatus(AdminStatus.STAND) // 대기 상태
                 .informerid(userId)
                 .build();

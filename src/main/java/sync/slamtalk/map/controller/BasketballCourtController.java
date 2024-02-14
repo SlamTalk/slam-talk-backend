@@ -8,9 +8,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
@@ -64,8 +65,12 @@ public class BasketballCourtController {
             description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtResponseDTO> reportBasketballCourt(@RequestBody BasketballCourtRequestDTO basketballCourtRequestDTO, @AuthenticationPrincipal Long userId) {
-        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtRequestDTO, userId);
+    public ApiResponse<BasketballCourtResponseDTO> reportBasketballCourt(
+            @RequestPart(name = "data", required = false) BasketballCourtRequestDTO basketballCourtRequestDTO,
+            @RequestPart(name = "image", required = false) MultipartFile file,
+            @AuthenticationPrincipal Long userId) {
+
+        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtRequestDTO,file ,userId);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
     }
 }

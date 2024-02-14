@@ -3,7 +3,9 @@
     import lombok.RequiredArgsConstructor;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
+    import org.springframework.web.multipart.MultipartFile;
     import sync.slamtalk.common.BaseException;
+    import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
     import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
     import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
     import sync.slamtalk.map.entity.AdminStatus;
@@ -16,10 +18,18 @@
     public class ReportBasketballCourtService {
         private final BasketballCourtRepository basketballCourtRepository;
         private final BasketballCourtMapper basketballCourtMapper;
+        private final AwsS3RepositoryImpl awsS3Repository;
 
         @Transactional
-        public BasketballCourt reportCourt(BasketballCourtRequestDTO basketballCourtRequestDTO, Long userId) {
-            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtRequestDTO, userId);
+        public BasketballCourt reportCourt(BasketballCourtRequestDTO basketballCourtRequestDTO, MultipartFile file,
+                                           Long userId) {
+
+            String photoUrl = "";
+            if (file != null && !file.isEmpty()) {
+                photoUrl = awsS3Repository.uploadFile(file);
+            }
+
+            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtRequestDTO, photoUrl, userId);
             return basketballCourtRepository.save(court);
         }
 
