@@ -3,6 +3,7 @@ package sync.slamtalk.user.dto.response;
 import lombok.*;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.entity.UserRole;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -12,6 +13,7 @@ public class UserDetailsMyInfo {
     /* 개인 정보 관련 */
     private String email;
     private SocialType socialType;
+    private UserRole role;
 
     /* 공개되어도 상관없는 부분 */
     private Long id;
@@ -54,6 +56,7 @@ public class UserDetailsMyInfo {
                 .teamMatchingCompleteParticipationCount(0L)
                 .email(user.getEmail())
                 .socialType(user.getSocialType())
+                .role(user.getRole())
                 .build();
 
     }

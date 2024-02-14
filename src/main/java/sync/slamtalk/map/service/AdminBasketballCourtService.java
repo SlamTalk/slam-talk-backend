@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
@@ -18,7 +18,7 @@ public class AdminBasketballCourtService {
     private final BasketballCourtMapper basketballCourtMapper;
 
     // 제보 받은 농구장 정보들 중 대기 상태의 정보만 조회
-    public List<BasketballCourtDto> getAllCourtsWithStatusStand() {
+    public List<BasketballCourtResponseDTO> getAllCourtsWithStatusStand() {
         List<BasketballCourt> courts = basketballCourtRepository.findByAdminStatus(AdminStatus.STAND); // 대기 상태인 정보만 조회
         return courts.stream()
                 .map(basketballCourtMapper::toFullDto)

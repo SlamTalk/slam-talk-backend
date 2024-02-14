@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
+import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
@@ -49,10 +50,10 @@ public class BasketballCourtController {
             description = "이 기능은 클릭한 마커에 해당하는 농구장의 전체 정보 응답을 보내는 기능입니다.", // 기능 설명
             tags = {"지도","게스트"}
     )
-    public ApiResponse<BasketballCourtDto> getCourtFullInfoById(@PathVariable Long courtId) {
+    public ApiResponse<BasketballCourtResponseDTO> getCourtFullInfoById(@PathVariable Long courtId) {
 
-        BasketballCourtDto basketballCourtDto = basketballCourtService.getCourtFullInfoById(courtId);
-        return ApiResponse.ok(basketballCourtDto, "농구장 상세 정보를 성공적으로 가져왔습니다.");
+        BasketballCourtResponseDTO basketballCourtResponseDTO = basketballCourtService.getCourtFullInfoById(courtId);
+        return ApiResponse.ok(basketballCourtResponseDTO, "농구장 상세 정보를 성공적으로 가져왔습니다.");
 
     }
 
@@ -63,8 +64,8 @@ public class BasketballCourtController {
             description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtDto> reportBasketballCourt(@RequestBody BasketballCourtDto basketballCourtDto, @AuthenticationPrincipal Long userId) {
-        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtDto, userId);
+    public ApiResponse<BasketballCourtResponseDTO> reportBasketballCourt(@RequestBody BasketballCourtRequestDTO basketballCourtRequestDTO, @AuthenticationPrincipal Long userId) {
+        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtRequestDTO, userId);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
     }
 }
