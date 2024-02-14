@@ -101,7 +101,7 @@ public class AuthService {
 
         // 이메일 인증된 사용자인지 판별 하는 로직
         String isAuth = redisService.getData(userSignUpReqDto.getEmail());
-        if(!isAuth.equals("OK")){
+        if(isAuth == null || !isAuth.equals("OK")){
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
@@ -263,7 +263,7 @@ public class AuthService {
 
         // 레디스 서버에서 인증했는지 확인하기
         String isAuth = redisService.getData(userChangePasswordReq.getEmail());
-        if(!isAuth.equals("OK")){
+        if(isAuth == null || !isAuth.equals("OK")){
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
 
