@@ -70,6 +70,7 @@ public class SecurityConfig {
                 // 토큰이 없는 상태에서 요청이 오는 정보들을 열어
                 .authorizeHttpRequests(request -> {
                             request.requestMatchers(
+                                    "**",
                                     "/api/login",
                                     "/api/sign-up",
                                     "/api/tokens/refresh",
