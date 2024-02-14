@@ -39,3 +39,6 @@ out/
 # 애플리케이션 구성 파일 무시
 **.yml
 **.properties
+
+# QueryDSL 관련 자동 생성 코드 무시
+src/main/generated/

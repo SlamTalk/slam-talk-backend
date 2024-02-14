@@ -43,7 +43,7 @@ public class TeamMatchingController {
 
         long matePostId = teamMatchingService.registerTeamMatching(fromTeamFormDTO, userId);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/match/" + matePostId));
+        headers.setLocation(URI.create("/api/match/read/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
@@ -52,7 +52,7 @@ public class TeamMatchingController {
             description = "팀 매칭 글을 조회하는 api 입니다.",
             tags = {"팀 매칭"}
     )
-    @GetMapping("/{teamMatchingId}/post")
+    @GetMapping("/read/{teamMatchingId}/")
     public ApiResponse<ToTeamFormDTO> getTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId){
 
         ToTeamFormDTO dto = teamMatchingService.getTeamMatching(teamMatchingId);
@@ -134,10 +134,10 @@ public class TeamMatchingController {
 
     @Operation(
             summary = "팀 매칭 신청자 관련 동작 api",
-            description = "팀 매칭 신청자와 대화하기(COMMUNICATING) : 해당 신청자와 대화하기를 누르면 해당 api를 호출하여 신청자의 채팅방에 접속하여 각자의 채팅방 리스트에 추가합니다. \n" +
-            "거절하기(REJECTED) : 해당 신청자를 거절합니다. \n" +
-            "취소하기(CANCELED) : 해당 신청자의 신청을 취소합니다. \n" +
-            "수락하기(ACCEPTED) : 해당 신청자를 수락합니다. 수락된 신청자는 취소하기를 통해 CANCELED 상태로 변경할 수 있습니다. \n",
+            description =
+                    "거절하기(REJECTED) : 해당 신청자를 거절합니다. \n" +
+                    "취소하기(CANCELED) : 해당 신청자의 신청을 취소합니다. \n" +
+                    "수락하기(ACCEPTED) : 해당 신청자를 수락합니다. 수락된 신청자는 취소하기를 통해 CANCELED 상태로 변경할 수 있습니다. \n",
             tags = {"팀 매칭 / 신청자 목록"}
     )
     @PatchMapping("/{teamMatchingId}/apply/{teamApplicantId}")
@@ -145,14 +145,12 @@ public class TeamMatchingController {
                                           @RequestParam("applyStatus") ApplyStatusType applyStatus, @AuthenticationPrincipal Long id){
 
 
-        if(applyStatus == ApplyStatusType.COMMUNICATING){
+        if(applyStatus == ApplyStatusType.ACCEPTED){
             teamMatchingService.communicateApplicant(teamMatchingId, teamApplicantId, id);
         }else if(applyStatus == ApplyStatusType.REJECTED){
             teamMatchingService.rejectApplicant(teamMatchingId, teamApplicantId, id);
         }else if(applyStatus == ApplyStatusType.CANCELED){
             teamMatchingService.cancelApplicant(teamMatchingId, teamApplicantId, id);
-        }else if(applyStatus == ApplyStatusType.ACCEPTED) {
-            teamMatchingService.acceptApplicant(teamMatchingId, teamApplicantId, id);
         }else{
             return ApiResponse.fail("잘못된 요청입니다.");
         }

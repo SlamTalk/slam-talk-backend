@@ -9,14 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
 import sync.slamtalk.chat.service.ChatService;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.dto.MateFormDTO;
-import sync.slamtalk.mate.dto.MatePostApplicantDTO;
-import sync.slamtalk.mate.dto.MatePostDTO;
-import sync.slamtalk.mate.dto.PositionListDTO;
+import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
+import sync.slamtalk.mate.repository.QueryRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -41,12 +39,13 @@ public class MatePostService {
     private final ParticipantService participantService;
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
-    private final ChatService chatService;
+    private final EntityToDtoMapper entityToDtoMapper;
+    private final QueryRepository queryRepository;
 
     private static final int FIRST_PAGE = 0;
     private static final int DEFAULT_PAGE_SIZE = 10;
 
-    /*
+    /**
      * Objective : 메이트찾기 게시글을 등록한다.
      * Flow :
      * 1. 매개변수로 입력 받은 userId로 userRepository를 조회하여 해당 User 객체를 가져온다.(없을 경우 예외 처리)
@@ -61,7 +60,7 @@ public class MatePostService {
         return result.getMatePostId(); // * 저장된 게시글의 아이디를 반환한다.
     }
 
-    /*
+    /**
      * Objective : matePostId로 원하는 메이트찾기 글을 조회한다.
      * Flow :
      * 1. 게시글 ID를 이용해서 저장된 게시글을 불러온다.(없을 경우 예외 처리)
@@ -79,20 +78,20 @@ public class MatePostService {
         }
 
         User writer = post.getWriter();
-        if(writer == null){
-            throw new BaseException(NOT_FOUND_USER);
-        }
+
         Long writerId = writer.getId();
         String writerNickname = writer.getNickname();
+        String writerImageUrl = writer.getImageUrl();
 
         List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
-        List<String> skillList = EntityToDtoMapper.toSkillLevelTypeList(post);
-        List<PositionListDTO> positionList = EntityToDtoMapper.toPositionListDto(post);
+        List<String> skillList = entityToDtoMapper.toSkillLevelTypeList(post);
+        List<PositionListDTO> positionList = entityToDtoMapper.toPositionListDto(post);
 
         MateFormDTO mateFormDTO = MateFormDTO.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(writerId)
                 .writerNickname(writerNickname)
+                .writerImageUrl(writerImageUrl)
                 .title(post.getTitle())
                 .content(post.getContent())
                 .scheduledDate(post.getScheduledDate())
@@ -107,7 +106,7 @@ public class MatePostService {
         return mateFormDTO;
     }
 
-    /*
+    /**
      * Objective : 메이트찾기 글을 삭제한다.
      * Flow :
      * 1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)
@@ -131,7 +130,7 @@ public class MatePostService {
         return true;
     }
 
-    /*
+    /**
      * Objective : 메이트찾기 글을 수정한다.
      * Flow :
      * 1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)
@@ -157,12 +156,12 @@ public class MatePostService {
         LocalDate scheduledDate = mateFormDTO.getScheduledDate();
         LocalTime startTime = mateFormDTO.getStartTime();
         LocalTime endTime = mateFormDTO.getEndTime();
-        EntityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
+        entityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
         Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
         Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
         Integer maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
         Integer maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
-        SkillLevelList skillLevel = EntityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
+        SkillLevelList skillLevel = entityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
 
         if(content != null && !content.equals("")){ // * 내용이 비어있지 않다면
             post.updateContent(content);
@@ -225,24 +224,27 @@ public class MatePostService {
         return true;
     }
 
-    /*
+    /**
     Objective : 커서 페이징 방식으로 메이트찾기 글 목록을 조회한다.
     Flow :
         1. 커서를 이용하여 글 목록을 조회한다.
         2. 조회된 글 목록을 DTO로 변환하여 반환한다.
      */
     @Transactional(readOnly = true)
-    public List<MatePostDTO> getMatePostsByCurser(String cursorStr, String location, SkillLevelType skillLevel, PositionType position){
-        LocalDateTime cursor = LocalDateTime.parse(cursorStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-        log.debug("cursor: {}", cursor);
-        Pageable pageable = PageRequest.of(FIRST_PAGE, DEFAULT_PAGE_SIZE);
-        List<MatePost> listedMatePosts = matePostRepository.findByCreatedAtLessThanAndIsDeletedNotOrderByCreatedAtDesc(cursor, true, pageable);
+    public MatePostListDTO getMatePostsByCurser(MateSearchCondition condition){
+        log.debug("condition: {}", condition);
+        List<MatePostDTO> listedMatePosts = queryRepository.findMatePostList(condition);
+
         log.debug("listedMatePosts: {}", listedMatePosts);
-        List<MatePostDTO> response = listedMatePosts.stream().map(EntityToDtoMapper::toMatePostDto).collect(Collectors.toList());
+        MatePostListDTO response = new MatePostListDTO();
+        response.setMatePostList(listedMatePosts);
+        if(listedMatePosts.isEmpty() == false) {
+            response.setNextCursor(listedMatePosts.get(listedMatePosts.size() - 1).getCreatedAt().toString());
+        }
         return response;
     }
 
-    /*
+    /**
     Objective : 해당 메이트찾기 글의 모집을 완료한다.
     Flow :
         1. 매개변수로 입력 받은 글 ID를 이용하여 해당 글을 찾는다. (글이 존재하지 않을 경우 예외 처리)

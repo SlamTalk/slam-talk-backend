@@ -80,7 +80,7 @@ public class TeamMatching extends BaseEntity implements Post {
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
 
-    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TeamApplicant> teamApplicants = new ArrayList<>();
 
 //    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!

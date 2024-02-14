@@ -359,6 +359,8 @@ public class TeamMatchingService {
                 }
                 teamPost.declareOpponent(applicantUser);
                 teamApplicant.updateApplyStatus(ApplyStatusType.ACCEPTED);
+            }else{
+                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
             }
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);

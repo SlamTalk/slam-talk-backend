@@ -98,7 +98,7 @@ public class MatePost extends BaseEntity implements Post{
         @Column(nullable = false, name="current_participants_others")
         private int currentParticipantsOthers; // 모집 포지션 무관 현재 참여 인원
 
-        @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL)
+        @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Participant> participants = new ArrayList<>(); // 참여자 목록
 
 

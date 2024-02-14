@@ -21,15 +21,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MateFormDTO {
+    @JsonIgnore
+    private final EntityToDtoMapper entityToDtoMapper = new EntityToDtoMapper();
+
     private long matePostId; // 글 아이디
     private long writerId; // 작성자 아이디
     private String writerNickname; // 작성자 닉네임
+    private String writerImageUrl; // 작성자 이미지 URL
 
     private String title; // 제목
     private String content; // 본문
@@ -67,8 +73,8 @@ public class MateFormDTO {
     private List<MatePostApplicantDTO> participants = new ArrayList<>(); // 참여자 목록
 
     @JsonIgnore
-    public MatePost toEntity(User user) { // * writerId를 User 객체로 대체할 것!
-        SkillLevelList tempSkillList = EntityToDtoMapper.fromRecruitSkillLevel(skillLevel);
+    public MatePost toEntity(User user) {
+        SkillLevelList tempSkillList = entityToDtoMapper.fromRecruitSkillLevel(skillLevel);
         String location = locationDetail.split(" ")[0];
             MatePost resultMatePost = MatePost.builder()
                     .writer(user)

@@ -37,7 +37,7 @@ public class ParticipantService {
     해당 글의 참여자 목록에 신청자를 등록한다.
     다음의 예외 상황을 가정하고 처리한다.
     1. 해당 글이 존재하지 않을 때
-    2. 접속한 유저의 ID가 존재하지 않을 때
+    2. 접속한 유저의 ID가 글 작성자의 ID와 일치할 때
     3. 해당 글이 삭제되었을 때
     4. 해당 글의 모집 상태가 모집 중이 아닐 때
     5. 해당 글의 작성자가 아닐 때
@@ -49,7 +49,7 @@ public class ParticipantService {
         User user = userRepository.findById(participantId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
         String participantNickname = user.getNickname();
 
-        if(!post.isCorrespondToUser(participantId)){
+        if(post.isCorrespondToUser(participantId)){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -87,18 +87,10 @@ public class ParticipantService {
             }
             MatePostApplicantDTO matePostApplicantDTO = new MatePostApplicantDTO(participant.getParticipantTableId(), participant.getParticipantId(), participant.getParticipantNickname(), participant.getPosition(), participant.getSkillLevel(), participant.getApplyStatus());
             matePostApplicantDTOs.add(matePostApplicantDTO);
-            log.debug("참여자 목록 : {}", matePostApplicantDTO);
         }
         return matePostApplicantDTOs;
     }
 
-    /**
-     *참여자의 신청 상태를 변경한다.
-     *참여자의 신청 상태는 ACCEPTED, REJECTED, CANCEL, WAITING(신청 시 기본 상태)이 있다.
-     *ACCEPTED : 모집 글 게시자가 참여자(AWAITING)를 수락했을 때
-     *REJECTED : 모집 글 게시자가 참여자(AWAITING)를 거절했을 때
-     *CANCEL : 참여자(AWAITING)가 취소를 선택했을 때
-     */
 
     // 모집 글 게시자가 참여자를 수락했을 때
     public ApiResponse acceptParticipant(long matePostId, long participantTableId, long hostId){

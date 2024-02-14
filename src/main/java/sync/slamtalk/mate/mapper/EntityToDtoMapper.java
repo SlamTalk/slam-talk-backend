@@ -13,7 +13,7 @@ import java.util.List;
 @Component
 public class EntityToDtoMapper {
 
-    public static List<PositionListDTO> toPositionListDto(MatePost matePost){
+    public List<PositionListDTO> toPositionListDto(MatePost matePost){
         List<PositionListDTO> positionList = new ArrayList<>();
 
         if(matePost.getMaxParticipantsCenters() > 0){
@@ -36,7 +36,7 @@ public class EntityToDtoMapper {
         return positionList;
     }
 
-    public static List<String> toSkillLevelTypeList(Post post){
+    public List<String> toSkillLevelTypeList(Post post){
         List<String> skillLevelTypeList = new ArrayList<>();
 
         if(post.isSkillLevelBeginner()) {
@@ -58,7 +58,7 @@ public class EntityToDtoMapper {
 
         return skillLevelTypeList;
     }
-    public static SkillLevelList fromRecruitSkillLevel(RecruitedSkillLevelType skillLevel){
+    public SkillLevelList fromRecruitSkillLevel(RecruitedSkillLevelType skillLevel){
         SkillLevelList skillLevelList = new SkillLevelList();
         switch(skillLevel) {
             case HIGH:
@@ -100,25 +100,9 @@ public class EntityToDtoMapper {
         }
         return skillLevelList;
     }
-    public static void toPositionListDTO(MatePost matePost, MatePostDTO matePostDTO){
-        if(matePost.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
-            matePostDTO.getPositionList().add(positionListDTO);
-        }
-        if(matePost.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
-            matePostDTO.getPositionList().add(positionListDTO);
-        }
-        if(matePost.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
-            matePostDTO.getPositionList().add(positionListDTO);
-        }
-        if(matePost.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
-            matePostDTO.getPositionList().add(positionListDTO);
-        }
-    }
-    public static MatePostDTO toMatePostDto(MatePost matePost){
+
+
+    public MatePostDTO toMatePostDto(MatePost matePost){
         MatePostDTO matePostDTO = new MatePostDTO();
         matePostDTO.setWriterId(matePost.getWriterId());
         matePostDTO.setWriterNickname(matePost.getWriterNickname());
@@ -131,7 +115,7 @@ public class EntityToDtoMapper {
         matePostDTO.setRecruitmentStatus(matePost.getRecruitmentStatus());
         matePostDTO.setLocationDetail(matePost.getLocationDetail());
         matePostDTO.setParticipants(matePost.getParticipants());
-        toPositionListDTO(matePost, matePostDTO);
+        matePostDTO.setPositionList(toPositionListDto(matePost));
         matePostDTO.setSkillList(toSkillLevelTypeList(matePost));
         matePostDTO.setPositionList(toPositionListDto(matePost));
         matePostDTO.setCreatedAt(matePost.getCreatedAt());

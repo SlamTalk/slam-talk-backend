@@ -12,6 +12,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.MatePostListDTO;
+import sync.slamtalk.mate.dto.MateSearchCondition;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.SkillLevelType;
@@ -41,7 +42,7 @@ public class MatePostController {
 
         long matePostId = matePostService.registerMatePost(mateFormDTO, id);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/mate/" + matePostId));
+        headers.setLocation(URI.create("/api/mate/read/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
@@ -50,7 +51,7 @@ public class MatePostController {
             description = "글 아이디를 요청하면 글을 조회하는 api 입니다.",
             tags = {"메이트 찾기"}
     )
-    @GetMapping("/{matePostId}/post")
+    @GetMapping("/read/{matePostId}")
     public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
         MateFormDTO dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
@@ -98,23 +99,11 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @GetMapping("/list")
-    public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor, @RequestParam(name = "location" , required = false) Optional<String> location,
-                                                        @RequestParam(name = "skillLevel", required = false) Optional<SkillLevelType> skillLevel, @RequestParam(name = "position", required = false) Optional<PositionType> position) {
-        String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        String effectiveLocation = location.orElse("all");
-        SkillLevelType effectiveSkillLevel = skillLevel.orElse(SkillLevelType.UNSPECIFIED);
-        PositionType effectivePosition = position.orElse(PositionType.UNSPECIFIED);
+    public ApiResponse<MatePostListDTO> getMatePostList(MateSearchCondition condition){
 
-        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, effectiveLocation, effectiveSkillLevel, effectivePosition);
+        MatePostListDTO resultDto = matePostService.getMatePostsByCurser(condition);
 
-        MatePostListDTO response = new MatePostListDTO();
-        response.setMatePostList(listedMatePostDTO);
-        if (!listedMatePostDTO.isEmpty()) {
-            String nextCursor = listedMatePostDTO.get(listedMatePostDTO.size() - 1).getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-            response.setNextCursor(nextCursor);
-        }
-
-        return ApiResponse.ok(response);
+        return ApiResponse.ok(resultDto);
     }
 
     @Operation(
