@@ -75,7 +75,9 @@ public class MateFormDTO {
     @JsonIgnore
     public MatePost toEntity(User user) {
         SkillLevelList tempSkillList = entityToDtoMapper.fromRecruitSkillLevel(skillLevel);
-        String location = locationDetail.split(" ")[0];
+        String[] temp = locationDetail.split(" ", 2);
+        String location = temp[0];
+        String locationDetail = temp.length > 1 ? temp[1] : "";
             MatePost resultMatePost = MatePost.builder()
                     .writer(user)
                     .title(title)
