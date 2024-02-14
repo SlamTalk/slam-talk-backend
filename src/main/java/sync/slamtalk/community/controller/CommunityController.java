@@ -37,8 +37,8 @@ public class CommunityController {
             tags = {"게시판"}
     )
     public ApiResponse<CommunityResponseDTO> createCommunity(
-            @RequestPart("requestDTO") CommunityCreateRequestDTO requestDTO,
-            @RequestPart("images") List<MultipartFile> images,
+            @RequestPart(name = "requestDTO", required = false) CommunityCreateRequestDTO requestDTO,
+            @RequestPart(name = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal Long userId) {
 
         CommunityResponseDTO responseDTO = communityService.createCommunity(requestDTO, images, userId);
@@ -53,8 +53,8 @@ public class CommunityController {
             tags = {"게시판"}
     )
     public ApiResponse<CommunityResponseDTO> editCommunity(@PathVariable Long communityId,
-                                                           @RequestPart("requestDTO") CommunityEditRequestDTO requestDTO,
-                                                           @RequestPart("images") List<MultipartFile> images,
+                                                           @RequestPart(name = "requestDTO", required = false) CommunityEditRequestDTO requestDTO,
+                                                           @RequestPart(name = "images", required = false) List<MultipartFile> images,
                                                            @AuthenticationPrincipal Long userId) {
         CommunityResponseDTO responseDTO = communityService.editCommunity(communityId, requestDTO, images, userId);
         return ApiResponse.ok(responseDTO, "게시글을 성공적으로 수정했습니다.");
