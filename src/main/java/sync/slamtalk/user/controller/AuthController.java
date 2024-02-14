@@ -7,10 +7,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.user.dto.UserLoginRequestDto;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
+import sync.slamtalk.user.dto.request.UserChangePasswordReq;
+import sync.slamtalk.user.dto.request.UserLoginReq;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.service.AuthService;
 
 /**
@@ -30,7 +32,7 @@ public class AuthController {
 
     /**
      * 로그인 api
-     * @param  userLoginDto
+     * @param  userLoginReqDto
      * @param response
      *
      * @return  jwtTokenResponseDto
@@ -42,19 +44,19 @@ public class AuthController {
             tags = {"로그인/회원가입"}
     )
     public ApiResponse<String> authorize(
-            @Valid @RequestBody UserLoginRequestDto userLoginDto,
+            @Valid @RequestBody UserLoginReq userLoginReqDto,
             HttpServletResponse response
     ) {
         // 1. username + password 를 기반으로 Authentication 객체 생성
         // 이때 authentication 은 인증 여부를 확인하는 authenticated 값이 false
-        authService.login(userLoginDto, response);
+        authService.login(userLoginReqDto, response);
 
         return ApiResponse.ok();
     }
 
     /**
      * 회원 가입 api
-     * @param  userSignUpDto
+     * @param  userSignUpReqDto
      *
      * @return  회원가입 성공
      * */
@@ -65,9 +67,9 @@ public class AuthController {
             tags = {"로그인/회원가입"}
     )
     public ApiResponse<String> signUp(
-            @Valid @RequestBody UserSignUpRequestDto userSignUpDto,
+            @Valid @RequestBody UserSignUpReq userSignUpReqDto,
             HttpServletResponse response) {
-        authService.signUp(userSignUpDto, response);
+        authService.signUp(userSignUpReqDto, response);
         return ApiResponse.ok();
     }
 
@@ -89,6 +91,30 @@ public class AuthController {
             HttpServletResponse response
     ){
         authService.refreshToken(request, response);
+        return ApiResponse.ok();
+    }
+
+    @PatchMapping("/user/change-password")
+    @Operation(
+            summary = "유저 비밀번호 변경하기",
+            description = "이메일인증을 한 유저의 비밀번호는 특정 비밀번호로 변경이 가능하다.",
+            tags = {"로그인/회원가입"}
+    )
+    public ApiResponse<String> userChangePassword(
+            @Valid @RequestBody UserChangePasswordReq userChangePasswordReq
+    ){
+        authService.userChangePassword(userChangePasswordReq);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/user/delete")
+    @Operation(
+            summary = "회원 탈퇴",
+            description = "7일이내로 회원탈퇴과정이 진행되고, 회원탈퇴 클릭 시 재회원가입, 로그인이 불가능하다.",
+            tags = {"로그인/회원가입"}
+    )
+    public ApiResponse<String> cancelUser(@AuthenticationPrincipal Long userId){
+        authService.cancelUser(userId);
         return ApiResponse.ok();
     }
 }
