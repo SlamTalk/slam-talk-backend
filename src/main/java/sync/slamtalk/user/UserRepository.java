@@ -47,6 +47,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(@Param("email") String email);
 
-    @Query(value = "SELECT * FROM users WHERE email = :email AND social_type = :socialType", nativeQuery = true)
+    /* 이미 탈퇴한 유저인지 검증하는 로직*/
+    @Query(value = "SELECT * FROM users WHERE email = :email AND social_type = :socialType AND is_deleted = true ", nativeQuery = true)
     Optional<User> findUserByEmailAndSocialTypeIgnoringWhere(@Param("email") String email, @Param("socialType") String socialType);
 }
