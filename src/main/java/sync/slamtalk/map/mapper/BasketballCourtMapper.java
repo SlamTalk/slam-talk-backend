@@ -1,7 +1,11 @@
 package sync.slamtalk.map.mapper;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.springframework.stereotype.Component;
-import sync.slamtalk.map.dto.BasketballCourtDto;
+import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
+import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
@@ -23,11 +27,16 @@ public class BasketballCourtMapper {
         );
     }
 
-    public BasketballCourtDto toFullDto(BasketballCourt basketballCourt) {
+    public BasketballCourtResponseDTO toFullDto(BasketballCourt basketballCourt) {
         if (basketballCourt == null) {
             return null;
         }
-        return new BasketballCourtDto(
+
+        List<String> convenienceList = basketballCourt.getConvenience() != null
+                ? Arrays.asList(basketballCourt.getConvenience().split(","))
+                : Collections.emptyList();
+
+        return new BasketballCourtResponseDTO(
                 basketballCourt.getCourtId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
@@ -43,14 +52,14 @@ public class BasketballCourtMapper {
                 basketballCourt.getParkingAvailable(),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
-                basketballCourt.getConvenience(),
+                convenienceList,
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
                 basketballCourt.getInformerid()
         );
     }
 
-    public BasketballCourt toEntity(BasketballCourtDto dto, Long userId) {
+    public BasketballCourt toEntity(BasketballCourtRequestDTO dto, Long userId) {
         if (dto == null) {
             return null;
         }
@@ -70,7 +79,7 @@ public class BasketballCourtMapper {
                 .parkingAvailable(dto.getParkingAvailable())
                 .phoneNum((dto.getPhoneNum()))
                 .website((dto.getWebsite()))
-                .convenience((dto.getConvenience()))
+                .convenience(dto.getConvenience())
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(dto.getPhotoUrl())
                 .adminStatus(AdminStatus.STAND) // 대기 상태

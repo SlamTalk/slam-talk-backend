@@ -8,7 +8,7 @@ public enum BasketballCourtErrorResponse implements ResponseCodeDetails {
     ;
 
     private final int code;
-    private int status;
+    private final int status;
     private final String message;
 
     BasketballCourtErrorResponse(int code, int status, String message) {
@@ -19,16 +19,16 @@ public enum BasketballCourtErrorResponse implements ResponseCodeDetails {
 
     @Override
     public int getStatus() {
-        return 0;
+        return status;
     }
 
     @Override
     public int getCode() {
-        return 0;
+        return code;
     }
 
     @Override
     public String getMessage() {
-        return null;
+        return message;
     }
 }

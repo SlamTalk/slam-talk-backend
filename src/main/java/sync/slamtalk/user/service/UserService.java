@@ -9,7 +9,11 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.*;
+import sync.slamtalk.user.dto.request.UpdateUserDetailInfoReq;
+import sync.slamtalk.user.dto.request.UserUpdateNicknameReq;
+import sync.slamtalk.user.dto.request.UserUpdatePositionAndSkillReq;
+import sync.slamtalk.user.dto.response.UserDetailsMyInfo;
+import sync.slamtalk.user.dto.response.UserDetailsOtherInfo;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserAttendance;
 import sync.slamtalk.user.error.UserErrorResponseCode;
@@ -35,7 +39,7 @@ public class UserService {
      * @param userId 찾고자하는 userId
      *
      * */
-    public UserDetailsMyInfoResponseDto userDetailsMyInfo(
+    public UserDetailsMyInfo userDetailsMyInfo(
             Long userId
     ) {
         User user = userRepository.findById(userId)
@@ -55,7 +59,7 @@ public class UserService {
         levelScore += userAttendCount * User.ATTEND_SCORE;
 
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
-        return UserDetailsMyInfoResponseDto.generateMyProfile(
+        return UserDetailsMyInfo.generateMyProfile(
                 user,
                 levelScore,
                 mateCompleteParticipationCount
@@ -67,7 +71,7 @@ public class UserService {
      *
      * @param userId 찾고자하는 userId
      */
-    public UserDetailsOtherInfoResponseDto userDetailsOtherInfo(
+    public UserDetailsOtherInfo userDetailsOtherInfo(
             Long userId
     ) {
         User user = userRepository.findById(userId)
@@ -87,7 +91,7 @@ public class UserService {
         levelScore += userAttendCount * User.ATTEND_SCORE;
 
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
-         return UserDetailsOtherInfoResponseDto.generateOtherUserProfile(
+         return UserDetailsOtherInfo.generateOtherUserProfile(
                 user,
                 levelScore,
                 mateCompleteParticipationCount
@@ -98,16 +102,16 @@ public class UserService {
      * 유저 닉네임 변경 로직
      *
      * @param userId 유저아이디,
-     * @param userUpdateNicknameRequestDto 유저 닉네임 변경 request dto
+     * @param userUpdateNicknameReq 유저 닉네임 변경 request dto
      * */
     @Transactional
     public void userUpdateNickname(
             Long userId,
-            UserUpdateNicknameRequestDto userUpdateNicknameRequestDto
+            UserUpdateNicknameReq userUpdateNicknameReq
     ) {
         log.debug("유저 아이디 "+ userId);
-        checkNicknameExistence(userUpdateNicknameRequestDto.getNickname());
-        userRepository.updateUserNickname(userId, userUpdateNicknameRequestDto.getNickname());
+        checkNicknameExistence(userUpdateNicknameReq.getNickname());
+        userRepository.updateUserNickname(userId, userUpdateNicknameReq.getNickname());
     }
 
     /**
@@ -128,17 +132,17 @@ public class UserService {
      *  유저의 스킬 레벨 타입과, 농구 포지션을 업데이트하는 서비스
      *
      * @param userId 유저 아이디
-     * @param userUpdatePositionAndSkillRequestDto 유저 레벨타입과, 농구포지션으로 요청이온 dto
+     * @param userUpdatePositionAndSkillReq 유저 레벨타입과, 농구포지션으로 요청이온 dto
      * */
     @Transactional
     public void userUpdatePositionAndSkillLevel(
             Long userId,
-            UserUpdatePositionAndSkillRequestDto userUpdatePositionAndSkillRequestDto
+            UserUpdatePositionAndSkillReq userUpdatePositionAndSkillReq
     ) {
         userRepository.updateUserPositionAndSkillLevel(
                 userId,
-                userUpdatePositionAndSkillRequestDto.getBasketballSkillLevel(),
-                userUpdatePositionAndSkillRequestDto.getBasketballPosition()
+                userUpdatePositionAndSkillReq.getBasketballSkillLevel(),
+                userUpdatePositionAndSkillReq.getBasketballPosition()
         );
     }
 
@@ -165,20 +169,20 @@ public class UserService {
      * 유저 마이페이지 수정 api
      * @param userId 유저아이디
      * @param file MultipartFile 업로드
-     * @param updateUserDetailInfoRequestDto UpdateUserDetailInfoRequestDto
+     * @param updateUserDetailInfoReq UpdateUserDetailInfoRequestDto
      * */
     @Transactional
     public void updateUserDetailInfo(
             Long userId,
             MultipartFile file,
-            UpdateUserDetailInfoRequestDto updateUserDetailInfoRequestDto
+            UpdateUserDetailInfoReq updateUserDetailInfoReq
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
         // 닉네임 검증
-        if(updateUserDetailInfoRequestDto.getNickname() != null) {
-            checkNicknameExistence(updateUserDetailInfoRequestDto.getNickname());
-            user.updateNickname(updateUserDetailInfoRequestDto.getNickname());
+        if(updateUserDetailInfoReq.getNickname() != null) {
+            checkNicknameExistence(updateUserDetailInfoReq.getNickname());
+            user.updateNickname(updateUserDetailInfoReq.getNickname());
         }
 
         // 이미지 파일이 존재한다면 업데이트
@@ -188,18 +192,18 @@ public class UserService {
         }
 
         // 자기 소개 한마디
-        if(updateUserDetailInfoRequestDto.getSelfIntroduction() != null){
-            user.updateSelfIntroduction(updateUserDetailInfoRequestDto.getSelfIntroduction());
+        if(updateUserDetailInfoReq.getSelfIntroduction() != null){
+            user.updateSelfIntroduction(updateUserDetailInfoReq.getSelfIntroduction());
         }
 
         // 유저 포지션
-        if(updateUserDetailInfoRequestDto.getBasketballPosition() != null){
-            user.updatePosition(updateUserDetailInfoRequestDto.getBasketballPosition());
+        if(updateUserDetailInfoReq.getBasketballPosition() != null){
+            user.updatePosition(updateUserDetailInfoReq.getBasketballPosition());
         }
 
         // 유저 스킬 레벨 업데이트
-        if(updateUserDetailInfoRequestDto.getBasketballSkillLevel() != null){
-            user.updateBasketballSkillLevel(updateUserDetailInfoRequestDto.getBasketballSkillLevel());
+        if(updateUserDetailInfoReq.getBasketballSkillLevel() != null){
+            user.updateBasketballSkillLevel(updateUserDetailInfoReq.getBasketballSkillLevel());
         }
     }
 }

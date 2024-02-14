@@ -1,4 +1,4 @@
-package sync.slamtalk.user.dto;
+package sync.slamtalk.user.dto.response;
 
 import lombok.*;
 import sync.slamtalk.user.entity.User;
@@ -7,7 +7,7 @@ import sync.slamtalk.user.entity.User;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Builder
-public class UserDetailsOtherInfoResponseDto {
+public class UserDetailsOtherInfo {
     /* 공개되어도 상관없는 부분 */
     private Long id;
     private String nickname;
@@ -31,11 +31,11 @@ public class UserDetailsOtherInfoResponseDto {
      * @param mateCompleteParticipationCount
      * @return UserDetailsInfoResponseDto 개인정보 제외된 정보
      */
-    public static UserDetailsOtherInfoResponseDto generateOtherUserProfile(
+    public static UserDetailsOtherInfo generateOtherUserProfile(
             User user,
             long levelScore,
             long mateCompleteParticipationCount
-    ) { return UserDetailsOtherInfoResponseDto.builder()
+    ) { return UserDetailsOtherInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())

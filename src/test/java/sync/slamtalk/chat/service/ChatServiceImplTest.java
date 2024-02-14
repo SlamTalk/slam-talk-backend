@@ -14,7 +14,7 @@ import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.User;
 
 import java.util.HashSet;
@@ -37,9 +37,9 @@ class ChatServiceImplTest {
     @Test
     @DisplayName("팀매칭 완료 시 UserChatRoom에 User 리스트 추가 테스트")
     void setUserListChatRoom() {
-        User entity1 = new UserSignUpRequestDto("test1@naver.com", "password", "hi1").toEntity();
-        User entity2 = new UserSignUpRequestDto("test2@naver.com", "password", "hi2").toEntity();
-        User entity3 = new UserSignUpRequestDto("test3@naver.com", "password", "hi3").toEntity();
+        User entity1 = new UserSignUpReq("test1@naver.com", "password", "hi1").toEntity();
+        User entity2 = new UserSignUpReq("test2@naver.com", "password", "hi2").toEntity();
+        User entity3 = new UserSignUpReq("test3@naver.com", "password", "hi3").toEntity();
 
         entity1.testSetUserId(1L); // 수동으로 ID 설정
         entity2.testSetUserId(1L); // 수동으로 ID 설정

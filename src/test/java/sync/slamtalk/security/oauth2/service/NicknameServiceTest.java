@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.User;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,8 +46,8 @@ class NicknameServiceTest {
         String password = "123";
         String nickname = "hello";
 
-        UserSignUpRequestDto userSignUpRequestDto = new UserSignUpRequestDto(userEmail, password, nickname);
-        User user = userSignUpRequestDto.toEntity();
+        UserSignUpReq userSignUpReq = new UserSignUpReq(userEmail, password, nickname);
+        User user = userSignUpReq.toEntity();
 
         Mockito.when(userRepository.findByNickname(nickname))
                 .thenReturn(Optional.of(user));
@@ -86,8 +86,8 @@ class NicknameServiceTest {
         String password = "123";
         String nickname = "hello";
 
-        UserSignUpRequestDto userSignUpRequestDto = new UserSignUpRequestDto(userEmail, password, nickname);
-        User user = userSignUpRequestDto.toEntity();
+        UserSignUpReq userSignUpReq = new UserSignUpReq(userEmail, password, nickname);
+        User user = userSignUpReq.toEntity();
 
         AtomicInteger counter = new AtomicInteger(0);
 

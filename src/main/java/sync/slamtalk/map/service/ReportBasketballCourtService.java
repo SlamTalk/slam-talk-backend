@@ -4,8 +4,8 @@
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
     import sync.slamtalk.common.BaseException;
-    import sync.slamtalk.map.dto.BasketballCourtDto;
     import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
+    import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
     import sync.slamtalk.map.entity.AdminStatus;
     import sync.slamtalk.map.entity.BasketballCourt;
     import sync.slamtalk.map.mapper.BasketballCourtMapper;
@@ -18,67 +18,67 @@
         private final BasketballCourtMapper basketballCourtMapper;
 
         @Transactional
-        public BasketballCourt reportCourt(BasketballCourtDto basketballCourtDto, Long userId) {
-            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtDto, userId);
+        public BasketballCourt reportCourt(BasketballCourtRequestDTO basketballCourtRequestDTO, Long userId) {
+            BasketballCourt court = basketballCourtMapper.toEntity(basketballCourtRequestDTO, userId);
             return basketballCourtRepository.save(court);
         }
 
         @Transactional
-        public BasketballCourt updateCourt(Long courtId, BasketballCourtDto basketballCourtDto) {
+        public BasketballCourt updateCourt(Long courtId, BasketballCourtRequestDTO basketballCourtRequestDTO) {
             BasketballCourt court = basketballCourtRepository.findById(courtId)
                     .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
 
             // null이 아닌 값만 입력 필드 업데이트
-            if (basketballCourtDto.getCourtType() != null) {
-                court.updateCourtType(basketballCourtDto.getCourtType());
+            if (basketballCourtRequestDTO.getCourtType() != null) {
+                court.updateCourtType(basketballCourtRequestDTO.getCourtType());
             }
 
-            if (basketballCourtDto.getIndoorOutdoor() != null) {
-                court.updateIndoorOutDoor(basketballCourtDto.getIndoorOutdoor());
+            if (basketballCourtRequestDTO.getIndoorOutdoor() != null) {
+                court.updateIndoorOutDoor(basketballCourtRequestDTO.getIndoorOutdoor());
             }
 
-            if (basketballCourtDto.getCourtSize() != null) {
-                court.updateCourtSize(basketballCourtDto.getCourtSize());
+            if (basketballCourtRequestDTO.getCourtSize() != null) {
+                court.updateCourtSize(basketballCourtRequestDTO.getCourtSize());
             }
 
-            if (basketballCourtDto.getHoopCount() != null) {
-                court.updateHoopCount(basketballCourtDto.getHoopCount());
+            if (basketballCourtRequestDTO.getHoopCount() != null) {
+                court.updateHoopCount(basketballCourtRequestDTO.getHoopCount());
             }
 
-            if (basketballCourtDto.getNightLighting() != null) {
-                court.updateNightLighting(basketballCourtDto.getNightLighting());
+            if (basketballCourtRequestDTO.getNightLighting() != null) {
+                court.updateNightLighting(basketballCourtRequestDTO.getNightLighting());
             }
 
-            if (basketballCourtDto.getOpeningHours() != null) {
-                court.updateOpeningHours(basketballCourtDto.getOpeningHours());
+            if (basketballCourtRequestDTO.getOpeningHours() != null) {
+                court.updateOpeningHours(basketballCourtRequestDTO.getOpeningHours());
             }
 
-            if (basketballCourtDto.getFee() != null) {
-                court.updateFee(basketballCourtDto.getFee());
+            if (basketballCourtRequestDTO.getFee() != null) {
+                court.updateFee(basketballCourtRequestDTO.getFee());
             }
 
-            if (basketballCourtDto.getParkingAvailable() != null) {
-                court.updateParkingAvailable(basketballCourtDto.getParkingAvailable());
+            if (basketballCourtRequestDTO.getParkingAvailable() != null) {
+                court.updateParkingAvailable(basketballCourtRequestDTO.getParkingAvailable());
             }
 
-            if (basketballCourtDto.getPhoneNum() != null) {
-                court.updatePhoneNum(basketballCourtDto.getPhoneNum());
+            if (basketballCourtRequestDTO.getPhoneNum() != null) {
+                court.updatePhoneNum(basketballCourtRequestDTO.getPhoneNum());
             }
 
-            if (basketballCourtDto.getWebsite() != null) {
-                court.updateWebsite(basketballCourtDto.getWebsite());
+            if (basketballCourtRequestDTO.getWebsite() != null) {
+                court.updateWebsite(basketballCourtRequestDTO.getWebsite());
             }
 
-            if (basketballCourtDto.getConvenience() != null) {
-                court.updateConvenience(basketballCourtDto.getConvenience());
+            if (basketballCourtRequestDTO.getConvenience() != null) {
+                court.updateConvenience(basketballCourtRequestDTO.getConvenience());
             }
 
-            if (basketballCourtDto.getAdditionalInfo() != null) {
-                court.updateAdditionalInfo(basketballCourtDto.getAdditionalInfo());
+            if (basketballCourtRequestDTO.getAdditionalInfo() != null) {
+                court.updateAdditionalInfo(basketballCourtRequestDTO.getAdditionalInfo());
             }
 
-            if (basketballCourtDto.getPhotoUrl() != null) {
-                court.updatePhotoUrl(basketballCourtDto.getPhotoUrl());
+            if (basketballCourtRequestDTO.getPhotoUrl() != null) {
+                court.updatePhotoUrl(basketballCourtRequestDTO.getPhotoUrl());
             }
 
             // AdminStatus 변경

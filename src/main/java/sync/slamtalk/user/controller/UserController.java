@@ -8,7 +8,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.user.dto.*;
+import sync.slamtalk.user.dto.request.UpdateUserDetailInfoReq;
+import sync.slamtalk.user.dto.request.UserUpdateNicknameReq;
+import sync.slamtalk.user.dto.request.UserUpdatePositionAndSkillReq;
+import sync.slamtalk.user.dto.response.UserDetailsMyInfo;
+import sync.slamtalk.user.dto.response.UserDetailsOtherInfo;
 import sync.slamtalk.user.service.UserService;
 
 /**
@@ -33,12 +37,12 @@ public class UserController {
             description = "유저 본인의 상세정보 확인가능합니다.",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsMyInfoResponseDto> userDetailsMyInfo(
+    public ApiResponse<UserDetailsMyInfo> userDetailsMyInfo(
             @AuthenticationPrincipal Long userId
     ) {
-        UserDetailsMyInfoResponseDto userDetailsMyInfoResponseDto = userService.userDetailsMyInfo(userId);
+        UserDetailsMyInfo userDetailsMyInfo = userService.userDetailsMyInfo(userId);
 
-        return ApiResponse.ok(userDetailsMyInfoResponseDto);
+        return ApiResponse.ok(userDetailsMyInfo);
     }
 
     /**
@@ -53,10 +57,10 @@ public class UserController {
             description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsOtherInfoResponseDto> userDetailsOtherInfo(
+    public ApiResponse<UserDetailsOtherInfo> userDetailsOtherInfo(
             @PathVariable("userId") Long userId
     ) {
-        UserDetailsOtherInfoResponseDto userDetailsMyInfoResponseDto = userService.userDetailsOtherInfo(userId);
+        UserDetailsOtherInfo userDetailsMyInfoResponseDto = userService.userDetailsOtherInfo(userId);
 
         return ApiResponse.ok(userDetailsMyInfoResponseDto);
     }
@@ -64,7 +68,7 @@ public class UserController {
     /**
      * 닉네임 변경을 위한 api
      *
-     * @param userUpdateNicknameRequestDto 유저 닉네임 요청한 dto
+     * @param userUpdateNicknameReq 유저 닉네임 요청한 dto
      * @param userId 유저 엔티티
      * */
     @PatchMapping("/user/update/nickname")
@@ -74,11 +78,11 @@ public class UserController {
                     "닉네임은 특수문자를 제외한 2~13자리여야 합니다",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsMyInfoResponseDto> userUpdateNickname(
-            @Valid @RequestBody UserUpdateNicknameRequestDto userUpdateNicknameRequestDto,
+    public ApiResponse<UserDetailsMyInfo> userUpdateNickname(
+            @Valid @RequestBody UserUpdateNicknameReq userUpdateNicknameReq,
             @AuthenticationPrincipal Long userId
     ) {
-        userService.userUpdateNickname(userId, userUpdateNicknameRequestDto);
+        userService.userUpdateNickname(userId, userUpdateNicknameReq);
 
         return ApiResponse.ok();
     }
@@ -86,7 +90,7 @@ public class UserController {
     /**
      * 유저 최초 정보 수집을 위한 api
      *
-     * @param userUpdatePositionAndSkillRequestDto 유저 포지션과 스킬타입을 요청한 dto
+     * @param userUpdatePositionAndSkillReq 유저 포지션과 스킬타입을 요청한 dto
      * @param userId user엔티티 객체
      * */
     @PatchMapping("/user/update/info")
@@ -95,12 +99,12 @@ public class UserController {
             description = "해당 유저의 포지션, 실력을 업데이트 가능합니다.",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsMyInfoResponseDto> userUpdatePositionAndSkillLevel(
-            @Valid @RequestBody UserUpdatePositionAndSkillRequestDto userUpdatePositionAndSkillRequestDto,
+    public ApiResponse<UserDetailsMyInfo> userUpdatePositionAndSkillLevel(
+            @Valid @RequestBody UserUpdatePositionAndSkillReq userUpdatePositionAndSkillReq,
             @AuthenticationPrincipal Long userId
     ) {
-        log.debug("UserUpdatePositionAndSkillRequestDto = {}", userUpdatePositionAndSkillRequestDto.toString());
-        userService.userUpdatePositionAndSkillLevel(userId, userUpdatePositionAndSkillRequestDto);
+        log.debug("UserUpdatePositionAndSkillRequestDto = {}", userUpdatePositionAndSkillReq.toString());
+        userService.userUpdatePositionAndSkillLevel(userId, userUpdatePositionAndSkillReq);
 
         return ApiResponse.ok();
     }
@@ -127,7 +131,7 @@ public class UserController {
      *
      * @param  userId AuthenticationPrincipal 어노테이션
      * @param file 파일 크기 1MB
-     * @param updateUserDetailInfoRequestDto 유저 프로필 업데이트 DTO
+     * @param updateUserDetailInfoReq 유저 프로필 업데이트 DTO
      * */
     @PatchMapping("/user/update")
     @Operation(
@@ -139,9 +143,9 @@ public class UserController {
     public ApiResponse<String> updateUserDetailInfo(
             @AuthenticationPrincipal Long userId,
             @RequestPart(name = "file", required = false) MultipartFile file,
-            @Valid @RequestPart(name = "data", required = false) UpdateUserDetailInfoRequestDto updateUserDetailInfoRequestDto
+            @Valid @RequestPart(name = "data", required = false) UpdateUserDetailInfoReq updateUserDetailInfoReq
     ) {
-        userService.updateUserDetailInfo(userId, file, updateUserDetailInfoRequestDto);
+        userService.updateUserDetailInfo(userId, file, updateUserDetailInfoReq);
         return ApiResponse.ok();
     }
 

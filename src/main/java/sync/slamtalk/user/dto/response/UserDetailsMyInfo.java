@@ -1,17 +1,19 @@
-package sync.slamtalk.user.dto;
+package sync.slamtalk.user.dto.response;
 
 import lombok.*;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.entity.UserRole;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Builder
-public class UserDetailsMyInfoResponseDto {
+public class UserDetailsMyInfo {
     /* 개인 정보 관련 */
     private String email;
     private SocialType socialType;
+    private UserRole role;
 
     /* 공개되어도 상관없는 부분 */
     private Long id;
@@ -37,11 +39,11 @@ public class UserDetailsMyInfoResponseDto {
      * @param mateCompleteParticipationCount 메이트 참여완료 횟수
      * @return UserDetailsInfoResponseDto 개인정보 포함된 정보
      */
-    public static UserDetailsMyInfoResponseDto generateMyProfile(
+    public static UserDetailsMyInfo generateMyProfile(
             User user,
             long levelScore,
             long mateCompleteParticipationCount
-    ){ return UserDetailsMyInfoResponseDto.builder()
+    ){ return UserDetailsMyInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
@@ -54,6 +56,7 @@ public class UserDetailsMyInfoResponseDto {
                 .teamMatchingCompleteParticipationCount(0L)
                 .email(user.getEmail())
                 .socialType(user.getSocialType())
+                .role(user.getRole())
                 .build();
 
     }

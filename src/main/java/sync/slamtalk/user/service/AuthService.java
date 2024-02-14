@@ -11,18 +11,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.UserLoginRequestDto;
-import sync.slamtalk.user.dto.UserSignUpRequestDto;
+import sync.slamtalk.user.dto.request.UserChangePasswordReq;
+import sync.slamtalk.user.dto.request.UserLoginReq;
+import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.error.UserErrorResponseCode;
 
 import java.util.Optional;
+
+import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER;
 
 /**
  * 이 컨트롤러는 유저의 인증과 관련된 기능을 다루는 클래스입니다.
@@ -33,10 +37,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final RedisService redisService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
+    private final RevokeService revokeService;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -52,17 +58,17 @@ public class AuthService {
     /**
      * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
      *
-     * @param userLoginDto 유저로그인 dto
+     * @param userLoginReqDto 유저로그인 dto
      * @param response HttpServletResponse를 받음
      * @return JwtTokenDto
      */
     @Transactional
     public void login(
-            UserLoginRequestDto userLoginDto,
+            UserLoginReq userLoginReqDto,
             HttpServletResponse response
     ) {
         try {
-            Authentication authentication = getAuthentication(userLoginDto.getEmail(), userLoginDto.getPassword());
+            Authentication authentication = getAuthentication(userLoginReqDto.getEmail(), userLoginReqDto.getPassword());
 
             User user = (User) authentication.getPrincipal();
 
@@ -83,27 +89,44 @@ public class AuthService {
     /**
      * 회원가입 검증 및 회원가입 로직
      *
-     * @param userSignUpDto UserSignUpRequestDto
+     * @param userSignUpReqDto UserSignUpRequestDto
      * @param response HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
     public void signUp(
-            UserSignUpRequestDto userSignUpDto,
+            UserSignUpReq userSignUpReqDto,
             HttpServletResponse response
     ) {
-        // 중복 이메일 검증
-        checkEmailExistence(userSignUpDto);
-        // 중복 닉네임 검증
-        checkNicknameExistence(userSignUpDto.getNickname());
 
-        User user = userSignUpDto.toEntity();
+        // 이메일 인증된 사용자인지 판별 하는 로직
+        String isAuth = redisService.getData(userSignUpReqDto.getEmail());
+        if(isAuth == null || !isAuth.equals("OK")){
+            log.debug("이메일 인증을 하지 않았습니다!");
+            throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
+        }
+        // 삭제된 유저인지 검증
+        checkAlreadyCancelUser(userSignUpReqDto);
+        // 중복 이메일 검증
+        checkEmailExistence(userSignUpReqDto);
+        // 중복 닉네임 검증
+        checkNicknameExistence(userSignUpReqDto.getNickname());
+
+        User user = userSignUpReqDto.toEntity();
         user.passwordEncode(passwordEncoder);
 
         userRepository.save(user);
 
+        // 레디스 이메일 인증한 유저 삭제하기
+        redisService.deleteData(userSignUpReqDto.getEmail());
 
-        login(new UserLoginRequestDto(userSignUpDto.getEmail(), userSignUpDto.getPassword()), response);
+        login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
+    }
+
+    private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
+        if(userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()){
+            throw new BaseException(ALREADY_CANCEL_USER);
+        }
     }
 
     /**
@@ -177,8 +200,8 @@ public class AuthService {
     /**
      * 회원가입 시 중복 이메일이 존재하는지 검사하는 메서드
      * */
-    private void checkEmailExistence(UserSignUpRequestDto userSignUpDto) {
-        if (userRepository.findByEmailAndSocialType(userSignUpDto.getEmail(), SocialType.LOCAL).isPresent()) {
+    private void checkEmailExistence(UserSignUpReq userSignUpReq) {
+        if (userRepository.findByEmailAndSocialType(userSignUpReq.getEmail(), SocialType.LOCAL).isPresent()) {
             log.debug("이미 존재하는 유저 이메일입니다.");
             throw new BaseException(UserErrorResponseCode.EMAIL_ALREADY_EXISTS);
         }
@@ -200,5 +223,53 @@ public class AuthService {
                 refreshTokenExpirationPeriod,
                 domain
         );
+    }
+
+    /**
+     * 회원 탈퇴
+     * @param userId : 탈퇴하고자 하는 USER
+     * */
+    @Transactional
+    public void cancelUser(
+            Long userId
+    ) {
+        // todo : 소셜 로그인일 경우 별도의 처리가 필요하다!
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        SocialType socialType = user.getSocialType();
+
+  /*      if(socialType.equals(SocialType.KAKAO)){
+            revokeService.deleteKakaoAccount(user);
+        }*/ /*else if (socialType.equals(SocialType.GOOGLE)){
+            revokeService.deleteGoogleAccount(user, accessToken);
+        } else if (socialType.equals(SocialType.NAVER)) {
+            revokeService.deleteNaverAccount(user, accessToken);
+        }*/
+
+        userRepository.deleteById(userId);
+        // todo : 게시판, 채팅, 팀매칭, 상대팀 매칭 모든 글의 softDelete 처리를 해줘야함.
+        // todo : 댓글 및 좋아요도 해줘야한다.
+        // todo : 출석 테이블도 삭제 처리해야함.
+        // todo : 이후 스케줄러를 통해 매번 1번씩 soft 처리된 모든 필드를 삭제하는 로직을 가져가야할 것 같다.
+
+    }
+
+    /**
+     * 비밀번호 변경 메서드
+     * @param userChangePasswordReq : 변경하고자하는 이메일 및 비밀번호를 담은 dto
+     * */
+    @Transactional
+    public void userChangePassword(UserChangePasswordReq userChangePasswordReq) {
+
+        // 레디스 서버에서 인증했는지 확인하기
+        String isAuth = redisService.getData(userChangePasswordReq.getEmail());
+        if(isAuth == null || !isAuth.equals("OK")){
+            throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
+        }
+
+        User user = userRepository.findByEmail(userChangePasswordReq.getEmail())
+                        .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        user.updatePasswordAndEnCoding(passwordEncoder, userChangePasswordReq.getPassword());
+        redisService.deleteData(userChangePasswordReq.getEmail());
     }
 }

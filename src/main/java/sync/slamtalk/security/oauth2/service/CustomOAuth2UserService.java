@@ -8,6 +8,7 @@ import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserServ
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -53,8 +55,15 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         SocialType socialType = getSocialType(registrationId);
         String userNameAttributeName = userRequest.getClientRegistration()
-                .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName(); // OAuth2 로그인 시 키(PK)가 되는 값
-        Map<String, Object> attributes = oAuth2User.getAttributes(); // 소셜 로그인에서 API가 제공하는 userInfo의 Json 값(유저 정보들)
+                .getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName(); // OAuth2 로그인 시 키(PK)가 되는 값
+        Map<String, Object> originalAttributes = oAuth2User.getAttributes(); // 소셜 로그인에서 API가 제공하는 userInfo의 Json 값(유저 정보들)
+        Map<String, Object> attributes = new HashMap<>(originalAttributes);
+        // SecretKey  추가하기
+        String clientSecretCode = userRequest.getClientRegistration()
+                .getClientSecret();
+        attributes.put("code", clientSecretCode);
 
         // socialType에 따라 유저 정보를 통해 OAuthAttributes 객체 생성
         OAuthAttributes extractAttributes = OAuthAttributes.of(socialType, userNameAttributeName, attributes);
@@ -89,6 +98,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     private User getUser(OAuthAttributes attributes, SocialType socialType) {
         User findUser = userRepository.findBySocialTypeAndSocialId(socialType,
                 attributes.getOauth2UserInfo().getId()).orElse(null);
+
+        // 회원 탈퇴한 유저일 경우
+        if(userRepository.findUserByEmailAndSocialTypeIgnoringWhere(attributes.getOauth2UserInfo().getEmail(), socialType.toString()).isPresent()){
+            throw new OAuth2AuthenticationException(new OAuth2Error("user_deleted", "The user is deleted.", null));
+        }
 
         if(findUser == null) {
             return saveUser(attributes, socialType);

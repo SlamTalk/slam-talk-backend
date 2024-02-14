@@ -2,6 +2,8 @@ package sync.slamtalk.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id", callSuper = false)
+@SQLDelete(sql = "UPDATE users SET is_deleted = true, refresh_token = null  WHERE id = ?")
+@Where(clause = "is_deleted = false")
 @Getter
 @Builder
 public class User extends BaseEntity implements UserDetails {
@@ -162,6 +166,16 @@ public class User extends BaseEntity implements UserDetails {
         this.basketballSkillLevel = basketballSkillLevel;
     }
 
+    /**
+     * 패스워드 변경하고 인코딩하는 메서드
+     *
+     * @param passwordEncoder : 패스워드 인코더
+     * @param password : 변경할 password
+     * */
+    public void updatePasswordAndEnCoding(PasswordEncoder passwordEncoder, String password){
+        this.password = passwordEncoder.encode(password);
+    }
+
     /* UserDetails 관련 메서드 */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -192,7 +206,6 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-
 
     /**
      * 테스트용 Id 세팅 하는 메서드
