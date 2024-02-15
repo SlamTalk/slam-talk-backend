@@ -229,16 +229,16 @@ public class JwtTokenProvider implements InitializingBean {
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElse(null);
 
-        // 권한 정보 가져오기
-        String authorities = user.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        log.debug("authorities = {}", authorities);
-
-        String accessToken = createAccessToken(user, authorities);
-
         if(user != null) {
+            // 권한 정보 가져오기
+            String authorities = user.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(","));
+
+            log.debug("authorities = {}", authorities);
+
+            String accessToken = createAccessToken(user, authorities);
+
             return Optional.of(new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken));
         }
         return Optional.empty();

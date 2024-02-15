@@ -77,6 +77,7 @@ public class AuthService {
 
             response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
             setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
+            user.updateRefreshToken(jwtTokenDto.getRefreshToken());
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
             if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
@@ -169,7 +170,7 @@ public class AuthService {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
-        // 엑세스 토큰 만료가 되었다면 RTR 방식으로 재발급 하기
+        // 엑세스 토큰 만료가 되었다면 재발급 하기
         Optional<JwtTokenDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
 
         if (optionalJwtTokenResponseDto.isEmpty()) {
@@ -178,7 +179,7 @@ public class AuthService {
 
         JwtTokenDto jwtTokenDto = optionalJwtTokenResponseDto.get();
 
-        /* 엑세스 토큰 헤더에 저장 및 리프레쉬 토큰 쿠키에 저장하는 로직 */
+        /* 엑세스 토큰 헤더에 저장*/
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
     }
 
