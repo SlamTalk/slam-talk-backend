@@ -183,8 +183,6 @@ public class TeamMatchingService {
             }
         });
 
-        //ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TEAM", entity.getTitle());// todo : 채팅방 관련 구현
-        //Long chatroomId = chatService.createChatRoom(chatCreateDTO);
         long chatroomId = 1L;
         if(entity.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
 
@@ -200,7 +198,6 @@ public class TeamMatchingService {
                     .applicantId(userId)
                     .applicantNickname(userNickname)
                     .applyStatus(ApplyStatusType.WAITING)
-                    //.chatroomId(chatroomId)
                     .teamName(fromApplicantDto.getTeamName())
                     .skillLevel(fromApplicantDto.getSkillLevel())
                     .build();
@@ -241,7 +238,7 @@ public class TeamMatchingService {
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
 
-            if(applicant.getApplyStatus() == ApplyStatusType.WAITING || applicant.getApplyStatus() == ApplyStatusType.COMMUNICATING){
+            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
                 applicant.updateApplyStatus(ApplyStatusType.REJECTED);
             }else{
                 throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
@@ -276,7 +273,7 @@ public class TeamMatchingService {
         }
 
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(applicant.getApplyStatus() == ApplyStatusType.WAITING || applicant.getApplyStatus() == ApplyStatusType.COMMUNICATING){
+            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
                 applicant.updateApplyStatus(ApplyStatusType.CANCELED);
             }else if(applicant.getApplyStatus() == ApplyStatusType.ACCEPTED){
                 teamPost.cancelOpponent();
@@ -314,7 +311,7 @@ public class TeamMatchingService {
         }
 
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(teamApplicant.getApplyStatus() == ApplyStatusType.WAITING || teamApplicant.getApplyStatus() == ApplyStatusType.COMMUNICATING) {
+            if(teamApplicant.getApplyStatus() == ApplyStatusType.WAITING) {
                 if (teamPost.getOpponent() != null) {
                     throw new BaseException(ALEADY_DECLARED_OPPONENT);
                 }
@@ -338,19 +335,23 @@ public class TeamMatchingService {
      * 4. 모집 상태를 완료로 변경한다.
      * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      */
-    public void completeTeamMatching(long teamMatchingId, long teamApplicantId, long writerId){
+    public void completeTeamMatching(long teamMatchingId, long writerId){
         TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
-        User applicantUser = userRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
         if(teamPost.isCorrespondTo(writerId) == false){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            teamPost.getTeamApplicants().forEach(polledTeamApplicant -> {
-                if(polledTeamApplicant.getApplyStatus() == ApplyStatusType.REJECTED || polledTeamApplicant.getApplyStatus() == ApplyStatusType.CANCELED){
-                    polledTeamApplicant.disconnectTeamMatching();
-                    teamApplicantRepository.delete(polledTeamApplicant);
-                }
-            });
+            if(teamPost.getOpponent() == null){
+                throw new BaseException(OPPONENT_NOT_DECLARED);
+            }
+            if(teamPost.getTeamApplicants().size() > 0){
+                teamPost.getTeamApplicants().forEach(polledTeamApplicant -> {
+                    if(polledTeamApplicant.getApplyStatus() != ApplyStatusType.ACCEPTED){
+                        polledTeamApplicant.disconnectTeamMatching();
+                        teamApplicantRepository.delete(polledTeamApplicant);
+                    }
+                });
+            }else
             teamPost.setRecruitmentStatus(RecruitmentStatusType.COMPLETED);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);

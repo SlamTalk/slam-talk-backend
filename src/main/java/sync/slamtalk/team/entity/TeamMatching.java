@@ -172,7 +172,8 @@ public class TeamMatching extends BaseEntity implements Post {
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writer.getId());
-        dto.setNickname(this.writer.getNickname());
+        dto.setWriterNickname(this.writer.getNickname());
+        dto.setWriterImageUrl(this.writer.getImageUrl());
         dto.setLocationDetail(this.locationDetail);
         dto.setSkillLevel(this.skillLevel);
         dto.setSkillLevelList(mapper.toSkillLevelTypeList(this.skillLevel));
