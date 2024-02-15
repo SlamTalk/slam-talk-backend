@@ -99,12 +99,14 @@ public class AuthService {
             HttpServletResponse response
     ) {
 
+/*
+        TODO : 운영환경에서 주석 해체 필요
         // 이메일 인증된 사용자인지 판별 하는 로직
         String isAuth = redisService.getData(userSignUpReqDto.getEmail());
         if(isAuth == null || !isAuth.equals("OK")){
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
-        }
+        }*/
         // 삭제된 유저인지 검증
         checkAlreadyCancelUser(userSignUpReqDto);
         // 중복 이메일 검증
@@ -117,8 +119,10 @@ public class AuthService {
 
         userRepository.save(user);
 
+/*
+        TODO : 운영환경에서 주석 해체 필요
         // 레디스 이메일 인증한 유저 삭제하기
-        redisService.deleteData(userSignUpReqDto.getEmail());
+        redisService.deleteData(userSignUpReqDto.getEmail());*/
 
         login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
     }
