@@ -30,7 +30,7 @@ public class CommunityImage {
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    @Column(name = "image_url", length = 255)
+    @Column(name = "image_url", length = 2048)
     private String imageUrl;
 
     public void updateCommunity(Community community) {

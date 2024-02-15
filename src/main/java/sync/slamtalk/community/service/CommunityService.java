@@ -1,5 +1,7 @@
 package sync.slamtalk.community.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +43,9 @@ public class CommunityService {
         // 사용자 조회 및 예외 처리
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(CommunityErrorResponseCode.USER_NOT_FOUND));
+
+        // 이미지 리스트 null 체크 및 빈 리스트 처리 추가
+        images = (images == null) ? new ArrayList<>() : images;
 
         try {
             // DTO -> entity, 이미지 업로드 처리
@@ -149,12 +154,9 @@ public class CommunityService {
 
     // 이미지 유효성 검사 및 업로드 -> 사용자가 업로드한 이미지가 있는지 확인 후, 업로드
     private List<CommunityImage> validateAndUploadImages(List<MultipartFile> images,Community community) {
-        // 업로드한 이미지가 없으면 빈 리스트 반환
-        /*for (MultipartFile image : images) {
-            if (image.getName().isEmpty()) {
-                return Collections.emptyList();
-            }
-        }*/
+        if (images == null || images.isEmpty()) {
+            return Collections.emptyList(); // 이미지가 없는 경우 빈 리스트 반환
+        }
 
         // 이미지가 비어있는지 검사 후 업로드
         // images 리스트에 실제로 내용이 있는 파일만 필터링 후 업로드

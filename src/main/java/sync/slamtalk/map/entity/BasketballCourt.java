@@ -83,7 +83,7 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "additional_info", columnDefinition = "TEXT")
     private String additionalInfo; //기타 내용
 
-    @Column(name = "photo_url", length = 255)
+    @Column(name = "photo_url", length = 2048)
     private String photoUrl; // 농구장 사진 url
 
     @Column(name = "admin_status")
