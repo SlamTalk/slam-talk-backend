@@ -51,7 +51,13 @@ public class TeamApplicant extends BaseEntity {
         this.teamMatching = null;
     }
 
-
+    @Override
+    public void delete() {
+        if(this.applyStatus != ApplyStatusType.CANCELED){
+            throw new BaseException(TEAM_POST_NOT_FOUND);
+        }
+        super.delete();
+    }
 
 
     public boolean checkCapabilities(List<String> requiredSkillLevel) {

@@ -162,9 +162,9 @@ public class TeamMatchingController {
             description = "팀 매칭 글의 모집을 완료하는 api 입니다.",
             tags = {"팀 매칭 / 신청자 목록"}
     )
-    @PatchMapping("/{teamMatchingId}/apply/{teamApplicantId}/complete")
-    public ApiResponse completeTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @PathVariable("teamApplicantId")Long teamApplicantId, @AuthenticationPrincipal Long id){
-        teamMatchingService.completeTeamMatching(teamMatchingId, teamApplicantId, id);
+    @PatchMapping("/{teamMatchingId}/complete")
+    public ApiResponse completeTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @AuthenticationPrincipal Long id){
+        teamMatchingService.completeTeamMatching(teamMatchingId, id);
         return ApiResponse.ok();
     }
 
