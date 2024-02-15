@@ -12,7 +12,10 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
 import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.MatePostListDTO;
+import sync.slamtalk.mate.dto.MateSearchCondition;
 import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.mate.entity.PositionType;
+import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
@@ -37,22 +40,18 @@ public class MatePostController {
     @PostMapping("/register")
     public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO, @AuthenticationPrincipal Long id){
 
-        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
-        long userId = id;
-
-        // MateFormDTO를 MatePost로 변환한다.
-        long matePostId = matePostService.registerMatePost(mateFormDTO, userId);
+        long matePostId = matePostService.registerMatePost(mateFormDTO, id);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/mate/" + matePostId));
+        headers.setLocation(URI.create("/api/mate/read/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
     }
 
     @Operation(
             summary = "메이트 찾기 글 조회",
             description = "글 아이디를 요청하면 글을 조회하는 api 입니다.",
-            tags = {"메이트 찾기"}
+            tags = {"메이트 찾기", "게스트"}
     )
-    @GetMapping("/{matePostId}")
+    @GetMapping("/read/{matePostId}")
     public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
         MateFormDTO dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
@@ -95,22 +94,26 @@ public class MatePostController {
             description = "메이트 찾기 글 목록을 조회하는 api 입니다. cursor(모집글 등록일)를 이용하여 최근 등록일 순으로 커서 페이징을 구현합니다. 제공되는 기본 페이지 수는 10 입니다. \n" +
                     "cursor가 없을 경우 현재 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
                     "cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
-                    "cursor는 yyyy-MM-dd HH:mm 형식으로 요청해야 합니다. \n" +
+                    "cursor는 yyyy-MM-dd HH:mm:SSS 형식으로 요청해야 합니다. \n" +
                     "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
+            tags = {"메이트 찾기", "게스트"}
+    )
+    @GetMapping("/list")
+    public ApiResponse<MatePostListDTO> getMatePostList(MateSearchCondition condition){
+
+        MatePostListDTO resultDto = matePostService.getMatePostsByCurser(condition);
+
+        return ApiResponse.ok(resultDto);
+    }
+
+    @Operation(
+            summary = "메이트 찾기 글 모집 완료",
+            description = "해당 글을 모집 완료처리하는 api 입니다.",
             tags = {"메이트 찾기"}
     )
-    @GetMapping
-    public ApiResponse<MatePostListDTO> getMatePostList(@RequestParam(name = "cursor", required = false) Optional<String> cursor) {
-        String effectiveCursor = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        List<MatePostDTO> listedMatePostDTO = matePostService.getMatePostsByCurser(effectiveCursor, 10);
-
-        MatePostListDTO response = new MatePostListDTO();
-        response.setMatePostList(listedMatePostDTO);
-        if (!listedMatePostDTO.isEmpty()) {
-            String nextCursor = listedMatePostDTO.get(listedMatePostDTO.size() - 1).getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-            response.setNextCursor(nextCursor);
-        }
-
-        return ApiResponse.ok(response);
+    @PatchMapping("/{matePostId}/complete")
+    public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+        matePostService.completeRecruitment(matePostId, id);
+        return ApiResponse.ok();
     }
 }

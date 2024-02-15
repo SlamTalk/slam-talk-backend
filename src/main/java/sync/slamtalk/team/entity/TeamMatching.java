@@ -4,9 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
-import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.mate.mapper.MatePostEntityToDtoMapper;
+import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
@@ -19,20 +18,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static sync.slamtalk.team.error.TeamErrorResponseCode.ALEADY_DECLARED_OPPONENT;
-import static sync.slamtalk.team.error.TeamErrorResponseCode.PROHIBITED_TO_APPLY_TO_YOUR_POST;
+import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "teammatchinglist")
 @Getter
+@Builder
 @NamedEntityGraph(
         name = "TeamMatching.forEagerApplicants",
         attributeNodes = @NamedAttributeNode("teamApplicants")
-
 )
-public class TeamMatching extends BaseEntity {
+public class TeamMatching extends BaseEntity implements Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamMatchingId;
@@ -44,6 +42,14 @@ public class TeamMatching extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "opponent_id")
     private User opponent;
+
+    boolean skillLevelHigh = false;
+
+    boolean skillLevelMiddle = false;
+
+    boolean skillLevelLow = false;
+
+    boolean skillLevelBeginner = false;
 
     private String teamName;
 
@@ -74,15 +80,30 @@ public class TeamMatching extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
 
-    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TeamApplicant> teamApplicants = new ArrayList<>();
 
 //    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!
 //        this.writerId = writerId;
 //    }
 
+    private static final int MAX_APPLICANTS = 5;
+
     public void declareOpponent(User opponent){
         this.opponent = opponent;
+        this.opponent.getOpponentTeamMatchings().add(this);
+    }
+
+    public void cancelOpponent(){
+        this.opponent.getOpponentTeamMatchings().remove(this);
+        this.opponent = null;
+    }
+
+    public void configureSkillLevel(SkillLevelList list){
+        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+        if(list.isSkillLevelLow()) this.skillLevelLow = true;
+        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
     }
 
     @Override
@@ -147,7 +168,7 @@ public class TeamMatching extends BaseEntity {
     * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
      */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
-        MatePostEntityToDtoMapper mapper = new MatePostEntityToDtoMapper();
+        EntityToDtoMapper mapper = new EntityToDtoMapper();
         dto.setTeamMatchingId(this.teamMatchingId);
         dto.setTitle(this.title);
         dto.setContent(this.content);
@@ -169,15 +190,21 @@ public class TeamMatching extends BaseEntity {
     @Override
     public void delete() {
         this.getTeamApplicants().forEach(TeamApplicant::delete);
+        this.recruitmentStatus = RecruitmentStatusType.CANCELED;
         super.delete();
     }
 
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
-        return this.writer.getId() == loginId;
+        return this.writer.getId().equals(loginId);
     }
-
+    public void connectApplicant(TeamApplicant teamApplicant){
+        if(teamApplicants.stream().filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING).count() > MAX_APPLICANTS){
+            throw new BaseException(OVER_LIMITED_NUMBERS);
+        }
+        this.teamApplicants.add(teamApplicant);
+    }
     public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
         //todo : 같은 모집 상태로 변경 시 예외 처리
 

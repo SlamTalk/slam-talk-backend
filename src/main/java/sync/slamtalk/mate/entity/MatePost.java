@@ -1,10 +1,7 @@
 package sync.slamtalk.mate.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseEntity;
@@ -18,17 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static sync.slamtalk.mate.error.MateErrorResponseCode.DECREASE_POSITION_NOT_AVAILABLE;
-import static sync.slamtalk.mate.error.MateErrorResponseCode.INCREASE_POSITION_NOT_AVAILABLE;
+import static sync.slamtalk.mate.error.MateErrorResponseCode.EXCEED_OR_UNDER_LIMITED_NUMBER;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "matepost")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
-public class MatePost extends BaseEntity {
+public class MatePost extends BaseEntity implements Post{
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +36,9 @@ public class MatePost extends BaseEntity {
         @JoinColumn(nullable = false, name="writer_id")
         private User writer;
 
+        @Column(nullable = false)
+        private String location; // 시합 장소 (* 서울, 인천 등)
+
         @Column(nullable = true, name="location_detail")
         private String locationDetail; // 상세 시합 장소
 
@@ -48,9 +48,15 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false)
         private String content; // 글 내용
 
-        @Column(nullable = false, name="skill_level_type")
-        @Enumerated(EnumType.STRING)
-        private RecruitedSkillLevelType skillLevel; // 원하는 스킬 레벨 범위 BEGINNER, OVER_BEGINNER, UNDER_LOW, OVER_LOW, UNDER_MIDDLE, OVER_MIDDLE, UNDER_HIGH, HIGH
+        private RecruitedSkillLevelType skillLevel;
+
+        private boolean skillLevelHigh = false;
+
+        private boolean skillLevelMiddle = false;
+
+        private boolean skillLevelLow = false;
+
+        private boolean skillLevelBeginner = false;
 
         @Column(nullable = false)
         private LocalDate scheduledDate; // 예정된 날짜
@@ -92,7 +98,7 @@ public class MatePost extends BaseEntity {
         @Column(nullable = false, name="current_participants_others")
         private int currentParticipantsOthers; // 모집 포지션 무관 현재 참여 인원
 
-        @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL)
+        @OneToMany(mappedBy = "matePost" , cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
         private List<Participant> participants = new ArrayList<>(); // 참여자 목록
 
 
@@ -103,6 +109,9 @@ public class MatePost extends BaseEntity {
          */
         public boolean softDeleteMatePost(){
                 softDeleteParticipantAll();
+                if(this.recruitmentStatus == RecruitmentStatusType.RECRUITING){
+                        this.recruitmentStatus = RecruitmentStatusType.CANCELED;
+                }
                 this.delete();
                 return true;
         }
@@ -121,6 +130,15 @@ public class MatePost extends BaseEntity {
                 return true;
         }
 
+        public boolean updateRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
+                if(this.recruitmentStatus == recruitmentStatus){
+                        log.debug("변경할 모집 상태와 현재 모집 상태가 같습니다.");
+                        return false;
+                }
+                this.recruitmentStatus = recruitmentStatus;
+                return true;
+        }
+
         public boolean isCorrespondToUser(Long userId){
                 log.debug("글 작성자 ID : {}", this.writer.getId());
                 log.debug("요청자 ID : {}", userId);
@@ -129,14 +147,23 @@ public class MatePost extends BaseEntity {
         }
 
         //todo: User의 연관관계 컬렉션 필드 생성 시 수정 필요
-//        public boolean connectParent(User user){
-//                this.user = user;
-//                if(!user.getMatePosts().contains(this)){
-//                        user.getMatePosts().add(this);
-//                        return true;
-//                }
-//                return false;
-//        }
+        public boolean connectParent(User user){
+                this.writer = user;
+                user.getMatePosts().add(this);
+                return true;
+        }
+
+        public void configureSkillLevel(SkillLevelList list){
+                this.skillLevelBeginner = false;
+                this.skillLevelLow = false;
+                this.skillLevelMiddle = false;
+                this.skillLevelHigh = false;
+
+                if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+                if(list.isSkillLevelLow()) this.skillLevelLow = true;
+                if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+                if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
+        }
 
         public Long getWriterId(){
                 return this.writer.getId();
@@ -170,11 +197,9 @@ public class MatePost extends BaseEntity {
                 this.locationDetail = locationDetail;
         }
 
-        public void updateSkillLevel(RecruitedSkillLevelType skillLevel){
-                this.skillLevel = skillLevel;
+        public void updateLocation(String location){
+                this.location = location;
         }
-
-
         public void updateMaxParticipantsForwards(int maxParticipantsForwards){
                 this.maxParticipantsForwards = maxParticipantsForwards;
         }
@@ -211,28 +236,28 @@ public class MatePost extends BaseEntity {
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
-                                        throw new BaseException(INCREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }
@@ -246,28 +271,28 @@ public class MatePost extends BaseEntity {
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() == 0){
-                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() - 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() == 0){
-                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() - 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() == 0){
-                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() - 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() == 0){
-                                        throw new BaseException(DECREASE_POSITION_NOT_AVAILABLE);
+                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() - 1);
                                 }
@@ -276,6 +301,27 @@ public class MatePost extends BaseEntity {
                 return ApiResponse.ok("성공적으로 인원을 줄였습니다.");
         }
 
+        public List<String> toSkillLevelTypeList(){
+                List<String> skillLevelTypeList = new ArrayList<>();
+
+                if(this.isSkillLevelBeginner()) {
+                        skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                }
+
+                if(this.isSkillLevelLow()) {
+                        skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                }
+
+                if(this.isSkillLevelMiddle()) {
+                        skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                }
+
+                if(this.isSkillLevelHigh()) {
+                        skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                }
+
+                return skillLevelTypeList;
+        }
         // todo : 참여자 목록의 최대 포지션 인원을 일정 수치 이상 올리지 못하도록 하는 기능 구현 필요
 
         // todo : 해당 모집 글의 요구 실력에 미달하거나 초과할 경우 참여자 목록에 추가하지 못하도록 하는 기능 구현 필요
@@ -300,7 +346,6 @@ public class MatePost extends BaseEntity {
                         ", locationDetail='" + locationDetail + '\'' +
                         ", title='" + title + '\'' +
                         ", content='" + content + '\'' +
-                        ", skillLevel=" + skillLevel +
                         ", scheduledDate=" + scheduledDate +
                         ", startTime=" + startTime +
                         ", endTime=" + endTime +

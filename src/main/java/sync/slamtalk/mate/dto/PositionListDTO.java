@@ -11,14 +11,13 @@ import sync.slamtalk.mate.entity.PositionType;
 @Setter
 public class PositionListDTO {
     @NonNull
-    @Enumerated(EnumType.STRING)
-    PositionType position;
+    String position;
     @NonNull
     int maxPosition;
     @NonNull
     int currentPosition;
 
-    public PositionListDTO(PositionType position, int maxPosition, int currentPosition) {
+    public PositionListDTO(String position, int maxPosition, int currentPosition) {
         this.position = position;
         this.maxPosition = maxPosition;
         this.currentPosition = currentPosition;
