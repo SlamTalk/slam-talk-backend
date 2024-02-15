@@ -74,6 +74,25 @@ public class AuthController {
     }
 
     /**
+     * 회원 가입 api
+     * @param  userSignUpReqDto
+     *
+     * @return  회원가입 성공
+     * */
+    @PostMapping("/test/sign-up")
+    @Operation(
+            summary = "자체 회원가입 기능",
+            description = "자체 회원가입 기능입니다.",
+            tags = {"백엔드 전용 api"}
+    )
+    public ApiResponse<String> testSignUp(
+            @RequestBody UserSignUpReq userSignUpReqDto,
+            HttpServletResponse response) {
+        authService.testSignUp(userSignUpReqDto, response);
+        return ApiResponse.ok();
+    }
+
+    /**
      * 리프래쉬 토큰 재발급 api
      * @param request
      * @param response
