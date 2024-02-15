@@ -45,7 +45,6 @@ public class TeamMatchingService {
     private final TeamMatchingRepository teamMatchingRepository;
     private final TeamApplicantRepository teamApplicantRepository;
     private final UserRepository userRepository;
-    private final ChatService chatService;
     private final EntityToDtoMapper entityToDtoMapper;
 
     private static final int FIRST_PAGE = 0;
@@ -216,45 +215,45 @@ public class TeamMatchingService {
         return chatroomId;
     }
 
-    /**
-     * Objective : 팀 매칭 글에 지원한 신청자의 채팅방에 접속하여 각자의 채팅방 리스트에 채팅방을 형성하는 메소드 입니다.
-     * Flow :
-     * 1. teamMatchingId를 가진 글을 조회한다.(없을 경우 BaseException을 발생시킨다.)
-     * 2. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
-     * 3. 모집 상태가 모집 중인지 확인한다.
-     * 3-1. 해당 신청자의 실력이 요구 실력과 일치하는지 확인한다.
-     * 3-2. 요구 실력을 충족하면 신청자의 채팅방 ID와 글 작성자의 채팅방 ID를 이용하여 채팅방을 각자의 채팅방 리스트에 추가한다.
-     * 3-3. 신청자의 신청 상태를 COMMUNICATING으로 변경한다.
-     * 4. 요구 실력을 충족하지 못하면 BaseException을 발생시킨다.
-     * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
-     */
-    public void communicateApplicant(long teamMatchingId, long teamApplicantId, long hostId){
-        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
-
-        if(teamPost.isCorrespondTo(hostId) == false){ // 접근자가 게시글 작성자가 아닐 때
-            throw new BaseException(USER_NOT_AUTHORIZED);
-        }
-
-        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
-
-            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
-                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(teamPost.getSkillLevel());
-                if(applicant.checkCapabilities(allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
-                    List<Long> userIdList = List.of(applicant.getApplicantId(), hostId);
-                    chatService.setUserListChatRoom(applicant.getChatroomId(), userIdList);
-                    applicant.updateApplyStatus(ApplyStatusType.COMMUNICATING);
-                }else{
-                    throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-                }
-            }else{
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
-            }
-        }else{
-            throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
-        }
-
-    }
+//    /**
+//     * Objective : 팀 매칭 글에 지원한 신청자의 채팅방에 접속하여 각자의 채팅방 리스트에 채팅방을 형성하는 메소드 입니다.
+//     * Flow :
+//     * 1. teamMatchingId를 가진 글을 조회한다.(없을 경우 BaseException을 발생시킨다.)
+//     * 2. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
+//     * 3. 모집 상태가 모집 중인지 확인한다.
+//     * 3-1. 해당 신청자의 실력이 요구 실력과 일치하는지 확인한다.
+//     * 3-2. 요구 실력을 충족하면 신청자의 채팅방 ID와 글 작성자의 채팅방 ID를 이용하여 채팅방을 각자의 채팅방 리스트에 추가한다.
+//     * 3-3. 신청자의 신청 상태를 COMMUNICATING으로 변경한다.
+//     * 4. 요구 실력을 충족하지 못하면 BaseException을 발생시킨다.
+//     * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
+//     */
+//    public void communicateApplicant(long teamMatchingId, long teamApplicantId, long hostId){
+//        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
+//
+//        if(teamPost.isCorrespondTo(hostId) == false){ // 접근자가 게시글 작성자가 아닐 때
+//            throw new BaseException(USER_NOT_AUTHORIZED);
+//        }
+//
+//        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
+//            TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
+//
+//            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
+//                List<String> allowedSkillLevel= entityToDtoMapper.toSkillLevelTypeList(teamPost.getSkillLevel());
+//                if(applicant.checkCapabilities(allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
+//                    List<Long> userIdList = List.of(applicant.getApplicantId(), hostId);
+//                    chatService.setUserListChatRoom(applicant.getChatroomId(), userIdList);
+//                    applicant.updateApplyStatus(ApplyStatusType.COMMUNICATING);
+//                }else{
+//                    throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+//                }
+//            }else{
+//                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
+//            }
+//        }else{
+//            throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
+//        }
+//
+//    }
 
     /**
      * Objective : 팀 매칭 글에 지원한 신청자를 거절하는 메소드 입니다.
