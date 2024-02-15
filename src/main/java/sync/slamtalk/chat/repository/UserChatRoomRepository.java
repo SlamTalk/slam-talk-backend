@@ -2,6 +2,7 @@ package sync.slamtalk.chat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import sync.slamtalk.chat.entity.RoomType;
 import sync.slamtalk.chat.entity.UserChatRoom;
 
 import java.util.List;
@@ -20,4 +21,9 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     // 특정 userId 와 특정 roomId 로 userChatRoom 엔터티 가져오기
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.id=:roomId")
     Optional<UserChatRoom>findByUserChatroom(Long userId, Long roomId);
+
+
+    // 특정 chatRoomName , 특정 chatRoomType 으로 검색
+    @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.name=:roomName and m.chat.roomType=:roomType")
+    Optional<UserChatRoom>findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
 }
