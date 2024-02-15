@@ -72,6 +72,7 @@ public class SecurityConfig {
                             request.requestMatchers(
                                     "/api/login",
                                     "/api/sign-up",
+                                    "/api/test/sign-up",
                                     "/api/tokens/refresh",
                                     "/ws/slamtalk/**",
                                     "/swagger-ui/**",
