@@ -146,7 +146,7 @@ public class TeamMatchingController {
 
 
         if(applyStatus == ApplyStatusType.ACCEPTED){
-            teamMatchingService.communicateApplicant(teamMatchingId, teamApplicantId, id);
+            teamMatchingService.acceptApplicant(teamMatchingId, teamApplicantId, id);
         }else if(applyStatus == ApplyStatusType.REJECTED){
             teamMatchingService.rejectApplicant(teamMatchingId, teamApplicantId, id);
         }else if(applyStatus == ApplyStatusType.CANCELED){
