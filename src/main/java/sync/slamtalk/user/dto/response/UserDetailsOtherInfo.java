@@ -28,13 +28,15 @@ public class UserDetailsOtherInfo {
      * 상대방 프로필 조회 시 필요한 정보를 반환하는 생성자
      *
      * @param user db에서 조회한 user 객체
-     * @param mateCompleteParticipationCount
+     * @param mateCount 메이트 총 개수
+     * @param teamCount 팀 총 개수
      * @return UserDetailsInfoResponseDto 개인정보 제외된 정보
      */
     public static UserDetailsOtherInfo generateOtherUserProfile(
             User user,
             long levelScore,
-            long mateCompleteParticipationCount
+            long mateCount,
+            long teamCount
     ) { return UserDetailsOtherInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
@@ -44,8 +46,8 @@ public class UserDetailsOtherInfo {
                 .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
                 .levelScore(levelScore)
                 .level(levelScore / User.LEVEL_THRESHOLD)
-                .mateCompleteParticipationCount(mateCompleteParticipationCount)
-                .teamMatchingCompleteParticipationCount(0L)
+                .mateCompleteParticipationCount(mateCount)
+                .teamMatchingCompleteParticipationCount(teamCount)
                 .build();
 
     }

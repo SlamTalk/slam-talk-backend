@@ -42,7 +42,8 @@ public class UserDetailsMyInfo {
     public static UserDetailsMyInfo generateMyProfile(
             User user,
             long levelScore,
-            long mateCompleteParticipationCount
+            long mateCompleteParticipationCount,
+            long teamCompleteParticipationCount
     ){ return UserDetailsMyInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
@@ -53,7 +54,7 @@ public class UserDetailsMyInfo {
                 .level(levelScore/User.LEVEL_THRESHOLD)
                 .levelScore(levelScore)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
-                .teamMatchingCompleteParticipationCount(0L)
+                .teamMatchingCompleteParticipationCount(teamCompleteParticipationCount)
                 .email(user.getEmail())
                 .socialType(user.getSocialType())
                 .role(user.getRole())
