@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.mate.repository.MatePostRepository;
+import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.dto.request.UpdateUserDetailInfoReq;
 import sync.slamtalk.user.dto.request.UserUpdateNicknameReq;
@@ -31,6 +32,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final UserAttendanceRepository userAttendanceRepository;
+    private final TeamMatchingRepository teamMatchingRepository;
     private final MatePostRepository matePostRepository;
     private final AwsS3RepositoryImpl awsS3Service;
 
@@ -49,12 +51,15 @@ public class UserService {
         long levelScore = 0L;
 
         // Mate 게시판 상태가 Complete
-        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(userId);
-        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
+        long mateCount = getMateCount(userId, user);
+        levelScore += mateCount * User.MATE_LEVEL_SCORE;
 
-        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
+        // teamMatching 게시판 상태가 Complete
+        long teamCount = getTeamCount(userId, user);
+        levelScore += teamCount * User.TEAM_MATCHING_LEVEL_SCORE;
 
-        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+        // user 출석개수 반환
+        long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
                 .orElse(0L);
         levelScore += userAttendCount * User.ATTEND_SCORE;
 
@@ -62,7 +67,8 @@ public class UserService {
         return UserDetailsMyInfo.generateMyProfile(
                 user,
                 levelScore,
-                mateCompleteParticipationCount
+                mateCount,
+                teamCount
         );
     }
 
@@ -81,12 +87,15 @@ public class UserService {
         long levelScore = 0L;
 
         // Mate 게시판 상태가 Complete
-        long mateCompleteParticipationCount = matePostRepository.findMateCompleteParticipationCount(userId);
-        levelScore += mateCompleteParticipationCount * User.MATE_LEVEL_SCORE;
+        long mateCount = getMateCount(userId, user);
+        levelScore += mateCount * User.MATE_LEVEL_SCORE;
 
-        // todo : teamMatchingCompleteParticipationCount 팀매칭이 완료된 경우의 개수 세기
+        // teamMatching 게시판 상태가 Complete
+        long teamCount = getTeamCount(userId, user);
+        levelScore += teamCount * User.TEAM_MATCHING_LEVEL_SCORE;
 
-        Long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+        // user 출석개수 반환
+        long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
                 .orElse(0L);
         levelScore += userAttendCount * User.ATTEND_SCORE;
 
@@ -94,8 +103,37 @@ public class UserService {
          return UserDetailsOtherInfo.generateOtherUserProfile(
                 user,
                 levelScore,
-                mateCompleteParticipationCount
+                mateCount,
+                 teamCount
         );
+    }
+
+    /**
+     * 팀매칭 완료된 곳에 참여한 개수 구하는 메서드
+     * @param userId : 유저 아이디
+     * @param user : 유저 객체
+     *
+     * @return count : 개수
+     * */
+    private long getTeamCount(Long userId, User user) {
+        long count = 0L;
+        count += teamMatchingRepository.countTeamMatchingByWriter(user);
+        count += teamMatchingRepository.findTeamMatchingByCompleteParticipationCount(userId);
+        return count;
+    }
+
+    /**
+     * Mate매칭 완료된 곳에 참여한 개수 구하는 메서드
+     * @param userId : 유저 아이디
+     * @param user : 유저 객체
+     *
+     * @return count : 개수
+     * */
+    private long getMateCount(Long userId, User user) {
+        long count = 0L;
+        count += matePostRepository.findMateCompleteParticipationCount(userId);
+        count += matePostRepository.countMatePostByWriter(user);
+        return count;
     }
 
     /**

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,5 +24,8 @@ public interface MatePostRepository extends JpaRepository<MatePost, Long> {
             "where p.participantId = :userId " +
             "and m.recruitmentStatus = 'COMPLETED' " +
             "and p.applyStatus = 'ACCEPTED'")
-    Long findMateCompleteParticipationCount(@Param("userId") Long userId);
+    long findMateCompleteParticipationCount(@Param("userId") Long userId);
+
+    @Query("select count(*) from MatePost m where m.writer = :writer and m.recruitmentStatus = 'COMPLETED'")
+    long countMatePostByWriter(@Param("writer") User writer);
 }
