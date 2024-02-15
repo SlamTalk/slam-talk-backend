@@ -45,7 +45,7 @@ public class MatePostToDto {
 
     private List<PositionListDTO> positionList = new ArrayList<>();
     private RecruitedSkillLevelType skillLevel;
-    private List<String> skillList = new ArrayList<>();
+    private List<String> skillLevelList = new ArrayList<>();
     private List<FromParticipantDto> participants = new ArrayList<>();
 
 }

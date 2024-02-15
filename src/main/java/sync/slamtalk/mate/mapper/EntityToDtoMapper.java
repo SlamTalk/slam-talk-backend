@@ -168,7 +168,7 @@ public class EntityToDtoMapper {
 
 
         MatePostToDto resultDto = new MatePostToDto();
-        resultDto.setSkillList(toSkillLevelTypeList(dto.getSkillLevel()));
+        resultDto.setSkillLevelList(toSkillLevelTypeList(dto.getSkillLevel()));
         resultDto.setWriterId(dto.getWriterId());
         resultDto.setWriterNickname(dto.getWriterNickname());
         resultDto.setMatePostId(dto.getMatePostId());
