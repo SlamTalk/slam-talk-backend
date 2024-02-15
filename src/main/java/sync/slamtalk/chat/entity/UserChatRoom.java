@@ -28,6 +28,12 @@ public class UserChatRoom extends BaseEntity {
     @JoinColumn(name = "chatroom_id",nullable = false)
     private ChatRoom chat;
 
+
+    // 채팅방 이름
+    @Column(name = "chatroom_name")
+    private String name;
+
+
     // 채팅방 타입
     @Enumerated(EnumType.STRING)
     @Column(name = "chatroom_type")
@@ -77,4 +83,5 @@ public class UserChatRoom extends BaseEntity {
     public void updateIsFirst(Boolean isFirst){
         this.isFirst = isFirst;
     }
+
 }
