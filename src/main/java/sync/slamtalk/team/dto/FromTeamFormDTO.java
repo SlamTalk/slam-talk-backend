@@ -29,7 +29,7 @@ public class FromTeamFormDTO {
     private String locationDetail;
 
     @NonNull
-    private Integer numberOfMembers;
+    private String numberOfMembers;
 
     @NonNull
     @Enumerated(EnumType.STRING)

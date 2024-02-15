@@ -52,7 +52,7 @@ public class TeamMatchingController {
             description = "팀 매칭 글을 조회하는 api 입니다.",
             tags = {"팀 매칭", "게스트"}
     )
-    @GetMapping("/read/{teamMatchingId}/")
+    @GetMapping("/read/{teamMatchingId}")
     public ApiResponse<ToTeamFormDTO> getTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId){
 
         ToTeamFormDTO dto = teamMatchingService.getTeamMatching(teamMatchingId);

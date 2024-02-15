@@ -100,6 +100,7 @@ public class MatePostService {
                 .startTime(post.getStartTime())
                 .endTime(post.getEndTime())
                 .locationDetail(post.getLocation() + " " + post.getLocationDetail())
+                .skillLevel(post.getSkillLevel())
                 .skillLevelList(skillList)
                 .recruitmentStatus(post.getRecruitmentStatus())
                 .positionList(positionList)

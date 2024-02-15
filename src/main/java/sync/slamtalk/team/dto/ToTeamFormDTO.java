@@ -43,10 +43,13 @@ public class ToTeamFormDTO {
     private String locationDetail;
 
     @NonNull
-    private Integer numberOfMembers;
+    private String numberOfMembers;
 
     @NonNull
-    private List<String> skillLevel;
+    private List<String> skillLevelList;
+
+    @NonNull
+    private RecruitedSkillLevelType skillLevel;
 
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -69,5 +72,5 @@ public class ToTeamFormDTO {
     private RecruitmentStatusType recruitmentStatusType;
 
     @NonNull
-    private List<ToApplicantDto> teamApplicantsDto;
+    private List<ToApplicantDto> teamApplicants;
 }

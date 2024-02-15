@@ -62,7 +62,7 @@ public class TeamMatching extends BaseEntity implements Post {
     private String locationDetail;
 
     @Column(nullable = false)
-    private Integer numberOfMembers;
+    private String numberOfMembers;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -124,7 +124,6 @@ public class TeamMatching extends BaseEntity implements Post {
         return "teammatching{" +
                 "teamMatchingId=" + teamMatchingId +
                 ", writerId=" + writer.getId() +
-                ", opponentId=" + opponent.getId() +
                 ", teamName='" + teamName + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
@@ -175,7 +174,8 @@ public class TeamMatching extends BaseEntity implements Post {
         dto.setWriterId(this.writer.getId());
         dto.setNickname(this.writer.getNickname());
         dto.setLocationDetail(this.locationDetail);
-        dto.setSkillLevel(mapper.toSkillLevelTypeList(this.skillLevel));
+        dto.setSkillLevel(this.skillLevel);
+        dto.setSkillLevelList(mapper.toSkillLevelTypeList(this.skillLevel));
         dto.setScheduledDate(this.scheduledDate);
         dto.setStartTime(this.startTime);
         dto.setEndTime(this.endTime);
@@ -183,7 +183,7 @@ public class TeamMatching extends BaseEntity implements Post {
         dto.setNumberOfMembers(this.numberOfMembers);
         dto.setCreatedAt(this.getCreatedAt());
         dto.setRecruitmentStatusType(this.recruitmentStatus);
-        dto.setTeamApplicantsDto(this.makeApplicantDto());
+        dto.setTeamApplicants(this.makeApplicantDto());
         return dto;
     }
 
