@@ -83,7 +83,7 @@ public class AuthController {
     @Operation(
             summary = "자체 회원가입 기능",
             description = "자체 회원가입 기능입니다.",
-            tags = {"로그인/회원가입"}
+            tags = {"백엔드 전용 api"}
     )
     public ApiResponse<String> testSignUp(
             @RequestBody UserSignUpReq userSignUpReqDto,
