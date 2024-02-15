@@ -21,8 +21,8 @@ public class ChatRoom extends BaseEntity {
     private Long id;
 
 
-//    @OneToOne(mappedBy = "chatRoom", fetch = FetchType.LAZY)
-//    private BasketballCourt basketballCourt;
+    @OneToOne(mappedBy = "chatroom", fetch = FetchType.LAZY)
+    private BasketballCourt basketballCourt;
 
 
     @Column(name = "chatroom_type",nullable = false)
@@ -46,9 +46,9 @@ public class ChatRoom extends BaseEntity {
     }
 
 
-//    // chatroom 에 basketball 설정
-//    public void setBasketballCourt(BasketballCourt basketballCourt) {
-//        this.basketballCourt = basketballCourt;
-//    }
+    // chatroom 에 basketball 설정
+    public void setBasketballCourt(BasketballCourt basketballCourt) {
+        this.basketballCourt = basketballCourt;
+    }
 
 }
