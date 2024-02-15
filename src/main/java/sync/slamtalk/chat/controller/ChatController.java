@@ -55,7 +55,6 @@ public class ChatController {
     }
 
     // 채팅 참여
-    // TODO 페이징정책 확정되면 다시 수정해야함
     @PostMapping("/api/chat/participation")
     @Operation(
             summary = "새로운 채팅 내역 조회",

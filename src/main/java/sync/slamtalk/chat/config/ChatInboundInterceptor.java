@@ -2,7 +2,6 @@ package sync.slamtalk.chat.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -10,14 +9,13 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.WebSocketSession;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
+import sync.slamtalk.chat.entity.RoomType;
 import sync.slamtalk.chat.entity.UserChatRoom;
+import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
@@ -42,6 +40,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private final JwtTokenProvider tokenProvider;
     private final UserRepository userRepository;
     private final UserChatRoomRepository userChatRoomRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
 
     // 메세지가 전송되기 전에 실행
@@ -72,7 +71,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         // SUBSCRIBE
         /*
         1. 구독이 가능한(ChatRoom 에 존재하는) 채팅방인지 검증
-        2. UserChatRoom 에 추가 ==> Token 로직 완성 되면 🌟서비스부터 수정해야됨🌟
+        (채팅방생성 시 participants 의 userchatroom 에 해당 채팅방 설정해주었음)
          */
         if(StompCommand.SUBSCRIBE.equals(headerAccessor.getCommand())){
             log.debug("===SUBSCRIBE===");
@@ -84,35 +83,50 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             isExistChatRoom(headerAccessor);
             log.debug("==SUBSCRIBE STEP2==");
 
-
             // RoomId 만 추출
             String destination = headerAccessor.getDestination();
             Long roomId = extractRoomId(destination);
 
-            //'사용자채팅방' 테이블에 추가하기
-            Long visited = addUserChatRoom(headerAccessor);
-            log.debug("visited:{}",visited);
-            String customMessageContent = null;
+            // userId 추출
             Long userId = extractUserId(headerAccessor);
             Optional<User> findUser = userRepository.findById(userId);
 
-            if(findUser.isPresent()){
-                String nickname = findUser.get().getNickname();
-
-                // TODO SUBSCRIBE 는 메세지를 따로 서버->클라이언트 안줌
-                // 첫 접속했을 때, 재차 접속했을 때 응답을 다르게 줘야하는데.. 고민해보기
-                if(visited.equals(0L)){ // 최초 접속!
-                    customMessageContent = nickname + "님이 입장하셨습니다.";
-                    byte[] payload = customMessageContent.getBytes(StandardCharsets.UTF_8);
-                    log.debug("payload:{}",payload);
-                    return MessageBuilder.withPayload(payload).copyHeadersIfAbsent(message.getHeaders()).build();
+            // userchatroom 검사
+            Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(roomId);
+            if(chatRoomOptional.isPresent()){
+                ChatRoom chatRoom = chatRoomOptional.get();
+                if(chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
+                    // userchatroom 에 넣어주기
+                    Optional<Long> optionaladdedResult = addUserChatRoom(headerAccessor);
+                    if(optionaladdedResult.isEmpty()){
+                        throw new RuntimeException("NFR");
+                    }
                 }
+            }
+
+
+            // 처음방문했을 때 메세지
+            String customMessageContent = null;
+
+            Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
+            if(optionalUserChatRoom.isPresent()){
+                UserChatRoom userChatRoom = optionalUserChatRoom.get();
+                if(userChatRoom.getIsFirst().equals(true)){
+//                    // 처음 방문했으면 처음방문메세지 전송
+//                    String nickname = userChatRoom.getUser().getNickname();
+//                    userChatRoom.updateIsFirst(false); // 방문체크
+//                    customMessageContent = nickname + " 님이 입장하셨습니다.";
+//                    byte[] payload = customMessageContent.getBytes(StandardCharsets.UTF_8);
+//                    log.debug("payload:{}",payload);
+//                    return MessageBuilder.withPayload(payload).copyHeadersIfAbsent(message.getHeaders()).build();
+                }
+            }
+            if(optionalUserChatRoom.isEmpty()){
+                throw new RuntimeException("Auth");
             }
 
             log.debug("==SUBSCRIBE STEP3==");
         }
-
-
 
 
 
@@ -210,18 +224,10 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             }
             // 처음 입장 메세지
             if(destination.contains("enter")){
+                // 특정 유저가 참여 하고 있는 방인지 검증
                 Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, roomId);
                 if(existUserChatRoom.isPresent()){
-
-                    log.debug("enter");
-                    // 본문 바디 가져오기
-                    String messageContent = new String((byte[]) message.getPayload(), StandardCharsets.UTF_8);
-
-                    // 메시지 보낸 유저의 닉네임 추출
-                    String nickname = extractNickname(messageContent);
-
-                    UserChatRoom userChatRoom = existUserChatRoom.get();
-                    // 처음 입장
+                    log.debug("enter success");
                 }else{
                     throw new RuntimeException("JWT");
                 }
@@ -229,30 +235,19 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         }
 
 
-
-
+        /*
+        1. 연결종료, CustomWebSocketHandler 에 의해 리소스 해제
+         */
         if(StompCommand.DISCONNECT.equals(headerAccessor.getCommand())){
             log.debug("===DISCONNECT===");
         }
-
-
 
         return message;
     }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+    //=================================편의 메소드===========================================
 
     // 토큰에서 아이디 추출
     private Long extractUserId(StompHeaderAccessor accessor){
@@ -344,6 +339,35 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         return null;
     }
 
+    // 방문 체크 추출
+    private String extractVisited(String json){
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(json);
+            if(rootNode.has("visited")){
+                return rootNode.get("visited").toString();
+            }
+        }catch (Exception e){
+            throw new RuntimeException(e.getMessage());
+        }
+        return null;
+    }
+
+
+    // 사용자 채팅방에 추가
+    public Optional<Long> addUserChatRoom(StompHeaderAccessor accessor){
+        Long userId = extractUserId(accessor);
+
+        String destination = accessor.getDestination();
+        Long roomId = extractRoomId(destination);
+
+        Optional<Long> userChatRoom = chatService.createUserChatRoom(userId, roomId);
+        if(userChatRoom.isEmpty()){
+            return Optional.empty();
+        }
+        return userChatRoom;
+    }
+
 
     // 채팅 유저 아이디 추출
     private String extractUserId(String json){
@@ -358,20 +382,4 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
         }
         return null;
     }
-
-
-    // 사용자 채팅방에 추가
-    public Long addUserChatRoom(StompHeaderAccessor accessor){
-        Long userId = extractUserId(accessor);
-
-        String destination = accessor.getDestination();
-        Long roomId = extractRoomId(destination);
-
-        Long result = chatService.setUserChatRoom(userId, roomId);
-        return result;
-    }
-
-
-
-
 }

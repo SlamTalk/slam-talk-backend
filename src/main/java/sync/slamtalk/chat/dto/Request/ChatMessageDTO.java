@@ -3,11 +3,9 @@ package sync.slamtalk.chat.dto.Request;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.Null;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 
 @Getter
