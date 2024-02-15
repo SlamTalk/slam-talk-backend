@@ -32,4 +32,16 @@ public class ChatRoomDTO implements Serializable {
     public void setLast_message(String lastMessage) {
         this.lastMessage = lastMessage;
     }
+
+    public void updateName(String name){
+        this.name = name;
+    }
+
+    public void updateImgUrl(String imgUrl){
+        this.imgUrl = imgUrl;
+    }
+
+    public void updatecourtId(Long courtId){
+        this.courtId = courtId;
+    }
 }
