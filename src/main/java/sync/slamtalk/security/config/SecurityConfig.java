@@ -84,7 +84,12 @@ public class SecurityConfig {
 
                             // 게스트 권환 설정
                             request.requestMatchers(HttpMethod.GET,
-                                    "/api/map/courts/**").permitAll();
+                                    "/api/map/courts/**",
+                                    "/api/mate/read/**",
+                                    "/api/mate/list",
+                                    "/api/match/read/**",
+                                    "/api/match/list"
+                                    ).permitAll();
                             request.requestMatchers("/api/admin").hasRole(UserRole.ADMIN.toString());
                             request.anyRequest().authenticated();
                         }
