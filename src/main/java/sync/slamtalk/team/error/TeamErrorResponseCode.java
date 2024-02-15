@@ -15,7 +15,8 @@ public enum TeamErrorResponseCode implements ResponseCodeDetails {
     ALEADY_DECLARED_OPPONENT(SC_BAD_REQUEST, 4010, "이미 상대팀을 선언한 글입니다."),
     OVER_LIMITED_NUMBERS(SC_BAD_REQUEST, 4011, "모집 인원을 초과하여 지원할 수 없습니다."),
     APPLICANT_NOT_FOUND(SC_NOT_FOUND, 4042, "해당 지원자를 찾을 수 없습니다."),
-    OPPONENT_NOT_DECLARED(SC_BAD_REQUEST, 4012, "상대팀이 선언되지 않은 글입니다.");
+    OPPONENT_NOT_DECLARED(SC_BAD_REQUEST, 4012, "상대팀이 선언되지 않은 글입니다."),
+    NOT_ALLOWED_REQUEST(SC_BAD_REQUEST, 4013, "요청이 허용되지 않습니다.");
 
     TeamErrorResponseCode(int code, int status, String message) {
         this.code = code;
