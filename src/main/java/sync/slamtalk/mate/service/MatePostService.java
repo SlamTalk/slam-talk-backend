@@ -154,8 +154,9 @@ public class MatePostService {
         }
         String content = mateFormDTO.getContent();
         String title = mateFormDTO.getTitle();
-        String location = mateFormDTO.getLocationDetail().split(" ")[0];
-        String locationDetail = mateFormDTO.getLocationDetail();
+        String[] splitedLocationString = mateFormDTO.getLocationDetail().split(" ", 2);
+        String location = splitedLocationString[0];
+        String locationDetail = splitedLocationString[1];
         LocalDate scheduledDate = mateFormDTO.getScheduledDate();
         LocalTime startTime = mateFormDTO.getStartTime();
         LocalTime endTime = mateFormDTO.getEndTime();

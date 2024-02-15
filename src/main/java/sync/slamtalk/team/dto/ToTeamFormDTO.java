@@ -10,7 +10,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.team.entity.TeamApplicant;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,14 +26,17 @@ public class ToTeamFormDTO {
     @NotBlank(message = "팀명을 입력해주세요.")
     private String teamName;
 
-    @NotBlank(message = "닉네임을 입력해주세요.")
-    private String nickname;
+    @NotBlank(message = "작성자 아이디를 입력해주세요.")
+    private Long writerId;
+
+    @NotBlank(message = "작성자 닉네임을 입력해주세요.")
+    private String writerNickname;
+
+    @NotBlank(message = "이미지를 입력해주세요.")
+    private String writerImageUrl;
 
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
-
-    @NonNull
-    private Long writerId;
 
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
