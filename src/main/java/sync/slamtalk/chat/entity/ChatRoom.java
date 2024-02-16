@@ -34,6 +34,22 @@ public class ChatRoom extends BaseEntity {
     private String name; // 방 제목
 
 
+    // 농구장(courtId)
+    @Column(name = "basketball_id")
+    private Long basketBallId;
+
+
+    // 같이헤요(게시글Id)
+    @Column(name = "together_id")
+    private Long togetherId;
+
+
+    // 팀매칭(게시글Id)
+    @Column(name = "teamMatching_id")
+    private Long teamMatchingId;
+
+
+
     // 사용자는 여러개의 채팅방을 가질 수 있음
     @OneToMany(mappedBy = "chat",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserChatRoom> userChats = new HashSet<>();

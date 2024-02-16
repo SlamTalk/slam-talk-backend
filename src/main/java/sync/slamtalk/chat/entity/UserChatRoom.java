@@ -28,19 +28,29 @@ public class UserChatRoom extends BaseEntity {
     @JoinColumn(name = "chatroom_id",nullable = false)
     private ChatRoom chat;
 
-
     // 채팅방 이름
     @Column(name = "chatroom_name")
     private String name;
-
 
     // 채팅방 타입
     @Enumerated(EnumType.STRING)
     @Column(name = "chatroom_type")
     private RoomType roomType;
 
-    @Column(name = "chatroom_source")
-    private Long source; // 1:1채팅의 경우 상대방 userId, 농구장채팅인 경우 court_id;
+    // 농구장(courtId)
+    @Column(name = "basketball_id")
+    private Long BasketBallId;
+
+    // 같이헤요(게시글Id)
+    @Column(name = "together_id")
+    private Long togetherId;
+
+    // 팀매칭(게시글Id)
+    @Column(name = "teamMatching_id")
+    private Long teamMatchingId;
+
+    @Column(name = "direct_id")
+    private Long directId;
 
 
     @Column(name = "chatroom_img")
@@ -71,6 +81,10 @@ public class UserChatRoom extends BaseEntity {
         if (!chat.getUserChats().contains(this)) {
             chat.getUserChats().add(this);
         }
+    }
+
+    public void setDirectId(Long directId){
+        this.directId = directId;
     }
 
 

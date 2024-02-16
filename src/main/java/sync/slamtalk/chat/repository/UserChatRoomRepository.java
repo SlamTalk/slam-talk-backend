@@ -2,9 +2,12 @@ package sync.slamtalk.chat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.RoomType;
 import sync.slamtalk.chat.entity.UserChatRoom;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,5 +28,25 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 
     // 특정 chatRoomName , 특정 chatRoomType 으로 검색
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.name=:roomName and m.chat.roomType=:roomType")
-    Optional<UserChatRoom>findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
+    List<UserChatRoom>findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
+
+    // TeamMatchingId로 UserChatRoom 검색
+    Optional<UserChatRoom> findByTeamMatchingId(Long teamMatchingId);
+
+    // DirectId로 UserChatRoom 검색
+    @Query("select m from UserChatRoom m where m.user.id=:userId and m.directId=:directId")
+    Optional<UserChatRoom> findByDirectId(Long userId,Long directId);
+
+//    // BasketballId로 UserChatRoom 검색
+//    Optional<UserChatRoom> findByBasketBallId(Long basketballId);
+
+
+    @Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.chat.basketBallId = :basketballId")
+    Optional<UserChatRoom> findUserChatRoomByBasketballId(@Param("basketballId") Long basketballId);
+
+
+    // TogetherId로 UserChatRoom 검색
+    Optional<UserChatRoom> findByTogetherId(Long togetherId);
+
+
 }
