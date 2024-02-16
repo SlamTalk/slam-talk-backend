@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
@@ -35,6 +36,7 @@ public class StompChatController {
     // "/pub/chat/room/roomId" 로 구독자들에게 해당 메세지 전달
     @MessageMapping(value = "/chat/bot/{roomId}") // 발행
     @SendTo("/sub/chat/bot/{roomId}") // 수신
+    @Transactional
     public String enter(ChatMessageDTO message){
 
         // TODO 입장 / 퇴장
@@ -45,11 +47,15 @@ public class StompChatController {
         if(message.getContent()!=null){
             if(message.getContent().equals("EXIT")){
                 Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
-
+                if(optionalUserChatRoom.isEmpty()){
+                    log.debug("읎다");
+                }
                 if(optionalUserChatRoom.isPresent()){
                     log.debug("유저채팅방에존재함");
                     UserChatRoom userChatRoom = optionalUserChatRoom.get();
-                    userChatRoom.updateIsDelete(Boolean.TRUE);
+                    userChatRoom.updateIsDelete(true);
+                    log.debug("{}",userChatRoom.getId());
+                    log.debug("삭제되었는가????{}",userChatRoom.getIsDeleted());
                 }
 
                 return message.getSenderNickname()+" 님이 퇴장하셨습니다.";
