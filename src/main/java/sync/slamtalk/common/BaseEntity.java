@@ -58,4 +58,9 @@ public class BaseEntity {
         return this.updatedAt;
     }
 
+    // soft delete
+    public void updateIsDelete(Boolean isDeleted){
+        this.isDeleted = isDeleted;
+    }
+
 }
