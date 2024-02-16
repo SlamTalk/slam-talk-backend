@@ -193,7 +193,7 @@ public class EntityToDtoMapper {
         if(matePost.getMaxParticipantsCenters() > 0){
             PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
-        }else
+        }
         if(matePost.getMaxParticipantsForwards() > 0){
             PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
