@@ -124,6 +124,7 @@ public class ChatServiceImpl implements ChatService{
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .user(optionalUser.get())
                     .isFirst(true)
+                    .roomType(roomType)
                     .readIndex(0L)
                     .chat(saved)
                     .name(chatCreateDTO.getName())
@@ -209,9 +210,12 @@ public class ChatServiceImpl implements ChatService{
 
 
             // 삭제 되지 않은 채팅방만 가져옴
-            if(!isDelete){
+            if(isDelete==false){
 
                 String profile = null;
+                if(ucr.getRoomType()==null){
+                    log.debug("getroomType null!!!!");
+                }
 
                 ChatRoomDTO dto = ChatRoomDTO.builder()
                         .roomId(ucr.getId().toString())
@@ -348,6 +352,7 @@ public class ChatServiceImpl implements ChatService{
                 userChatRoom.updateIsFirst(Boolean.FALSE);
                 return Optional.of(Boolean.TRUE);
             }
+            // 이미 방문을 했다면
             return Optional.empty();
         }
         throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
@@ -417,11 +422,5 @@ public class ChatServiceImpl implements ChatService{
         return Optional.empty();
     }
 
-
-
-//    private Optional<Long> checkParticipnats(List<Long> pid,String roomName,RoomType roomType){
-//
-//
-//    }
 
 }
