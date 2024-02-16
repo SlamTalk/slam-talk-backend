@@ -19,6 +19,7 @@ import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
+import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
@@ -40,99 +41,103 @@ public class ChatServiceImpl implements ChatService{
     private final UserRepository userRepository;
     private final BasketballCourtRepository basketballCourtRepository;
 
-    // 채팅방 생성(농구장:미리해놓기, 그외 모두 SUBSCRIBE 시에)
+    // 채팅방 생성
+    // * 생성시점에 userChatRoom 에 추가됨 *
     @Override
     @Transactional
     public long createChatRoom(ChatCreateDTO chatCreateDTO) {
+        long roomNum = 0L;
+        RoomType roomType = RoomType.DIRECT;
 
-        // chatRoom 이 기존에 있는 지 검증
-        // 채팅방 이름, 채팅방 타입
-        Long creatorId = chatCreateDTO.getCreator_id();
-        String roomName = chatCreateDTO.getName();
-        String roomType = chatCreateDTO.getRoomType();
-        RoomType rt = RoomType.BASKETBALL;
-
-        switch (roomType){
-            case "BM" : rt = RoomType.BASKETBALL;
+        switch (chatCreateDTO.getRoomType()){
+            case "DM" : break;
+            case "TM" : roomType = RoomType.TOGETHER;
             break;
-            case "DM" : rt = RoomType.DIRECT;
-            break;
-            case "TM" : rt = RoomType.TOGETHER;
-            break;
-            case "MM" : rt = RoomType.MATCHING;
+            case "MM" : roomType = RoomType.MATCHING;
             break;
         }
 
-        log.debug("roomType:{}",rt);
-        String key = rt.getKey();
-
-        // 참여자 + 유저 의 userchatroom 에 (채팅방이름, 채팅방타입) 이 동일하게 모두 있는 지 확인
-        Optional<Long> optionalroomId = checkParticipnats(chatCreateDTO.getParticipants(), roomName, rt);
-        // 존재하는 방이라면 chatRoomId 반환
-        if(optionalroomId.isPresent()){
-            Long userChatRoomId = optionalroomId.get();
-            Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findById(userChatRoomId);
-            return optionalUserChatRoom.get().getChat().getId();
-        }
-
-
-        // 기존에 없는 경우 새로운 채팅방 생성
-        // 1:1 메세지만 채팅방 이름을 따로 받지 않음
-        if(chatCreateDTO.getRoomType().equals(RoomType.DIRECT)){
-
-            List<Long> partnerId = chatCreateDTO.getParticipants();
-            Long pid = partnerId.get(0);
-            Optional<User> optionalpartner = userRepository.findById(pid);
-
-            // 파트너가 등록되지 않은 아이디이면 Exception
-            if(optionalpartner.isEmpty()){
-                throw new BaseException(ChatErrorResponseCode.CHAT_TARGET_NOT_FOUND);
-            }
-
-            // 채팅방 생성
-            ChatRoom chatRoom = ChatRoom.builder()
-                    .roomType(typeOfRoom(chatCreateDTO))
-                    .name("DirectMessageRoom")
-                    .build();
-            ChatRoom save = chatRoomRepository.save(chatRoom);
-
-
-            // 생성자 채팅방 목록에 추가
-            Optional<Long> userChatRoom = createUserChatRoom(chatCreateDTO.getCreator_id(), save.getId());
-            if(userChatRoom.isEmpty()){
-                throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
-            }
-
-            // 참여자 가져오기
+        // DM
+        if(roomType.equals(RoomType.DIRECT)){
             List<Long> participants = chatCreateDTO.getParticipants();
-            // 참여자 채팅방 목록에 추가
-            for(Long u : participants){
-                createUserChatRoom(u,save.getId());
-            }
+            Long userA = participants.get(0);
+            Long userB = participants.get(1);
 
-            // 생성된 채팅방 아이디 반환
-            return save.getId();
-            // 농구장, 팀매칭, 같이해요 이름을 모두 받음
-        }else{
-            // 채팅방 생성
-            ChatRoom chatRoom = ChatRoom.builder()
-                    .roomType(typeOfRoom(chatCreateDTO))
+            // 유저 한명만 조회하면 됨 다른 유저도 똑같이 상대 유저의 id 를 directId 로 가지고 있을 것이기 때문
+            Optional<UserChatRoom> optionalUC1 = userChatRoomRepository.findByDirectId(userA, userB);
+            if(optionalUC1.isPresent()){
+                log.debug("동일한 디엠방 존재함");
+                return optionalUC1.get().getChat().getId();
+            }
+        }
+
+        // TM,MM 은 id 로 검사
+        if(roomType.equals(RoomType.TOGETHER)){
+            Long togetherId = chatCreateDTO.getTogether_id();
+            Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByTogetherId(chatCreateDTO.getTogether_id());
+
+            // 채팅방에 해당하는 팀매칭 아이디 채팅방이 존재한다면 기존에 채팅방 정보 반환
+            // 새로 생성 x
+            if(optionalChatRoom.isPresent()) {
+                return optionalChatRoom.get().getId();
+            }
+        }
+
+        if(roomType.equals(RoomType.MATCHING)){
+            Long teamMatchingId = chatCreateDTO.getTeamMatching_id();
+            Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByTeamMatchingId(chatCreateDTO.getTeamMatching_id());
+
+            // 채팅방에 존재한다면 새로 생성 x
+            if(optionalChatRoom.isPresent()){
+                return optionalChatRoom.get().getId();
+            }
+        }
+
+
+        // 위에서 종료되지 않았으면 새로 생성
+        // 채팅방 생성
+        ChatRoom chatRoom = ChatRoom.builder()
+                .roomType(roomType)
+                //.basketballCourt()
+                .togetherId(chatCreateDTO.getTogether_id())
+                .teamMatchingId(chatCreateDTO.getTeamMatching_id())
+                .name(chatCreateDTO.getName())
+                .build();
+
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+        roomNum = saved.getId();
+        
+        
+        // direct 상대방 아이디
+        List<Long> participants = chatCreateDTO.getParticipants();
+        Long userA = participants.get(0);
+        Long userB = participants.get(1);
+        List<Long> directs = new ArrayList<>();
+        directs.add(userA);
+        directs.add(userB);
+
+        int dIndex = 1;
+        for(Long user : chatCreateDTO.getParticipants()){
+
+            Optional<User> optionalUser = userRepository.findById(user);
+
+            UserChatRoom userChatRoom = UserChatRoom.builder()
+                    .user(optionalUser.get())
+                    .isFirst(true)
+                    .readIndex(0L)
+                    .chat(saved)
                     .name(chatCreateDTO.getName())
+                    .togetherId(chatCreateDTO.getTogether_id())
+                    //.BasketBallId()
                     .build();
-            ChatRoom save = chatRoomRepository.save(chatRoom);
 
-            // 생성자 채팅방 목록에 추가
-            createUserChatRoom(chatCreateDTO.getCreator_id(), save.getId());
-
-            // 참여자 채팅방 목록에 추가
-            List<Long> participants = chatCreateDTO.getParticipants();
-            for(Long u : participants){
-                createUserChatRoom(u,save.getId());
+            if(roomType.equals(RoomType.DIRECT)){
+                userChatRoom.setDirectId(directs.get(dIndex--));
             }
-
-            // 생성된 채팅방 아이디 반환
-            return save.getId();
+            UserChatRoom savedUserChatRoom = userChatRoomRepository.save(userChatRoom);
         }
+
+        return roomNum;
     }
 
 
@@ -394,6 +399,7 @@ public class ChatServiceImpl implements ChatService{
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .user(user)
                     .roomType(chatRoom.getRoomType())
+                    .name(chatRoom.getName())
                     .chat(chatRoom)
                     .isFirst(true) // 방문 초기화
                     .readIndex(0L) // 읽은 메세지 초기화
@@ -413,19 +419,9 @@ public class ChatServiceImpl implements ChatService{
 
 
 
-    private Optional<Long> checkParticipnats(List<Long> pid,String roomName,RoomType roomType){
-        Long chatRoomId = 0L;
-        for(Long partner : pid){
-            // 특정 유저, 특정 방이름, 특정 타입이 userChatRoomRepository 에 존재하는 지 확인
-            Optional<UserChatRoom> byUserChatroomExist = userChatRoomRepository.findByUserChatroomExist(partner, roomName, roomType);
-            // 존재하지않거나 || 방을 나간 경우
-            if(byUserChatroomExist.isEmpty() || byUserChatroomExist.get().getIsDeleted().equals(true)){
-                return Optional.empty();
-            }
-            chatRoomId = byUserChatroomExist.get().getId();
-        }
-
-        return Optional.of(chatRoomId);
-    }
+//    private Optional<Long> checkParticipnats(List<Long> pid,String roomName,RoomType roomType){
+//
+//
+//    }
 
 }
