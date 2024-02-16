@@ -285,8 +285,8 @@ public class UserService {
         List<ToTeamFormDTO> authoredPost = allByWriter.stream()
                 .filter(teamMatching ->
                         teamMatching.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
-                                teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now()))
+                                (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
+                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .toList();
@@ -299,8 +299,8 @@ public class UserService {
                                                 teamApplicant.getApplicantId().equals(user.getId()) &&
                                                         !teamApplicant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
-                                teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now()))
+                                (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
+                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .map(toTeamFormDTO -> {
@@ -332,8 +332,8 @@ public class UserService {
         List<MatePostToDto> authoredPost = allByWriter.stream()
                 .filter(matePost ->
                         matePost.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
-                                matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now()))
+                                (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
+                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
                 .toList();
@@ -346,8 +346,8 @@ public class UserService {
                                                 participant.getParticipantId().equals(user.getId()) &&
                                                         !participant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
-                                matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now()))
+                                (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
+                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
                 .map(matePostToDto -> {
