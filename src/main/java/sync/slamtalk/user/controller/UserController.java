@@ -13,6 +13,7 @@ import sync.slamtalk.user.dto.request.UserUpdateNicknameReq;
 import sync.slamtalk.user.dto.request.UserUpdatePositionAndSkillReq;
 import sync.slamtalk.user.dto.response.UserDetailsMyInfo;
 import sync.slamtalk.user.dto.response.UserDetailsOtherInfo;
+import sync.slamtalk.user.dto.response.UserSchedule;
 import sync.slamtalk.user.service.UserService;
 
 /**
@@ -147,6 +148,23 @@ public class UserController {
     ) {
         userService.updateUserDetailInfo(userId, file, updateUserDetailInfoReq);
         return ApiResponse.ok();
+    }
+
+    /**
+     * 현재날짜 이후의 모든 약속 리스트를 반환하는 api
+     * @param userId 유저 아이디
+     * */
+    @GetMapping("/user/scheduleList")
+    @Operation(
+            summary = "임박한 약속 리스트 api",
+            description = "현재날짜 이후의 상태가 COMPLETED 약속 리스트를 팀매칭, 상대팀매칭 별로 구분해서 전달합니다.",
+            tags = {"유저 상세정보 조회"}
+    )
+    public ApiResponse<UserSchedule> userMyScheduleList(
+            @AuthenticationPrincipal Long userId
+    ) {
+        UserSchedule userMyScheduleList = userService.userMyScheduleList(userId);
+        return ApiResponse.ok(userMyScheduleList);
     }
 
 }
