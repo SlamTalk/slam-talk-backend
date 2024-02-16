@@ -1,12 +1,8 @@
 package sync.slamtalk.mate.mapper;
 
-import com.querydsl.core.Tuple;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-import sync.slamtalk.mate.dto.MatePostDTO;
-import sync.slamtalk.mate.dto.MatePostToDto;
-import sync.slamtalk.mate.dto.PositionListDTO;
-import sync.slamtalk.mate.dto.UnrefinedMatePostDTO;
+import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.entity.*;
 
 import java.util.ArrayList;
@@ -182,6 +178,50 @@ public class EntityToDtoMapper {
         resultDto.setLocationDetail(dto.getLocation() + " " + dto.getLocationDetail());
         resultDto.setPositionList(positionList);
         resultDto.setCreatedAt(dto.getCreatedAt());
+
+        return resultDto;
+    }
+
+    /**
+     * MatePost 에서 MatePostToDto로 변환하는 Mapper 매서드
+     * @param matePost : entity
+     * @return MatePostToDto : response dto
+     * */
+    public MatePostToDto FromMatePostToMatePostDto(MatePost matePost){
+        List<PositionListDTO> positionList = new ArrayList<>();
+
+        if(matePost.getMaxParticipantsCenters() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+            positionList.add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsForwards() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+            positionList.add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsGuards() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+            positionList.add(positionListDTO);
+        }
+        if(matePost.getMaxParticipantsOthers() > 0){
+            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+            positionList.add(positionListDTO);
+        }
+
+        MatePostToDto resultDto = new MatePostToDto();
+        resultDto.setSkillLevelList(toSkillLevelTypeList(matePost.getSkillLevel()));
+        resultDto.setWriterId(matePost.getWriterId());
+        resultDto.setWriterNickname(matePost.getWriterNickname());
+        resultDto.setMatePostId(matePost.getMatePostId());
+        resultDto.setScheduledDate(matePost.getScheduledDate());
+        resultDto.setStartTime(matePost.getStartTime());
+        resultDto.setEndTime(matePost.getEndTime());
+        resultDto.setTitle(matePost.getTitle());
+        resultDto.setContent(matePost.getContent());
+        resultDto.setSkillLevel(matePost.getSkillLevel());
+        resultDto.setRecruitmentStatus(matePost.getRecruitmentStatus());
+        resultDto.setLocationDetail(matePost.getLocation() + " " + matePost.getLocationDetail());
+        resultDto.setPositionList(positionList);
+        resultDto.setCreatedAt(matePost.getCreatedAt());
 
         return resultDto;
     }

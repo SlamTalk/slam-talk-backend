@@ -13,6 +13,7 @@ import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromApplicantDto;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
+import sync.slamtalk.team.dto.response.MyTeamMatchingListRes;
 import sync.slamtalk.team.entity.TeamApplicant;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamApplicantRepository;
@@ -23,7 +24,6 @@ import sync.slamtalk.user.entity.User;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
@@ -353,5 +353,35 @@ public class TeamMatchingService {
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+    }
+
+    /**
+     * 내가 속한 모든 팀매칭 리스트 보기
+     * @param userId 유저아이디
+     * @return MyTeamMatchingListRes 나의 팀매칭 리스트
+     * */
+    public MyTeamMatchingListRes getMyTeamMatchingList(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+        List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriter(user);
+        List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(userId);
+
+        List<ToTeamFormDTO> authoredPost = allByWriter.stream()
+                .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
+                .toList();
+
+        List<ToTeamFormDTO> participatedPost = allByApplications.stream()
+                .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
+                .map(toTeamFormDTO -> {
+                    toTeamFormDTO.setTeamApplicants(
+                            toTeamFormDTO.getTeamApplicants().stream()
+                                    .filter(toApplicantDto -> toApplicantDto.getApplicantId().equals(userId))
+                                    .toList()
+                    );
+                    return toTeamFormDTO;
+                })
+                .toList();
+
+        return new MyTeamMatchingListRes(authoredPost, participatedPost);
     }
 }

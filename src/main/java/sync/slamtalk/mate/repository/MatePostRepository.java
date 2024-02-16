@@ -2,6 +2,7 @@ package sync.slamtalk.mate.repository;
 
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -28,4 +29,16 @@ public interface MatePostRepository extends JpaRepository<MatePost, Long> {
 
     @Query("select count(*) from MatePost m where m.writer = :writer and m.recruitmentStatus = 'COMPLETED'")
     long countMatePostByWriter(@Param("writer") User writer);
+
+    /* 내가 쓴 글 조회*/
+    @EntityGraph(attributePaths = {"participants", "writer"})
+    List<MatePost> findAllByWriter(@Param("writer") User writer);
+
+    /* 내가 참여한 글 조회*/
+    @Query("select distinct m " +
+            "from MatePost m " +
+            "join fetch m.participants p " +
+            "where p.participantId =:participantId")
+    List<MatePost> findAllByApplicationId(@Param("participantId") Long participantId);
+
 }

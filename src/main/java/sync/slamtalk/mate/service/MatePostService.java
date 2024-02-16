@@ -1,16 +1,12 @@
 package sync.slamtalk.mate.service;
 
-import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
-import sync.slamtalk.chat.service.ChatService;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.*;
+import sync.slamtalk.mate.dto.response.MyMateListRes;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
@@ -20,9 +16,7 @@ import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -301,5 +295,35 @@ public class MatePostService {
     // * 글 작성자가 모집을 취소할 때
     // * 현재로썬 구현을 안 하는 방향으로 정했지만 추후에 구현할 수도 있음
     public void cancelRecruitment(long matePostId, long userId) {
+    }
+
+    /**
+     * 내가 쓴 글 또는 내가 참여한 모든 Mate List를 반환하는 메서드
+     *
+     * @param userId : 유저 아이디
+     * @return MyMateListRes : 내가 쓴 글/ 참여한 글 반환
+     * */
+    public MyMateListRes getMyMateList(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+        List<MatePost> allByWriter = matePostRepository.findAllByWriter(user);
+        List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
+
+        List<MatePostToDto> authoredPost = allByWriter.stream()
+                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .toList();
+
+        List<MatePostToDto> participatedPost = allByApplications.stream()
+                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(matePostToDto -> {
+                    matePostToDto.setParticipants(
+                            matePostToDto.getParticipants().stream()
+                                    .filter(participant -> participant.getParticipantId().equals(userId))
+                                    .toList()
+                    );
+                    return matePostToDto;
+                })
+                .toList();
+        return new MyMateListRes(authoredPost, participatedPost);
     }
 }
