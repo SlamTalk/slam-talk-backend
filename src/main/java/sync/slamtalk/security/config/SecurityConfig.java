@@ -91,7 +91,7 @@ public class SecurityConfig {
                                     "/api/match/read/**",
                                     "/api/match/list"
                                     ).permitAll();
-                            request.requestMatchers("/api/admin/**").hasRole(UserRole.ADMIN.getKey());
+                            request.requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.getKey());
                             request.anyRequest().authenticated();
                         }
                 )
