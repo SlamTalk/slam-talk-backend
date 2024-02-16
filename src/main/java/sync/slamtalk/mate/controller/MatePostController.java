@@ -10,19 +10,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.dto.MateFormDTO;
-import sync.slamtalk.mate.dto.MatePostDTO;
 import sync.slamtalk.mate.dto.MatePostListDTO;
 import sync.slamtalk.mate.dto.MateSearchCondition;
-import sync.slamtalk.mate.entity.MatePost;
-import sync.slamtalk.mate.entity.PositionType;
-import sync.slamtalk.mate.entity.SkillLevelType;
+import sync.slamtalk.mate.dto.response.MyMateListRes;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -115,5 +108,16 @@ public class MatePostController {
     public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
         matePostService.completeRecruitment(matePostId, id);
         return ApiResponse.ok();
+    }
+
+    @Operation(
+            summary = "내가 쓴/신청한 메이트 목록 ",
+            description = "나의 메이트 매칭 관련 모든 과거기록 및 신청한 리스트를 전송합니다.",
+            tags = {"메이트 찾기"}
+    )
+    @GetMapping("/my-list")
+    public ApiResponse<MyMateListRes> getMyMateList(@AuthenticationPrincipal Long userId){
+        MyMateListRes myMateListRes = matePostService.getMyMateList(userId);
+        return ApiResponse.ok(myMateListRes);
     }
 }
