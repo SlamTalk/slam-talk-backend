@@ -12,7 +12,9 @@ public enum ChatErrorResponseCode implements ResponseCodeDetails {
     CHAT_LIST_NOT_FOUND(SC_NOT_FOUND,4022,"ChatList Not Found"),
     CHAT_ROOM_NOT_FOUND(SC_NOT_FOUND,4023,"ChatRoom Not Found"),
 
-    CHAT_TARGET_NOT_FOUND(SC_NOT_FOUND,4033,"Partners Not Found")
+    CHAT_TARGET_NOT_FOUND(SC_NOT_FOUND,4033,"Partners Not Found"),
+
+    CHAT_ROOM_EXIST_ALREADY(SC_BAD_REQUEST,4034,"ChatRoom Exist Alradey"),
     ;
 
 
