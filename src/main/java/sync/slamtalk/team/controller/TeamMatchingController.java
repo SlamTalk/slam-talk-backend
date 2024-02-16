@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.team.dto.*;
+import sync.slamtalk.team.dto.response.MyTeamMatchingListRes;
 import sync.slamtalk.team.service.TeamMatchingService;
 
 import java.net.URI;
@@ -168,6 +169,14 @@ public class TeamMatchingController {
         return ApiResponse.ok();
     }
 
-
-
+    @Operation(
+            summary = "내가 쓴/신청한 팀 매칭 목록 보기",
+            description = "나의 팀매칭 관련 모든 과거기록 및 신청한 리스트를 전송합니다.",
+            tags = {"팀 매칭 / 신청자 목록"}
+    )
+    @GetMapping("/my-list")
+    public ApiResponse<MyTeamMatchingListRes> getMyTeamMatchingList(@AuthenticationPrincipal Long userId){
+        MyTeamMatchingListRes myTeamMatchingListRes = teamMatchingService.getMyTeamMatchingList(userId);
+        return ApiResponse.ok(myTeamMatchingListRes);
+    }
 }
