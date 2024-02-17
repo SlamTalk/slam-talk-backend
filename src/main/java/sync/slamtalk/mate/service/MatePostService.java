@@ -327,7 +327,7 @@ public class MatePostService {
                 })
                 .toList());
 
-        for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(new ArrayList<>(authoredPost), new ArrayList<>(participatedPost))) {
+        for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
             Collections.sort(toTeamFormDTOS, (o1, o2) -> {
                 if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
                     return o1.getStartTime().compareTo(o2.getStartTime());
