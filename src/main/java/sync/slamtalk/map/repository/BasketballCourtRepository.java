@@ -16,4 +16,10 @@ public interface BasketballCourtRepository extends JpaRepository<BasketballCourt
     // AdminStatus에 따른 특정 농구장 조회
     Optional<BasketballCourt> findByCourtIdAndAdminStatus(Long courtId, AdminStatus adminStatus);
 
+    // 내가 제보한 농구장이 승인된 개수 구하기
+    Long countBasketballCourtByAdminStatusEqualsAndInformerid(
+            AdminStatus adminStatus,
+            Long informerid
+    );
+
 }
