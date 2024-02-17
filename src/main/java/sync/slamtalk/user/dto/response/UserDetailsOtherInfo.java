@@ -2,6 +2,7 @@ package sync.slamtalk.user.dto.response;
 
 import lombok.*;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.utils.UserLevelScore;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -45,10 +46,9 @@ public class UserDetailsOtherInfo {
                 .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
                 .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
                 .levelScore(levelScore)
-                .level(levelScore / User.LEVEL_THRESHOLD)
+                .level(levelScore / UserLevelScore.LEVEL_THRESHOLD)
                 .mateCompleteParticipationCount(mateCount)
                 .teamMatchingCompleteParticipationCount(teamCount)
                 .build();
-
     }
 }
