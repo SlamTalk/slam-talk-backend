@@ -3,6 +3,8 @@ package sync.slamtalk.mate.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Repository;
@@ -66,6 +68,7 @@ public class QueryRepository {
                         eqPosition(condition.getPosition()),
                         eqSkillLevel(condition.getSkillLevel()),
                         ltCreatedAt(condition.getCursorTime()),
+                        beforeScheduledTime(),
                         matePost.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
@@ -88,7 +91,8 @@ public class QueryRepository {
                 )
                 .from(participant)
                 .where(
-                        eqMatePostId(matePostId)
+                        eqMatePostId(matePostId),
+                        participant.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
                 .limit(10)
@@ -144,6 +148,11 @@ public class QueryRepository {
         } else {
             return null;
         }
+    }
+
+    private BooleanExpression beforeScheduledTime() {
+        DateTimeExpression<LocalDateTime> scheduledStartTime = Expressions.dateTimeTemplate(LocalDateTime.class, "{0}T{1}", matePost.scheduledDate, matePost.startTime);
+        return scheduledStartTime.after(LocalDateTime.now());
     }
 
     private BooleanExpression ltCreatedAt(LocalDateTime cursorTime) {
