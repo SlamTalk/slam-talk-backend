@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
+import sync.slamtalk.map.entity.AdminStatus;
+import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.mate.dto.MatePostToDto;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.MatePost;
@@ -27,11 +29,11 @@ import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserAttendance;
 import sync.slamtalk.user.error.UserErrorResponseCode;
 import sync.slamtalk.user.repository.UserAttendanceRepository;
+import sync.slamtalk.user.utils.UserLevelScore;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +48,7 @@ public class UserService {
     private final UserAttendanceRepository userAttendanceRepository;
     private final TeamMatchingRepository teamMatchingRepository;
     private final MatePostRepository matePostRepository;
+    private final BasketballCourtRepository basketballCourtRepository;
     private final AwsS3RepositoryImpl awsS3Service;
     private final EntityToDtoMapper entityToDtoMapper;
 
@@ -60,28 +63,14 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
-        // 레벨 score 계산하기
-        long levelScore = 0L;
-
-        // Mate 게시판 상태가 Complete
-        long mateCount = getMateCount(userId, user);
-        levelScore += mateCount * User.MATE_LEVEL_SCORE;
-
-        // teamMatching 게시판 상태가 Complete
-        long teamCount = getTeamCount(userId, user);
-        levelScore += teamCount * User.TEAM_MATCHING_LEVEL_SCORE;
-
-        // user 출석개수 반환
-        long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
-                .orElse(0L);
-        levelScore += userAttendCount * User.ATTEND_SCORE;
+        Result result = getResult(userId, user);
 
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
         return UserDetailsMyInfo.generateMyProfile(
                 user,
-                levelScore,
-                mateCount,
-                teamCount
+                result.levelScore,
+                result.mateCount,
+                result.teamCount
         );
     }
 
@@ -96,29 +85,47 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
-        // 레벨 score 계산하기
-        long levelScore = 0L;
-
-        // Mate 게시판 상태가 Complete
-        long mateCount = getMateCount(userId, user);
-        levelScore += mateCount * User.MATE_LEVEL_SCORE;
-
-        // teamMatching 게시판 상태가 Complete
-        long teamCount = getTeamCount(userId, user);
-        levelScore += teamCount * User.TEAM_MATCHING_LEVEL_SCORE;
-
-        // user 출석개수 반환
-        long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
-                .orElse(0L);
-        levelScore += userAttendCount * User.ATTEND_SCORE;
+        Result result = getResult(userId, user);
 
         // 찾고자 하는 유저가 본인이 아닐경우(개인정보 제외하고 공개)
         return UserDetailsOtherInfo.generateOtherUserProfile(
                 user,
-                levelScore,
-                mateCount,
-                teamCount
+                result.levelScore(),
+                result.mateCount(),
+                result.teamCount()
         );
+    }
+
+    /**
+     * 사용자의 레벨 점수를 계산하여 Result record로 반환하는 메서드입니다.
+     *
+     * @param userId 사용자의 ID
+     * @param user 사용자 객체
+     * @return 계산된 레벨 점수를 포함한 Result record
+     */
+    private Result getResult(Long userId, User user) {
+        // 레벨 score 계산하기
+        long levelScore = 0L;
+        long mateCount = getMateCount(userId, user);
+        long teamCount = getTeamCount(userId, user);
+        // user 출석개수 반환
+        long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
+                .orElse(0L);
+        long userReportCount = basketballCourtRepository.countBasketballCourtByAdminStatusEqualsAndInformerid(AdminStatus.ACCEPT, userId);
+
+        // Mate 게시판 상태가 Complete
+        levelScore += mateCount * UserLevelScore.MATE_LEVEL_SCORE;
+        // teamMatching 게시판 상태가 Complete
+        levelScore += teamCount * UserLevelScore.TEAM_MATCHING_LEVEL_SCORE;
+        levelScore += userAttendCount * UserLevelScore.ATTEND_SCORE;
+        levelScore += userReportCount * UserLevelScore.BASKETBALL_COURT_TIP_SCORE;
+        return new Result(levelScore, mateCount, teamCount);
+    }
+
+    /**
+     * 결과 record를 나타내는 record 클래스입니다.
+     */
+    private record Result(long levelScore, long mateCount, long teamCount) {
     }
 
     /**
@@ -319,12 +326,11 @@ public class UserService {
         teamMatchingList.addAll(participatedPost);
 
         // getScheduledDate 순으로 정렬하기, 만약에 날짜가 같다면 getStartTime 순으로 정렬하기
-        Collections.sort(teamMatchingList, (o1, o2) -> {
-            if(o1.getScheduledDate().isBefore(o2.getScheduledDate())){
-                return -1;
-            } else if(o1.getScheduledDate().isBefore(o2.getScheduledDate()) && o1.getStartTime().isBefore(o2.getStartTime())){
-                return -1;
-            } return 1;
+        teamMatchingList.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
         });
         return teamMatchingList;
     }
@@ -345,7 +351,7 @@ public class UserService {
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
                                 (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .toList();
 
         List<MatePostToDto> participatedPost = allByApplications.stream()
@@ -359,7 +365,7 @@ public class UserService {
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
                                 (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .map(matePostToDto -> {
                     matePostToDto.setParticipants(
                             matePostToDto.getParticipants().stream()
@@ -376,13 +382,11 @@ public class UserService {
         mateList.addAll(participatedPost);
 
         // getScheduledDate 순으로 정렬하기, 만약에 날짜가 같다면 getStartTime 순으로 정렬하기
-        Collections.sort(mateList, (o1, o2) -> {
-            if (o1.getScheduledDate().isBefore(o2.getScheduledDate())) {
-                return -1;
-            } else if (o1.getScheduledDate().isBefore(o2.getScheduledDate()) && o1.getStartTime().isBefore(o2.getStartTime())) {
-                return -1;
+        mateList.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
             }
-            return 1;
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
         });
         return mateList;
     }

@@ -29,13 +29,6 @@ import java.util.List;
 @Builder
 public class User extends BaseEntity implements UserDetails {
 
-    /* 레벨 시스템을 위한 상수 */
-    public final static Long LEVEL_THRESHOLD = 50L;
-    public final static Long MATE_LEVEL_SCORE = 5L;
-    public final static Long TEAM_MATCHING_LEVEL_SCORE = 5L;
-    public final static Long ATTEND_SCORE = 1L;
-    public final static Long BASKETBALL_COURT_TIP_SCORE = 30L;
-
     @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;

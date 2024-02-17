@@ -4,6 +4,7 @@ import lombok.*;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserRole;
+import sync.slamtalk.user.utils.UserLevelScore;
 
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -31,7 +32,6 @@ public class UserDetailsMyInfo {
     private Long mateCompleteParticipationCount = 0L;
     private Long teamMatchingCompleteParticipationCount = 0L;
 
-
     /**
      * 나의 프로필 조회 시 필요한 정보를 반환하는 생성자
      *
@@ -51,7 +51,7 @@ public class UserDetailsMyInfo {
                 .selfIntroduction(user.getSelfIntroduction())
                 .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
                 .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
-                .level(levelScore/User.LEVEL_THRESHOLD)
+                .level(levelScore/UserLevelScore.LEVEL_THRESHOLD)
                 .levelScore(levelScore)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(teamCompleteParticipationCount)
@@ -59,6 +59,5 @@ public class UserDetailsMyInfo {
                 .socialType(user.getSocialType())
                 .role(user.getRole())
                 .build();
-
     }
 }
