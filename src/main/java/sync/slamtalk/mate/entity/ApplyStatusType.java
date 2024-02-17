@@ -6,5 +6,5 @@ package sync.slamtalk.mate.entity;
  */
 
 public enum ApplyStatusType {
-    WAITING, ACCEPTED, REJECTED, CANCELED, COMMUNICATING
+    WAITING, ACCEPTED, REJECTED, CANCELED
 }

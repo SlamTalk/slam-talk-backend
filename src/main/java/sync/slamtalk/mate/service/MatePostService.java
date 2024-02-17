@@ -236,7 +236,7 @@ public class MatePostService {
         List<UnrefinedMatePostDTO> listedMatePosts = queryRepository.findMatePostList(condition);
 
         log.debug("listedMatePosts: {}", listedMatePosts);
-        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().FromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
+        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
         List<MatePostToDto> result = refinedDto.stream().map(dto -> {
                     List<FromParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
                      dto.setParticipants(refined);
@@ -259,8 +259,7 @@ public class MatePostService {
         3. 글의 모집 상태가 모집 중인지 확인한다. (모집 중이 아닐 경우 예외 처리)
         3-1. 모집 중이라면 참여자 목록을 불러온다.
         3-2. 참여자 목록이 비어있다면 예외 처리한다.
-        3-3. 참여자 목록이 비어있지 않다면 채팅방을 개설하고 참여자 목록을 정제하여 채팅방에 등록한다.
-        3-4. 참여자 목록을 순회하며 수락되지 않은 참여자들을 데이터베이스에서 삭제한다. (hard delete)
+        3-3. 참여자 목록을 순회하며 수락되지 않은 참여자들을 데이터베이스에서 삭제한다. (hard delete)
         4. 글의 모집 상태를 완료로 변경한다.
      */
     public void completeRecruitment(long matePostId, long userId) {
@@ -275,8 +274,7 @@ public class MatePostService {
             if(participants.isEmpty()){
                 throw new BaseException(NO_ACCEPTED_PARTICIPANT);
             }
-            //ChatCreateDTO chatCreateDTO = new ChatCreateDTO("TOGETHER", post.getTitle());
-            //Long chatroomId = chatService.createChatRoom(chatCreateDTO);
+
             List<Long> usersId = new ArrayList<>();
             for(Participant participant : participants){
                 if(participant.getApplyStatus() == ApplyStatusType.ACCEPTED){
@@ -286,17 +284,12 @@ public class MatePostService {
                     participantRepository.delete(participant); // * 수락되지 않은 참여자들은 데이터베이스에서 삭제한다.(hard delete)
                 }
             }
-            //chatService.setUserListChatRoom(chatroomId, usersId);
+
             post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
 
-    }
-
-    // * 글 작성자가 모집을 취소할 때
-    // * 현재로썬 구현을 안 하는 방향으로 정했지만 추후에 구현할 수도 있음
-    public void cancelRecruitment(long matePostId, long userId) {
     }
 
     /**

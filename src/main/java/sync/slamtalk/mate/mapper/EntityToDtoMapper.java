@@ -142,7 +142,7 @@ public class EntityToDtoMapper {
         return matePostDTO;
     }
 
-    public MatePostToDto FromUnrefinedToMatePostDto(UnrefinedMatePostDTO dto){
+    public MatePostToDto fromUnrefinedToMatePostDto(UnrefinedMatePostDTO dto){
         List<PositionListDTO> positionList = new ArrayList<>();
 
         if(dto.getMaxParticipantsCenters() > 0){
@@ -167,6 +167,7 @@ public class EntityToDtoMapper {
         resultDto.setSkillLevelList(toSkillLevelTypeList(dto.getSkillLevel()));
         resultDto.setWriterId(dto.getWriterId());
         resultDto.setWriterNickname(dto.getWriterNickname());
+        resultDto.setWriterImageUrl(dto.getImageUrl());
         resultDto.setMatePostId(dto.getMatePostId());
         resultDto.setScheduledDate(dto.getScheduledDate());
         resultDto.setStartTime(dto.getStartTime());

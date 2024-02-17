@@ -19,9 +19,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UnrefinedMatePostDTO {
-    private Long writerId = 0L;
-    private String writerNickname = "익명";
-    private String imageUrl = "빈 이미지";
+    private Long writerId;
+    private String writerNickname;
+    private String imageUrl;
     private Long matePostId;
     private String title;
     private String content;
