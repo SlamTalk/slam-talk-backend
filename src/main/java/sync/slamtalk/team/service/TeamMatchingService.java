@@ -155,13 +155,12 @@ public class TeamMatchingService {
      * 2. 조회된 글이 삭제되었을 경우 BaseException을 발생시킨다.
      * 3. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 4. 이미 지원한 작성자인지 확인한다.
-     * 5. 채팅방을 생성해서 채팅방 id를 가져온다.
-     * 6. 모집 상태가 모집 중인지 확인한다.
-     * 6-1. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
-     * 6-2. 요구 실력을 충족하지 못할 경우 BaseException을 발생시킨다.
-     * 7. TeamApplicant 객체를 생성하여 저장한다.
+     * 5. 모집 상태가 모집 중인지 확인한다.
+     * 5-1. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
+     * 5-2. 요구 실력을 충족하지 못할 경우 BaseException을 발생시킨다.(임시 주석 처리)
+     * 6. TeamApplicant 객체를 생성하여 연관관계를 맺고 저장한다.
      * Note :
-     * 해당 글에 지원한 신청자의 상태가 WAITING인 수가 5명을 초과할 경우 BaseException을 발생시킨다.
+     * 적합성 여부를 판단하는 로직을 주석 처리 함.
      */
     public Long applyTeamMatching(Long teamMatchingId, FromApplicantDto fromApplicantDto, Long id){
         long userId = id;
@@ -178,9 +177,6 @@ public class TeamMatchingService {
        if(existedApplicant != null){
             if(existedApplicant.getApplyStatus() == ApplyStatusType.WAITING){
                 throw new BaseException(ALREADY_APPLIED_TO_THIS_POST);
-            }else if(existedApplicant.getApplyStatus() == ApplyStatusType.CANCELED) {
-                existedApplicant.updateApplyStatus(ApplyStatusType.WAITING);
-                return existedApplicant.getTeamApplicantTableId();
             }else{
                 throw new BaseException(NOT_ALLOWED_REQUEST);
             }
@@ -191,9 +187,9 @@ public class TeamMatchingService {
             User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
             String userNickname = user.getNickname();
 
-            if(entityToDtoMapper.toSkillLevelTypeList(entity.getSkillLevel()).contains(fromApplicantDto.getSkillLevel().getLevel()) == false){
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-            }
+//            if(entityToDtoMapper.toSkillLevelTypeList(entity.getSkillLevel()).contains(fromApplicantDto.getSkillLevel().getLevel()) == false){
+//                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+//            }
 
             TeamApplicant applicant = TeamApplicant.builder()
                     .applicantId(userId)
@@ -222,13 +218,11 @@ public class TeamMatchingService {
      * 1. teamMatchingId를 가진 글을 조회한다.(없을 경우 BaseException을 발생시킨다.)
      * 2. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 3. 모집 상태가 모집 중인지 확인한다.
-     * 3-1. 신청자의 신청 상태가 WAITING 또는 COMMUNICATING인지 확인한다.
-     * 3-2. 신청자의 신청 상태를 REJECTED로 변경한다.
-     * 4. 신청자의 신청 상태가 ACCEPTED, REJECTED, CANCELED일 경우 BaseException을 발생시킨다.
-     * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
+     * 3-1. 신청자의 신청 상태가 WAITING 인지 확인한다. 그렇다면 연관관계를 끊고 REJECTED로 변경한다. 그렇지 않다면 BaseException을 발생시킨다.
+     * 4. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      * Note :
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
-     * 그리고 신청자의 신청 상태가 WAITING 또는 COMMUNICATING이어야 합니다.
+     * 그리고 신청자의 신청 상태가 WAITING 이어야 합니다.
      */
     public void rejectApplicant(long teamMatchingId, long teamApplicantId, long hostId){
         TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
@@ -256,13 +250,11 @@ public class TeamMatchingService {
      * 2. 해당 신청자의 TeamApplicant 객체를 가져온다.(없을 경우 BaseException을 발생시킨다.)
      * 3. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 4. 모집 상태가 모집 중인지 확인한다.
-     * 4-1. 신청자의 신청 상태가 WAITING 또는 COMMUNICATING인지 확인한다.
-     * 4-2. 신청자의 신청 상태를 CANCELED로 변경한다.
-     * 5. 신청자의 신청 상태가 REJECTED, CANCELED일 경우 BaseException을 발생시킨다.
-     * 6. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
+     * 4-1. 신청자가 WAITING 상태라면 연관관계를 끊고 데이터베이스에서 삭제한다.(hard delete) 그렇지 않다면 BaseException을 발생시킨다.
+     * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      * Note :
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
-     * 그리고 신청자의 신청 상태가 WAITING 또는 COMMUNICATING나 ACCEPTED이어야 합니다.
+     * 그리고 신청자의 신청 상태가 WAITING 이어야 합니다.
      */
     public void cancelApplicant(long teamMatchingId, long teamApplicantId, long writerId){
         TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
@@ -275,7 +267,8 @@ public class TeamMatchingService {
 
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
-                applicant.updateApplyStatus(ApplyStatusType.CANCELED);
+                applicant.disconnectTeamMatching();
+                teamApplicantRepository.delete(applicant);
             }else{
                 throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
             }
@@ -291,14 +284,12 @@ public class TeamMatchingService {
      * 2. 해당 신청자의 TeamApplicant 객체를 가져온다.(없을 경우 BaseException을 발생시킨다.)
      * 3. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 4. 모집 상태가 모집 중인지 확인한다.
-     * 4-1. 신청자의 신청 상태가 REJECTED, CANCELED일 경우 연관관계를 끊고 데이터베이스에서 삭제한다.(hard delete)
-     * 4-2. 해당 글의 opponent가 이미 설정되어 있을 경우 BaseException을 발생시킨다.
-     * 4-3. 4-2의 과정을 거친 후에는 해당 신청자를 opponent로 설정한다.
-     * 4-4. 신청자의 신청 상태를 ACCEPTED로 변경한다.
+     * 4-1. 해당 글의 opponent가 이미 설정되어 있을 경우 BaseException을 발생시킨다.
+     * 4-2. 4-2의 과정을 거친 후에는 해당 신청자를 opponent로 설정한다.
+     * 4-3. 신청자의 신청 상태를 ACCEPTED로 변경한다.
      * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      * Note :
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
-     * 그리고 신청자의 신청 상태가 ACCEPTED이어야 합니다.
      */
     public void acceptApplicant(long teamMatchingId,long teamApplicantId, long writerId){
         TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
@@ -329,7 +320,7 @@ public class TeamMatchingService {
      * 1. teamMatchingId를 가진 글을 조회한다.(없을 경우 BaseException을 발생시킨다.)
      * 2. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 3. 모집 상태가 모집 중인지 확인한다.
-     * 3-1. 신청자의 지원 상태가 REJECTED, CANCELED일 경우 연관관계를 끊고 데이터베이스에서 삭제한다.(hard delete)
+     * 3-1. 신청자의 지원 상태가 REJECTED, WAITING일 경우 연관관계를 끊고 데이터베이스에서 삭제한다.(hard delete)
      * 4. 모집 상태를 완료로 변경한다.
      * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      */
