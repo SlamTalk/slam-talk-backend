@@ -18,6 +18,8 @@ import sync.slamtalk.user.entity.User;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -309,11 +311,11 @@ public class MatePostService {
         List<MatePost> allByWriter = matePostRepository.findAllByWriter(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
-        List<MatePostToDto> authoredPost = allByWriter.stream()
+        List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
                 .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
-                .toList();
+                .toList());
 
-        List<MatePostToDto> participatedPost = allByApplications.stream()
+        List<MatePostToDto> participatedPost = new ArrayList<>(allByApplications.stream()
                 .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
                 .map(matePostToDto -> {
                     matePostToDto.setParticipants(
@@ -323,7 +325,17 @@ public class MatePostService {
                     );
                     return matePostToDto;
                 })
-                .toList();
+                .toList());
+
+        for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(new ArrayList<>(authoredPost), new ArrayList<>(participatedPost))) {
+            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
+                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                    return o1.getStartTime().compareTo(o2.getStartTime());
+                }
+                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+            });
+        }
+
         return new MyMateListRes(authoredPost, participatedPost);
     }
 }

@@ -31,6 +31,7 @@ import sync.slamtalk.user.repository.UserAttendanceRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -242,17 +243,17 @@ public class UserService {
             user.updateProfileUrl(fileUrl);
         }
 
-        // 자기 소개 한마디
+        // 자기 소개 한마디이 null이 아니라면 값 update 하기
         if (updateUserDetailInfoReq.getSelfIntroduction() != null) {
             user.updateSelfIntroduction(updateUserDetailInfoReq.getSelfIntroduction());
         }
 
-        // 유저 포지션
+        // 유저 포지션가 null이 아니라면 값 update 하기
         if (updateUserDetailInfoReq.getBasketballPosition() != null) {
             user.updatePosition(updateUserDetailInfoReq.getBasketballPosition());
         }
 
-        // 유저 스킬 레벨 업데이트
+        // 유저 스킬 레벨 업데이트가 null이 아니라면 update 하기
         if (updateUserDetailInfoReq.getBasketballSkillLevel() != null) {
             user.updateBasketballSkillLevel(updateUserDetailInfoReq.getBasketballSkillLevel());
         }
@@ -316,6 +317,15 @@ public class UserService {
         List<ToTeamFormDTO> teamMatchingList = new ArrayList<>();
         teamMatchingList.addAll(authoredPost);
         teamMatchingList.addAll(participatedPost);
+
+        // getScheduledDate 순으로 정렬하기, 만약에 날짜가 같다면 getStartTime 순으로 정렬하기
+        Collections.sort(teamMatchingList, (o1, o2) -> {
+            if(o1.getScheduledDate().isBefore(o2.getScheduledDate())){
+                return -1;
+            } else if(o1.getScheduledDate().isBefore(o2.getScheduledDate()) && o1.getStartTime().isBefore(o2.getStartTime())){
+                return -1;
+            } return 1;
+        });
         return teamMatchingList;
     }
 
@@ -364,6 +374,16 @@ public class UserService {
         List<MatePostToDto> mateList = new ArrayList<>();
         mateList.addAll(authoredPost);
         mateList.addAll(participatedPost);
+
+        // getScheduledDate 순으로 정렬하기, 만약에 날짜가 같다면 getStartTime 순으로 정렬하기
+        Collections.sort(mateList, (o1, o2) -> {
+            if (o1.getScheduledDate().isBefore(o2.getScheduledDate())) {
+                return -1;
+            } else if (o1.getScheduledDate().isBefore(o2.getScheduledDate()) && o1.getStartTime().isBefore(o2.getStartTime())) {
+                return -1;
+            }
+            return 1;
+        });
         return mateList;
     }
 }

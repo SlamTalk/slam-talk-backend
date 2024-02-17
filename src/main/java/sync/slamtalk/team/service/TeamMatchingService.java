@@ -23,6 +23,9 @@ import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
@@ -366,11 +369,11 @@ public class TeamMatchingService {
         List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriter(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(userId);
 
-        List<ToTeamFormDTO> authoredPost = allByWriter.stream()
+        List<ToTeamFormDTO> authoredPost = new ArrayList<>(allByWriter.stream()
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
-                .toList();
+                .toList());
 
-        List<ToTeamFormDTO> participatedPost = allByApplications.stream()
+        List<ToTeamFormDTO> participatedPost = new ArrayList<>(allByApplications.stream()
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .map(toTeamFormDTO -> {
                     toTeamFormDTO.setTeamApplicants(
@@ -380,7 +383,16 @@ public class TeamMatchingService {
                     );
                     return toTeamFormDTO;
                 })
-                .toList();
+                .toList());
+
+        for (List<ToTeamFormDTO> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
+            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
+                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                    return o1.getStartTime().compareTo(o2.getStartTime());
+                }
+                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+            });
+        }
 
         return new MyTeamMatchingListRes(authoredPost, participatedPost);
     }
