@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.entity.*;
@@ -14,7 +15,9 @@ import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.user.entity.QUser;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.querydsl.core.types.Projections.bean;
@@ -23,6 +26,7 @@ import static sync.slamtalk.mate.entity.QParticipant.participant;
 import static sync.slamtalk.mate.entity.QTeam.team;
 import static sync.slamtalk.user.entity.QUser.user;
 
+@Slf4j
 @Repository
 public class QueryRepository {
 
@@ -149,14 +153,19 @@ public class QueryRepository {
     }
 
     private BooleanExpression beforeScheduledTime() {
-        DateTimeExpression<LocalDateTime> scheduledStartTime = Expressions.dateTimeTemplate(LocalDateTime.class, "{0}T{1}", matePost.scheduledDate, matePost.startTime);
-        return scheduledStartTime.after(LocalDateTime.now());
+        BooleanExpression isBeforeScheduledDate = matePost.scheduledDate.after(LocalDate.now());
+
+        BooleanExpression isTodayAndBeforeScheduledTime = matePost.scheduledDate.eq(LocalDate.now())
+                .and(matePost.startTime.after(LocalTime.now()));
+
+        return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
     }
 
     private BooleanExpression ltCreatedAt(LocalDateTime cursorTime) {
         if(cursorTime == null){
             return null;
         }
+
         return matePost.createdAt.lt(cursorTime);
     }
 
