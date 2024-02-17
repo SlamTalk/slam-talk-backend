@@ -3,8 +3,11 @@ package sync.slamtalk.mate.repository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateTimeExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.entity.*;
@@ -12,7 +15,9 @@ import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.user.entity.QUser;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.querydsl.core.types.Projections.bean;
@@ -21,6 +26,7 @@ import static sync.slamtalk.mate.entity.QParticipant.participant;
 import static sync.slamtalk.mate.entity.QTeam.team;
 import static sync.slamtalk.user.entity.QUser.user;
 
+@Slf4j
 @Repository
 public class QueryRepository {
 
@@ -66,6 +72,7 @@ public class QueryRepository {
                         eqPosition(condition.getPosition()),
                         eqSkillLevel(condition.getSkillLevel()),
                         ltCreatedAt(condition.getCursorTime()),
+                        beforeScheduledTime(),
                         matePost.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
@@ -88,7 +95,8 @@ public class QueryRepository {
                 )
                 .from(participant)
                 .where(
-                        eqMatePostId(matePostId)
+                        eqMatePostId(matePostId),
+                        participant.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
                 .limit(10)
@@ -131,13 +139,11 @@ public class QueryRepository {
     private BooleanExpression eqPosition(PositionType position) {
         if(position != null){
             if(position.equals(PositionType.CENTER)){
-                return matePost.maxParticipantsCenters.gt(matePost.currentParticipantsCenters);
+                return matePost.maxParticipantsCenters.gt(matePost.currentParticipantsCenters).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             } else if(position.equals(PositionType.GUARD)){
-                return matePost.maxParticipantsGuards.gt(matePost.currentParticipantsGuards);
+                return matePost.maxParticipantsGuards.gt(matePost.currentParticipantsGuards).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             } else if(position.equals(PositionType.FORWARD)){
-                return matePost.maxParticipantsForwards.gt(matePost.currentParticipantsForwards);
-            } else if(position.equals(PositionType.UNSPECIFIED)){
-                return matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers);
+                return matePost.maxParticipantsForwards.gt(matePost.currentParticipantsForwards).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             }else {
                 return null;
             }
@@ -146,10 +152,20 @@ public class QueryRepository {
         }
     }
 
+    private BooleanExpression beforeScheduledTime() {
+        BooleanExpression isBeforeScheduledDate = matePost.scheduledDate.after(LocalDate.now());
+
+        BooleanExpression isTodayAndBeforeScheduledTime = matePost.scheduledDate.eq(LocalDate.now())
+                .and(matePost.startTime.after(LocalTime.now()));
+
+        return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
+    }
+
     private BooleanExpression ltCreatedAt(LocalDateTime cursorTime) {
         if(cursorTime == null){
             return null;
         }
+
         return matePost.createdAt.lt(cursorTime);
     }
 
