@@ -135,13 +135,11 @@ public class QueryRepository {
     private BooleanExpression eqPosition(PositionType position) {
         if(position != null){
             if(position.equals(PositionType.CENTER)){
-                return matePost.maxParticipantsCenters.gt(matePost.currentParticipantsCenters);
+                return matePost.maxParticipantsCenters.gt(matePost.currentParticipantsCenters).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             } else if(position.equals(PositionType.GUARD)){
-                return matePost.maxParticipantsGuards.gt(matePost.currentParticipantsGuards);
+                return matePost.maxParticipantsGuards.gt(matePost.currentParticipantsGuards).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             } else if(position.equals(PositionType.FORWARD)){
-                return matePost.maxParticipantsForwards.gt(matePost.currentParticipantsForwards);
-            } else if(position.equals(PositionType.UNSPECIFIED)){
-                return matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers);
+                return matePost.maxParticipantsForwards.gt(matePost.currentParticipantsForwards).or(matePost.maxParticipantsOthers.gt(matePost.currentParticipantsOthers));
             }else {
                 return null;
             }
