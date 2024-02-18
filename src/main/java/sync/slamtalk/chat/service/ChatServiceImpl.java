@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
@@ -273,6 +274,7 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     @Override
+    @Transactional
     public List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId) {
         List<ChatMessageDTO> ansList = new ArrayList<>();
 
@@ -402,6 +404,7 @@ public class ChatServiceImpl implements ChatService{
 
     // userChatRoom 에 readIndex 저장하기
     @Override
+    @Transactional
     public void saveReadIndex(Long userId,Long chatRoomId,Long readIndex) {
 
         Optional<UserChatRoom> matchingChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
