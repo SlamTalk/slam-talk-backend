@@ -91,8 +91,11 @@ public class BasketballCourt extends BaseEntity {
     private AdminStatus adminStatus; // 관리자 상태
 
     @Column(name = "informer_id")
-    private Long informerid; // 제보자 ID
+    private Long informerId; // 제보자 ID
 
+
+    // 농구장 이름 업데이트
+    // 농구장
 
     //코트 타입 업데이트
     public void updateCourtType(String courtType) {
