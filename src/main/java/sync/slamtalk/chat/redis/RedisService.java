@@ -72,7 +72,7 @@ public class RedisService {
         List<String> keyCollect = keys.stream()
                 .map(key -> key.split(":"))
                 // 분할된 배열에서 메시지 ID가 숫자 형태인지, 그리고 readIndex보다 작은지 확인
-                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Integer.parseInt(parts[3]) < readIndex)
+                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Integer.parseInt(parts[3]) <= readIndex)
                 // 원래 키 형태로 복원
                 .map(parts -> String.join(":", parts))
                 // 메시지 ID에 따라 내림차순 정렬
