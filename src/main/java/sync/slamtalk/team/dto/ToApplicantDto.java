@@ -11,16 +11,12 @@ import sync.slamtalk.team.entity.TeamMatching;
 @Getter
 @Setter
 public class ToApplicantDto {
-
-
     Long teamApplicantTableId;
+    String teamName;
     Long applicantId;
     String applicantNickname;
-    Long chatroomId;
-    Long TeamMatchingId;
-    @Enumerated(EnumType.STRING)
-    ApplyStatusType applyStatusType;
-
-    String teamName;
+    Long teamMatchingId;
     SkillLevelType skillLevel;
+    @Enumerated(EnumType.STRING)
+    ApplyStatusType applyStatus;
 }

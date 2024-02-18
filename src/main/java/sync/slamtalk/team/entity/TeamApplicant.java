@@ -36,8 +36,7 @@ public class TeamApplicant extends BaseEntity {
     private String applicantNickname;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED, CANCELED
-    private Long chatroomId;
+    private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED
     @Enumerated(EnumType.STRING)
     private SkillLevelType skillLevel;
 
@@ -64,8 +63,7 @@ public class TeamApplicant extends BaseEntity {
         ToApplicantDto dto = new ToApplicantDto();
         dto.setApplicantId(this.applicantId);
         dto.setApplicantNickname(this.applicantNickname);
-        dto.setApplyStatusType(this.applyStatus);
-        dto.setChatroomId(this.chatroomId);
+        dto.setApplyStatus(this.applyStatus);
         dto.setTeamName(this.teamName);
         dto.setTeamApplicantTableId(this.teamApplicantTableId);
         dto.setTeamMatchingId(this.teamMatching.getTeamMatchingId());
@@ -95,7 +93,6 @@ public class TeamApplicant extends BaseEntity {
                 ", applicantId=" + applicantId +
                 ", applicantNickname='" + applicantNickname + '\'' +
                 ", isChatroomCreated=" + applyStatus +
-                ", chatroomId=" + chatroomId +
                 ", skillLevel=" + skillLevel +
                 '}';
     }

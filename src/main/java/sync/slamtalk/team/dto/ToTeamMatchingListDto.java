@@ -14,6 +14,5 @@ public class ToTeamMatchingListDto {
 
     List<ToTeamFormDTO> teamMatchingList;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSS")
-    LocalDateTime cursor;
+    String nextCursor;
 }

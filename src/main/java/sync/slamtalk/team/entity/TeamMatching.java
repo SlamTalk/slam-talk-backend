@@ -39,9 +39,9 @@ public class TeamMatching extends BaseEntity implements Post {
     @JoinColumn(name = "writer_id")
     private User writer;
 
-    private Long opponentId = 0L;
+    private Long opponentId;
 
-    private String opponentNickname = "empty";
+    private String opponentNickname;
 
     boolean skillLevelHigh = false;
 
@@ -54,7 +54,7 @@ public class TeamMatching extends BaseEntity implements Post {
     @Column(nullable = false)
     private String teamName;
 
-    private String opponentTeamName = "empty";
+    private String opponentTeamName;
 
     @Column(nullable = false)
     private String title;
@@ -103,13 +103,6 @@ public class TeamMatching extends BaseEntity implements Post {
         this.opponentTeamName = opponentTeamName;
     }
 
-    public void configureSkillLevel(SkillLevelList list){
-        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
-        if(list.isSkillLevelLow()) this.skillLevelLow = true;
-        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
-        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
-    }
-
     public void splitAndStoreLocation(String locationDetail){
         String[] splited = locationDetail.split(" ", 2);
         this.location = splited[0];
@@ -155,6 +148,8 @@ public class TeamMatching extends BaseEntity implements Post {
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(fromTeamFormDTO.getSkillLevel());
+        configureSkillLevel(skillList);
         this.startTime = fromTeamFormDTO.getStartTime();
         this.endTime = fromTeamFormDTO.getEndTime();
         this.scheduledDate = fromTeamFormDTO.getScheduledDate();
@@ -167,6 +162,8 @@ public class TeamMatching extends BaseEntity implements Post {
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(fromTeamFormDTO.getSkillLevel());
+        configureSkillLevel(skillList);
         this.startTime = fromTeamFormDTO.getStartTime();
         this.endTime = fromTeamFormDTO.getEndTime();
         this.scheduledDate = fromTeamFormDTO.getScheduledDate();
@@ -210,6 +207,17 @@ public class TeamMatching extends BaseEntity implements Post {
         super.delete();
     }
 
+    public void configureSkillLevel(SkillLevelList list){
+        this.skillLevelBeginner = false;
+        this.skillLevelLow = false;
+        this.skillLevelMiddle = false;
+        this.skillLevelHigh = false;
+
+        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+        if(list.isSkillLevelLow()) this.skillLevelLow = true;
+        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
+    }
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){

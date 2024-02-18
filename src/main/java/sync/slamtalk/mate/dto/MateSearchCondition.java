@@ -15,4 +15,5 @@ public class MateSearchCondition {
     private SkillLevelType skillLevel;
     private String location;
     private LocalDateTime cursorTime;
+    private boolean includingExpired = false; // 만료된 팀 매칭도 포함할지 여부. 기본값은 false(포함하지 않음)
 }

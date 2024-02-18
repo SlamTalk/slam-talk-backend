@@ -4,6 +4,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.team.dto.ToTeamFormDTO;
+import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -223,6 +225,31 @@ public class EntityToDtoMapper {
         resultDto.setLocationDetail(matePost.getLocation() + " " + matePost.getLocationDetail());
         resultDto.setPositionList(positionList);
         resultDto.setCreatedAt(matePost.getCreatedAt());
+
+        return resultDto;
+    }
+
+    public ToTeamFormDTO fromUnrefinedTeamMatchingToDto(UnrefinedTeamMatchingDto inputDto){
+        ToTeamFormDTO resultDto = new ToTeamFormDTO();
+        resultDto.setTeamMatchingId(inputDto.getTeamMatchingId());
+        resultDto.setTeamName(inputDto.getTeamName());
+        resultDto.setTitle(inputDto.getTitle());
+        resultDto.setContent(inputDto.getContent());
+        resultDto.setWriterId(inputDto.getWriterId());
+        resultDto.setWriterNickname(inputDto.getWriterNickname());
+        resultDto.setWriterImageUrl(inputDto.getWriterImageUrl());
+        resultDto.setOpponentId(inputDto.getOpponentId());
+        resultDto.setOpponentNickname(inputDto.getOpponentNickname());
+        resultDto.setOpponentTeamName(inputDto.getOpponentTeamName());
+        resultDto.setScheduledDate(inputDto.getScheduledDate());
+        resultDto.setStartTime(inputDto.getStartTime());
+        resultDto.setEndTime(inputDto.getEndTime());
+        resultDto.setLocationDetail(inputDto.getLocation() + " " + inputDto.getLocationDetail());
+        resultDto.setNumberOfMembers(inputDto.getNumberOfMembers());
+        resultDto.setSkillLevel(inputDto.getSkillLevel());
+        resultDto.setSkillLevelList(toSkillLevelTypeList(inputDto.getSkillLevel()));
+        resultDto.setCreatedAt(inputDto.getCreatedAt());
+        resultDto.setRecruitmentStatusType(inputDto.getRecruitmentStatus());
 
         return resultDto;
     }
