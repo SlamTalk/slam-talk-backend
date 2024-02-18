@@ -111,7 +111,7 @@ public class UserService {
         // user 출석개수 반환
         long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
                 .orElse(0L);
-        long userReportCount = basketballCourtRepository.countBasketballCourtByAdminStatusEqualsAndInformerid(AdminStatus.ACCEPT, userId);
+        long userReportCount = basketballCourtRepository.countBasketballCourtByAdminStatusEqualsAndInformerId(AdminStatus.ACCEPT, userId);
 
         // Mate 게시판 상태가 Complete
         levelScore += mateCount * UserLevelScore.MATE_LEVEL_SCORE;
