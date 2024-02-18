@@ -144,6 +144,7 @@ public class ChatServiceImpl implements ChatService{
 
     // 채팅방에 메세지 저장(STOMP: SEND)
     @Override
+    @Transactional
     public void saveMessage(ChatMessageDTO chatMessageDTO) {
         long chatRoomId = Long.parseLong(chatMessageDTO.getRoomId());
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
