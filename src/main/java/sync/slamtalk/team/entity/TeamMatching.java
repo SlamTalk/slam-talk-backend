@@ -39,9 +39,9 @@ public class TeamMatching extends BaseEntity implements Post {
     @JoinColumn(name = "writer_id")
     private User writer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "opponent_id")
-    private User opponent;
+    private Long opponentId = 0L;
+
+    private String opponentNickname = "empty";
 
     boolean skillLevelHigh = false;
 
@@ -51,9 +51,10 @@ public class TeamMatching extends BaseEntity implements Post {
 
     boolean skillLevelBeginner = false;
 
+    @Column(nullable = false)
     private String teamName;
 
-    private String opponentTeamName;
+    private String opponentTeamName = "empty";
 
     @Column(nullable = false)
     private String title;
@@ -93,17 +94,13 @@ public class TeamMatching extends BaseEntity implements Post {
 
     private static final int MAX_APPLICANTS = 5;
 
-    public void declareOpponent(User opponent){
-        if(this.opponent != null){
+    public void declareOpponent(long opponentId, String opponentNickname, String opponentTeamName){
+        if(this.opponentId != null){
             throw new BaseException(ALEADY_DECLARED_OPPONENT);
         }
-        this.opponent = opponent;
-        this.opponent.getOpponentTeamMatchings().add(this);
-    }
-
-    public void cancelOpponent(){
-        this.opponent.getOpponentTeamMatchings().remove(this);
-        this.opponent = null;
+        this.opponentId = opponentId;
+        this.opponentNickname = opponentNickname;
+        this.opponentTeamName = opponentTeamName;
     }
 
     public void configureSkillLevel(SkillLevelList list){
