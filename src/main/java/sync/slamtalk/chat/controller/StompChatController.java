@@ -39,7 +39,7 @@ public class StompChatController {
     @Transactional
     public String enter(ChatMessageDTO message){
 
-        // TODO 입장 / 퇴장
+
         Long userId = message.getSenderId();
         String StringRoomId = message.getRoomId();
         long roomId = Long.parseLong(StringRoomId);
