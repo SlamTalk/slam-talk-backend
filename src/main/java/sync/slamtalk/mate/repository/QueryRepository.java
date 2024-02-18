@@ -1,29 +1,17 @@
 package sync.slamtalk.mate.repository;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.DateTimeExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.NotBlank;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.dto.*;
+import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.TeamSearchCondition;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
-import sync.slamtalk.team.entity.TeamApplicant;
-import sync.slamtalk.team.entity.TeamMatching;
-import sync.slamtalk.user.entity.QUser;
-import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,10 +21,8 @@ import java.util.List;
 import static com.querydsl.core.types.Projections.bean;
 import static sync.slamtalk.mate.entity.QMatePost.matePost;
 import static sync.slamtalk.mate.entity.QParticipant.participant;
-import static sync.slamtalk.mate.entity.QTeam.team;
 import static sync.slamtalk.team.entity.QTeamApplicant.teamApplicant;
 import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
-import static sync.slamtalk.user.entity.QUser.user;
 
 @Slf4j
 @Repository
@@ -52,9 +38,9 @@ public class QueryRepository {
         this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
-    public List<UnrefinedMatePostDTO> findMatePostList(MateSearchCondition condition) {
+    public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
         return queryFactory
-                .select(bean(UnrefinedMatePostDTO.class,
+                .select(bean(UnrefinedMatePostDto.class,
                         matePost.writer.id.as("writerId"),
                         matePost.writer.nickname.as("writerNickname"),
                         matePost.writer.imageUrl.as("imageUrl"),
@@ -92,10 +78,10 @@ public class QueryRepository {
                 .fetch();
     }
 
-    public List<FromParticipantDto> findParticipantByMatePostId(long matePostId) {
+    public List<ParticipantDto> findParticipantByMatePostId(long matePostId) {
         return queryFactory
                 .select(
-                        bean(FromParticipantDto.class,
+                        bean(ParticipantDto.class,
                                 participant.participantTableId.as("participantTableId"),
                                 participant.matePost.matePostId.as("matePostId"),
                                 participant.participantId.as("participantId"),

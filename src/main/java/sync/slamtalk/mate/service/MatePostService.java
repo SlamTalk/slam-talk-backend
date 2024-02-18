@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.dto.*;
-import sync.slamtalk.mate.dto.response.MyMateListRes;
+import sync.slamtalk.mate.dto.request.MatePostReq;
+import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
@@ -50,9 +51,9 @@ public class MatePostService {
      * 3. MatePost를 저장한다.
      * 4. 저장된 게시글의 아이디를 반환한다.
      */
-    public long registerMatePost(MateFormDTO mateFormDTO, long userId){
+    public long registerMatePost(MatePostReq matePostReq, long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
-        MatePost matePost = mateFormDTO.toEntity();
+        MatePost matePost = matePostReq.toEntity();
         matePost.connectParent(user);
         MatePost result = matePostRepository.save(matePost);
         return result.getMatePostId(); // * 저장된 게시글의 아이디를 반환한다.
@@ -68,24 +69,29 @@ public class MatePostService {
      * 5. 게시글의 정보를 Dto로 변환하여 반환한다.
      */
     @Transactional(readOnly = true)
-    public MateFormDTO getMatePost(long matePostId){
+    public MatePostRes getMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
         if(post.getIsDeleted()){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
 
-        User writer = post.getWriter();
+        MatePostRes matePostRes = getMatePostRes(matePostId, post);
 
+        return matePostRes;
+    }
+
+    private MatePostRes getMatePostRes(long matePostId, MatePost post) {
+        User writer = post.getWriter();
         Long writerId = writer.getId();
         String writerNickname = writer.getNickname();
         String writerImageUrl = writer.getImageUrl();
 
-        List<MatePostApplicantDTO> participantsToArrayList = participantService.getParticipants(matePostId);
+        List<ParticipantDto> participantsToArrayList = participantService.getParticipants(matePostId);
         List<String> skillList = post.toSkillLevelTypeList();
-        List<PositionListDTO> positionList = entityToDtoMapper.toPositionListDto(post);
+        List<PositionListDto> positionList = entityToDtoMapper.toPositionListDto(post);
 
-        MateFormDTO mateFormDTO = MateFormDTO.builder()
+        MatePostRes matePostRes = MatePostRes.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(writerId)
                 .writerNickname(writerNickname)
@@ -102,7 +108,7 @@ public class MatePostService {
                 .positionList(positionList)
                 .participants(participantsToArrayList)
                 .build();
-        return mateFormDTO;
+        return matePostRes;
     }
 
     /**
@@ -139,7 +145,7 @@ public class MatePostService {
      * Note :
      * 지금은 dto로 넘어오는 존재하는 필드와 값만 수정하거나 업데이트 하도록 구현되어 있다.
      */
-    public boolean updateMatePost(long matePostId, MateFormDTO mateFormDTO, long userId){
+    public boolean updateMatePost(long matePostId, MatePostReq matePostReq, long userId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
         if(post.getIsDeleted()){
@@ -148,50 +154,21 @@ public class MatePostService {
         if(post.isCorrespondToUser(userId) == false) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
-        String content = mateFormDTO.getContent();
-        String title = mateFormDTO.getTitle();
-        String[] splitedLocationString = mateFormDTO.getLocationDetail().split(" ", 2);
+
+        EntityToDtoMapper entityToDtoMapper = new EntityToDtoMapper();
+
+        String[] splitedLocationString = matePostReq.getLocationDetail().split(" ", 2);
         String location = splitedLocationString[0];
-        String locationDetail = splitedLocationString[1];
-        LocalDate scheduledDate = mateFormDTO.getScheduledDate();
-        LocalTime startTime = mateFormDTO.getStartTime();
-        LocalTime endTime = mateFormDTO.getEndTime();
-        entityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
-        Integer maxParticipantsCenters = mateFormDTO.getMaxParticipantsCenters();
-        Integer maxParticipantsGuards = mateFormDTO.getMaxParticipantsGuards();
-        Integer maxParticipantsForwards = mateFormDTO.getMaxParticipantsForwards();
-        Integer maxParticipantsOthers = mateFormDTO.getMaxParticipantsOthers();
-        SkillLevelList skillLevel = entityToDtoMapper.fromRecruitSkillLevel(mateFormDTO.getSkillLevel());
+        String locationDetail = splitedLocationString[1].length() > 0 ? splitedLocationString[1] : "";
+        LocalDate scheduledDate = matePostReq.getScheduledDate();
+        LocalTime startTime = matePostReq.getStartTime();
+        LocalTime endTime = matePostReq.getEndTime();
+        SkillLevelList skillList = entityToDtoMapper.fromRecruitSkillLevel(matePostReq.getSkillLevel());
 
-        if(content != null && !content.equals("")){ // * 내용이 비어있지 않다면
-            post.updateContent(content);
-        }
-
-        if(title != null && !title.equals("")){ // * 제목이 비어있지 않다면
-            post.updateTitle(title);
-        }
-
-        if(location != null && !location.equals("")){ // * 시합 장소가 비어있지 않다면
-            post.updateLocation(location);
-        }
-
-        if(locationDetail != null && !locationDetail.equals("")){ // * 상세 시합 장소가 비어있지 않다면
-            post.updateLocationDetail(locationDetail);
-        }
-
-        if(scheduledDate != null){
-            post.updateScheduledDate(scheduledDate);
-        }
-        if(startTime != null){
-            post.updateStartTime(startTime);
-        }
-        if(endTime != null){
-            post.updateEndTime(endTime);
-        }
-
-        if(skillLevel != null){
-            post.configureSkillLevel(skillLevel);
-        }
+        Integer maxParticipantsCenters = matePostReq.getMaxParticipantsCenters();
+        Integer maxParticipantsGuards = matePostReq.getMaxParticipantsGuards();
+        Integer maxParticipantsForwards = matePostReq.getMaxParticipantsForwards();
+        Integer maxParticipantsOthers = matePostReq.getMaxParticipantsOthers();
 
         if(maxParticipantsCenters != null){
             if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
@@ -221,6 +198,15 @@ public class MatePostService {
             post.updateMaxParticipantsOthers(maxParticipantsOthers);
         }
 
+            post.updateContent(matePostReq.getContent());
+            post.updateTitle(matePostReq.getTitle());
+            post.updateLocation(location);
+            post.updateLocationDetail(locationDetail);
+            post.updateScheduledDate(scheduledDate);
+            post.updateStartTime(startTime);
+            post.updateEndTime(endTime);
+            post.configureSkillLevel(skillList);
+
         return true;
     }
 
@@ -231,19 +217,19 @@ public class MatePostService {
         2. 조회된 글 목록을 DTO로 변환하여 반환한다.
      */
     @Transactional(readOnly = true)
-    public MatePostListDTO getMatePostsByCurser(MateSearchCondition condition){
+    public MatePostListDto getMatePostsByCurser(MateSearchCondition condition){
         log.debug("condition: {}", condition);
-        List<UnrefinedMatePostDTO> listedMatePosts = queryRepository.findMatePostList(condition);
+        List<UnrefinedMatePostDto> listedMatePosts = queryRepository.findMatePostList(condition);
 
         log.debug("listedMatePosts: {}", listedMatePosts);
         List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
         List<MatePostToDto> result = refinedDto.stream().map(dto -> {
-                    List<FromParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
+                    List<ParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
                      dto.setParticipants(refined);
                         return dto;
                 }
         ).toList();
-        MatePostListDTO response = new MatePostListDTO();
+        MatePostListDto response = new MatePostListDto();
         response.setMatePostList(result);
         if(listedMatePosts.isEmpty() == false) {
             response.setNextCursor(listedMatePosts.get(listedMatePosts.size() - 1).getCreatedAt().toString());
@@ -262,7 +248,7 @@ public class MatePostService {
         3-3. 참여자 목록을 순회하며 수락되지 않은 참여자들을 데이터베이스에서 삭제한다. (hard delete)
         4. 글의 모집 상태를 완료로 변경한다.
      */
-    public void completeRecruitment(long matePostId, long userId) {
+    public MatePostRes completeRecruitment(long matePostId, long userId) {
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
         if(!post.isCorrespondToUser(userId)){
@@ -286,6 +272,7 @@ public class MatePostService {
             }
 
             post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
+            return getMatePostRes(matePostId, post);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }

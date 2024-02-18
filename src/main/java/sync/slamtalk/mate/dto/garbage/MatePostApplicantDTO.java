@@ -1,4 +1,4 @@
-package sync.slamtalk.mate.dto;
+package sync.slamtalk.mate.dto.garbage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -16,6 +16,7 @@ public class MatePostApplicantDTO {
 
     private long participantTableId;
     private long participantId;
+    private long matePostId;
     private String participantNickname;
     private ApplyStatusType applyStatus;
     private PositionType position;
