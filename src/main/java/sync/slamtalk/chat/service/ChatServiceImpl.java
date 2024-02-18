@@ -515,7 +515,9 @@ public class ChatServiceImpl implements ChatService{
 
 
     // redis 에서 메세지 가져오기
-    private Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
+    @Transactional
+    @Override
+    public Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
 
         List<ChatMessageDTO> msgList = new ArrayList<>();
         

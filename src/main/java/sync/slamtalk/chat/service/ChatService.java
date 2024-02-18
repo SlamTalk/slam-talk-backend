@@ -56,4 +56,6 @@ public interface ChatService {
 
     Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
 
+    Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count);
+
 }
