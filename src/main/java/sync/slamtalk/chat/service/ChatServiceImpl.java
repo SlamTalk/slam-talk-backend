@@ -145,12 +145,15 @@ public class ChatServiceImpl implements ChatService{
 
     // 채팅방에 메세지 저장(STOMP: SEND)
     @Override
-    @Transactional
     public void saveMessage(ChatMessageDTO chatMessageDTO) {
         long chatRoomId = Long.parseLong(chatMessageDTO.getRoomId());
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if(chatRoom.isPresent()){ // chatRoom 이 존재하면
+            // redis 먼저 저장
+            redisService.saveMessage(chatMessageDTO,42300);
             ChatRoom Room = chatRoom.get();
+
+            // messages 저장
             // Message create
             Messages messages = Messages.builder()
                     .chatRoom(Room)
@@ -160,8 +163,6 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
-//            // redis 에도 저장..?
-            redisService.saveMessage(chatMessageDTO,42300);
         }else{
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
