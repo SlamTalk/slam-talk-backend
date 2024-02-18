@@ -160,7 +160,7 @@ public class ChatServiceImpl implements ChatService{
                     .build();
             messagesRepository.save(messages);
 //            // redis 에도 저장..?
-//            redisService.saveMessage(chatMessageDTO,42300);
+            redisService.saveMessage(chatMessageDTO,42300);
         }else{
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
@@ -391,9 +391,16 @@ public class ChatServiceImpl implements ChatService{
         // redis 에서 가져온 내역이 있는 경우
 
         // TODO 갯수 20개 못가져온경우 추가적으로 db 페이징
+        List<ChatMessageDTO> chatMessageDTOS = optionalList.get();
+        String messageId = chatMessageDTOS.get(chatMessageDTOS.size() - 1).getMessageId();
+        if(chatMessageDTOS.size()<needCnt){
+            int more = needCnt - chatMessageDTOS.size();
+            // 20 개 - redis 로 가져온 내역 갯수 = 추가 내역 페이징
+            Pageable pageable = PageRequest.of(0, more); // 첫 페이지, 최대 20개
+            List<Messages> messagesList = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, Long.parseLong(messageId), pageable);
+        }
 
         return optionalList.get();
-
     }
 
     // 특정 방에 저장된 메세지 중 가장 마지막 메세지 가져옴
