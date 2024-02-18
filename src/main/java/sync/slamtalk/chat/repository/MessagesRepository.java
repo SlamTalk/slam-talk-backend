@@ -31,4 +31,7 @@ public interface MessagesRepository extends JpaRepository<Messages,Long> {
     // 메세지 아이디가 특정넘버 이상인 메세지들 가져오기
     List<Messages> findByChatRoomIdAndIdGreaterThan(Long chatRoomId, Long messageId);
 
+    @Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :chatRoomId AND m.id <= :messageId ORDER BY m.id DESC")
+    List<Messages> findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(Long chatRoomId, Long messageId, Pageable pageable);
+
 }

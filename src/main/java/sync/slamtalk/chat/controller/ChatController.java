@@ -2,6 +2,7 @@ package sync.slamtalk.chat.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,11 +20,13 @@ import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.user.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class ChatController {
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -54,7 +57,7 @@ public class ChatController {
         return ApiResponse.ok(chatLIst);
     }
 
-    // 채팅 참여
+    // 채팅방 접속 시 채팅 내역
     @PostMapping("/api/chat/participation")
     @Operation(
             summary = "새로운 채팅 내역 조회",
@@ -75,9 +78,29 @@ public class ChatController {
 
 
         // 채팅방에서 주고받았던 메세지 가져오기
-        List<ChatMessageDTO> chatMessage = chatService.getChatMessage(roomId,readIndex);
+        List<ChatMessageDTO> chatMessage = chatService.getChatMessages(roomId,readIndex);
 
         return ApiResponse.ok(chatMessage);
     }
+
+
+    // 채팅방에서 내역 추가 요청 할 때
+    @PostMapping("/api/chat/history")
+    @Operation(
+            summary = "과거 내역 조회",
+            description = "이 기능은 과거 마지막으로 읽은 메세지 전의 메세지를 보내주는 기능입니다.",
+            tags = {"채팅"}
+    )
+    public ApiResponse history(@Param("roomId")Long roomId,@AuthenticationPrincipal Long userId){
+        List<ChatMessageDTO> previousChatMessages = chatService.getPreviousChatMessages(userId, roomId);
+        if (previousChatMessages == null) {
+            log.debug("컨트롤러에서 가져온 메세지가 없습니다");
+            previousChatMessages = new ArrayList<>(); // 빈 리스트로 초기화
+        }
+        return ApiResponse.ok(previousChatMessages);
+
+    }
+
+
 
 }

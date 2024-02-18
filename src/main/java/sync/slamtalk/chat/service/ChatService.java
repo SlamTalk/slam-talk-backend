@@ -37,7 +37,10 @@ public interface ChatService {
     // 페이징 방식에 의존
     //      1. 사용자가 입장한 시점의 채팅방 메세지부터 모두 내려주기
     //      2. 사용자가 마지막으로 읽은 메세지 이후부터 내려주기
-    List<ChatMessageDTO> getChatMessage(Long chatRoomId, Long messageId);
+    List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId);
+
+
+    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId);
 
 
     // 사용자 채팅리스트 가져오기
