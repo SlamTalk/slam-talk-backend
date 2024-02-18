@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
@@ -14,6 +15,7 @@ import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.RoomType;
 import sync.slamtalk.chat.entity.UserChatRoom;
+import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
@@ -24,9 +26,7 @@ import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +40,7 @@ public class ChatServiceImpl implements ChatService{
     private final UserChatRoomRepository userChatRoomRepository;
     private final UserRepository userRepository;
     private final BasketballCourtRepository basketballCourtRepository;
+    private final RedisService redisService;
 
     // 채팅방 생성
     // * 생성시점에 userChatRoom 에 추가됨 *
@@ -160,6 +161,8 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
+//            // redis 에도 저장..?
+//            redisService.saveMessage(chatMessageDTO,42300);
         }else{
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
@@ -228,16 +231,22 @@ public class ChatServiceImpl implements ChatService{
                 // 1:1 인 경우 상대방 프로필
                 // 1:1, 팀매칭만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
                 if(ucr.getRoomType().equals(RoomType.DIRECT) || ucr.getRoomType().equals(RoomType.MATCHING)){
-                    log.debug("여기까지옴??");
                     List<UserChatRoom> optionalList = userChatRoomRepository.findByChat_Id(ucr.getChat().getId());
+
                     for(UserChatRoom x : optionalList){
-                        if(!x.getUser().getId().equals(userId) && x.getIsDeleted().equals(Boolean.FALSE)){
+                        if(x.getUser().getId().equals(userId) && x.getIsDeleted().equals(Boolean.FALSE)){ //&& !x.getUser().getId().equals(userId)
                             // 자기 자신이 아니고, 삭제가 되지 않은 경우
-                            profile = x.getUser().getImageUrl();
-                            dto.updateImgUrl(profile);
-                            if(ucr.getRoomType().equals(RoomType.DIRECT)){
-                                dto.updateName(x.getUser().getNickname());
+                            Long directId = x.getDirectId();
+                            Optional<User> optionalUser = userRepository.findById(directId);
+
+                            if(optionalUser.isPresent()){
+                                profile = optionalUser.get().getImageUrl();
+                                dto.updateImgUrl(profile);
+                                dto.updateName(optionalUser.get().getNickname());
                             }
+
+                            log.debug("지금 내 자신 : {}",userId);
+                            log.debug("자기 자신이 아닌 상대방 :{}",directId);
                         }
                     }
                 }
@@ -268,7 +277,7 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     @Override
-    public List<ChatMessageDTO> getChatMessage(Long chatRoomId, Long messageId) {
+    public List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId) {
         List<ChatMessageDTO> ansList = new ArrayList<>();
 
         // 특정 방 메세지 중 현재 messageId 보다 큰 Id값을 가진 메세지들 가져오기
@@ -298,10 +307,94 @@ public class ChatServiceImpl implements ChatService{
                     .timestamp(m.getCreation_time())
                     .build();
             ansList.add(messageDTO);
+
+            // Redis 캐싱
+            redisService.saveMessage(messageDTO,43200); // 12시간
+            log.debug("redis 캐싱 다음줄");
         }
         return ansList;
     }
 
+
+    // 과거 메세지 추가 요청
+    /*
+
+     */
+    @Override
+    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId) {
+
+        List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
+
+        // 추가로 가져올 메세지 갯수
+        int needCnt = 20;
+
+        // redis 먼저 조회
+        Optional<List<ChatMessageDTO>> optionalList = redisFirstDataBaseLater(userId, chatRoomId, needCnt);
+
+        // redis 로 불러온 내역이 없는 경우
+        if(optionalList.isEmpty()) {
+            log.debug("===redis 로 불러온 내역이 없음====");
+
+            // redis에 없는 경우 DB조회
+            Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(chatRoomId);
+            Optional<UserChatRoom> existUserChatRoom = isExistUserChatRoom(userId, chatRoomId);
+
+            if (existUserChatRoom.isEmpty()) {
+                log.debug("userChatRoom 존재하지않음");
+                throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
+            }
+
+            if (existUserChatRoom.isPresent()) {
+                log.debug("userChatroom 존재함");
+                UserChatRoom userChatRoom = existUserChatRoom.get();
+                Long readIndex = userChatRoom.getReadIndex();
+
+                // 20개씩 내역 페이징
+                Pageable pageable = PageRequest.of(0, 20); // 첫 페이지, 최대 20개
+                List<Messages> byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, readIndex, pageable);
+
+                // 메세지가 아예 없는 경우
+                if (byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc.isEmpty()) {
+                    log.debug("채팅방에 아직 메세지 없음");
+                    throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NO_HISTORY_YET);
+                }
+
+                // 메세지가 있는 경우
+                for (Messages msg : byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc) {
+//                    log.debug("messageId: {}", msg.getId());
+//                    log.debug("content: {}", msg.getContent());
+
+                    log.debug("db에서 메세지 불러오기 성공");
+                    Optional<User> optionalUser = userRepository.findById(msg.getSenderId());
+                    String senderImgUrl = null;
+                    if(optionalUser.isPresent()){
+                        senderImgUrl = optionalUser.get().getImageUrl();
+                    }
+
+                    ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
+                            .messageId(msg.getId().toString())
+                            .senderId(msg.getSenderId())
+                            .roomId(msg.getChatRoom().getId().toString())
+                            .content(msg.getContent())
+                            .senderNickname(msg.getSenderNickname())
+                            .timestamp(msg.getCreation_time())
+                            .imgUrl(senderImgUrl)
+                            .build();
+                    chatMessageDTOList.add(chatMessageDTO);
+
+                    // db에서 페이징하는 동시에 레디스에 내역 저장
+                    redisService.saveMessage(chatMessageDTO,43200);
+                    log.debug("db페이징 후 레디스에 내역 저장");
+                }
+            }
+        }
+        // redis 에서 가져온 내역이 있는 경우
+
+        // TODO 갯수 20개 못가져온경우 추가적으로 db 페이징
+
+        return optionalList.get();
+
+    }
 
     // 특정 방에 저장된 메세지 중 가장 마지막 메세지 가져옴
     @Override
@@ -420,6 +513,39 @@ public class ChatServiceImpl implements ChatService{
             return Optional.ofNullable(saved.getId());
         }
         return Optional.empty();
+    }
+
+
+    // redis 에서 메세지 가져오기
+    private Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
+
+        List<ChatMessageDTO> msgList = new ArrayList<>();
+        
+        // user의 readIndex 를 가져와야함
+        Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
+
+        // userChatRoom에서 방의 존재가 확인이 안되는 경우 empty 로 반환
+        if(optionalUserChatRoom.isEmpty()){
+            throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
+        }
+
+        UserChatRoom userChatRoom = optionalUserChatRoom.get();
+        // 특정 유저가 특정 채팅방에 가지고 있는 readIndex
+        Long readIndex = userChatRoom.getReadIndex();
+        log.debug("유저의 ReadIndex:{}",readIndex);
+
+        // redis에서 과거 내역 조회 20개씩
+        List<ChatMessageDTO> messages = redisService.getMessages(chatRoomId, readIndex);
+
+        // redis에서 가져온데이터가 없으면 empty return
+        if(messages.isEmpty()){
+            log.debug("레디스로 가져온 데이터가 없습니다.");
+            return Optional.empty();
+        }
+
+        // redis 로 가져온데이터 반환
+        return Optional.of(messages);
+
     }
 
 
