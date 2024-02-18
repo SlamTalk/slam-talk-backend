@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
+import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
@@ -24,6 +26,20 @@ public class BasketballCourtMapper {
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
                 basketballCourt.getLongitude()
+        );
+    }
+
+    public BasketballCourtReportSummaryDTO toStatusDto(BasketballCourt basketballCourt) {
+        if (basketballCourt == null) {
+            return null;
+        }
+        return new BasketballCourtReportSummaryDTO(
+                basketballCourt.getCourtId(),
+                basketballCourt.getCourtName(),
+                basketballCourt.getAddress(),
+                basketballCourt.getLatitude(),
+                basketballCourt.getLongitude(),
+                basketballCourt.getAdminStatus().name()
         );
     }
 
@@ -55,7 +71,40 @@ public class BasketballCourtMapper {
                 convenienceList,
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
-                basketballCourt.getInformerid()
+                basketballCourt.getInformerId()
+        );
+    }
+
+    public BasketballCourtReportResponseDTO toFullStatusDto(BasketballCourt basketballCourt) {
+        if (basketballCourt == null) {
+            return null;
+        }
+
+        List<String> convenienceList = basketballCourt.getConvenience() != null
+                ? Arrays.asList(basketballCourt.getConvenience().split(","))
+                : Collections.emptyList();
+
+        return new BasketballCourtReportResponseDTO(
+                basketballCourt.getCourtId(),
+                basketballCourt.getCourtName(),
+                basketballCourt.getAddress(),
+                basketballCourt.getLatitude(),
+                basketballCourt.getLongitude(),
+                basketballCourt.getCourtType(),
+                basketballCourt.getIndoorOutdoor(),
+                basketballCourt.getCourtSize(),
+                basketballCourt.getHoopCount(),
+                basketballCourt.getNightLighting(),
+                basketballCourt.getOpeningHours(),
+                basketballCourt.getFee(),
+                basketballCourt.getParkingAvailable(),
+                basketballCourt.getPhoneNum(),
+                basketballCourt.getWebsite(),
+                convenienceList,
+                basketballCourt.getAdditionalInfo(),
+                basketballCourt.getPhotoUrl(),
+                basketballCourt.getInformerId(),
+                basketballCourt.getAdminStatus().name()
         );
     }
 
@@ -83,7 +132,7 @@ public class BasketballCourtMapper {
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(photoUrl)
                 .adminStatus(AdminStatus.STAND) // 대기 상태
-                .informerid(userId)
+                .informerId(userId)
                 .build();
 
     }
