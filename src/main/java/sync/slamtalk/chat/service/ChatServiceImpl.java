@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 
 @Service
 @Slf4j
-@Transactional
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService{
     private final ChatRoomRepository chatRoomRepository;
@@ -45,7 +44,6 @@ public class ChatServiceImpl implements ChatService{
     // 채팅방 생성
     // * 생성시점에 userChatRoom 에 추가됨 *
     @Override
-    @Transactional
     public long createChatRoom(ChatCreateDTO chatCreateDTO) {
         long roomNum = 0L;
         RoomType roomType = RoomType.DIRECT;
