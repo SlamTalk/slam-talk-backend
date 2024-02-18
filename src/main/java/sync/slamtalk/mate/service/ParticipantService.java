@@ -123,14 +123,6 @@ public class ParticipantService {
     }
 
 
-
-
-    // 참여자가 취소를 선택했을 때
-    // 접속자 ID와 해당 신청자 ID가 일치하는지 확인한다.
-    // 참여자 목록의 해당 정보를 CANCEL로 변경한다.(연관관계는 그대로, softDelete는 false)
-    // 참여자가 취소를 선택했을 때 참여자 목록에서 삭제하는 것이 아니라 취소 상태로 변경하는 이유는 완전히 삭제되지 않는다면 연결된 정보는 남겨놔야 할거 같아서
-    // 취소를 눌러도 포지션별 인원의 변동은 없다.
-    // todo : 현재 참여자 목록에서 완전히 삭제 하지 않았지만 재신청이 가능하다면 참여자 목록에서 삭제(hard delete)하는 것이 맞다고 생각한다.
     public ApiResponse cancelParticipant(long matePostId, long participantTableId, long writerId){
         Participant participant = participantRepository.findById(participantTableId).orElseThrow(()->new BaseException(PARTICIPANT_NOT_FOUND));
 
@@ -142,10 +134,8 @@ public class ParticipantService {
 
         if(matePost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             if(participant.getApplyStatus() == ApplyStatusType.WAITING){
-                participant.updateApplyStatus(ApplyStatusType.CANCELED);
-            }else if(participant.getApplyStatus() == ApplyStatusType.ACCEPTED){ // 이미 수락된 참여자가 취소할 경우 해당 포지션의 모집 인원 수를 감소 시킵니다.
-                matePost.reducePositionNumbers(participant.getPosition());
-                participant.updateApplyStatus(ApplyStatusType.CANCELED);
+                participant.disconnectParent();
+                participantRepository.delete(participant);
             }else{
                 throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
             }
