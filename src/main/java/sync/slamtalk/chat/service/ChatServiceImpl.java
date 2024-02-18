@@ -319,6 +319,7 @@ public class ChatServiceImpl implements ChatService{
 
      */
     @Override
+    @Transactional
     public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
