@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
@@ -144,7 +143,6 @@ public class ChatServiceImpl implements ChatService{
 
     // 채팅방에 메세지 저장(STOMP: SEND)
     @Override
-    @Transactional
     public void saveMessage(ChatMessageDTO chatMessageDTO) {
         long chatRoomId = Long.parseLong(chatMessageDTO.getRoomId());
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
@@ -418,7 +416,6 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정방을 나갈 때 userChatRoom softDelete
     @Override
-    @Transactional
     public Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId) {
         Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
 
