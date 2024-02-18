@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
@@ -316,11 +317,8 @@ public class ChatServiceImpl implements ChatService{
 
 
     // 과거 메세지 추가 요청
-    /*
-
-     */
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
@@ -398,6 +396,24 @@ public class ChatServiceImpl implements ChatService{
             // 20 개 - redis 로 가져온 내역 갯수 = 추가 내역 페이징
             Pageable pageable = PageRequest.of(0, more); // 첫 페이지, 최대 20개
             List<Messages> messagesList = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, Long.parseLong(messageId), pageable);
+            for(Messages m : messagesList){
+                Optional<User> optionalUser = userRepository.findById(m.getSenderId());
+                String imgUrl = null;
+                if(optionalUser.isPresent()){
+                    imgUrl = optionalUser.get().getImageUrl();
+                }
+
+                ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
+                        .messageId(m.getId().toString())
+                        .senderId(m.getSenderId())
+                        .roomId(m.getChatRoom().getId().toString())
+                        .content(m.getContent())
+                        .senderNickname(m.getSenderNickname())
+                        .timestamp(m.getCreation_time())
+                        .imgUrl(imgUrl)
+                        .build();
+                optionalList.get().add(chatMessageDTO);
+            }
         }
 
         return optionalList.get();
@@ -524,7 +540,7 @@ public class ChatServiceImpl implements ChatService{
 
 
     // redis 에서 메세지 가져오기
-    @Transactional
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     @Override
     public Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
 
