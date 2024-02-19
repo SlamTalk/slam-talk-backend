@@ -91,8 +91,8 @@ public class ChatController {
             description = "이 기능은 과거 마지막으로 읽은 메세지 전의 메세지를 보내주는 기능입니다.",
             tags = {"채팅"}
     )
-    public ApiResponse history(@Param("roomId")Long roomId,@AuthenticationPrincipal Long userId){
-        List<ChatMessageDTO> previousChatMessages = chatService.getPreviousChatMessages(userId, roomId);
+    public ApiResponse history(@Param("roomId")Long roomId, @AuthenticationPrincipal Long userId,@Param("count") int count){
+        List<ChatMessageDTO> previousChatMessages = chatService.getPreviousChatMessages(userId, roomId,count);
         if (previousChatMessages == null) {
             log.debug("컨트롤러에서 가져온 메세지가 없습니다");
             previousChatMessages = new ArrayList<>(); // 빈 리스트로 초기화

@@ -149,8 +149,7 @@ public class ChatServiceImpl implements ChatService{
         long chatRoomId = Long.parseLong(chatMessageDTO.getRoomId());
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if(chatRoom.isPresent()){ // chatRoom 이 존재하면
-            // redis 먼저 저장
-            redisService.saveMessage(chatMessageDTO,42300);
+
             ChatRoom Room = chatRoom.get();
 
             // messages 저장
@@ -163,6 +162,12 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
+
+            chatMessageDTO.setMessageId(messages.getId().toString());
+
+            // redis 먼저 저장
+            redisService.saveMessage(chatMessageDTO,43200);
+
         }else{
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
@@ -320,12 +325,12 @@ public class ChatServiceImpl implements ChatService{
     // 과거 메세지 추가 요청
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId) {
+    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId,int count) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
 
         // 추가로 가져올 메세지 갯수
-        int needCnt = 20;
+        int needCnt = 20 * count;
 
         // redis 먼저 조회
         Optional<List<ChatMessageDTO>> optionalList = redisFirstDataBaseLater(userId, chatRoomId, needCnt);
@@ -347,6 +352,7 @@ public class ChatServiceImpl implements ChatService{
                 log.debug("userChatroom 존재함");
                 UserChatRoom userChatRoom = existUserChatRoom.get();
                 Long readIndex = userChatRoom.getReadIndex();
+                log.debug("=== readIndex : {}",readIndex);
 
                 // 20개씩 내역 페이징
                 Pageable pageable = PageRequest.of(0, 20); // 첫 페이지, 최대 20개
