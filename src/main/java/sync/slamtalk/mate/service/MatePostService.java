@@ -301,7 +301,7 @@ public class MatePostService {
     public MyMateListRes getMyMateList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
-        List<MatePost> allByWriter = matePostRepository.findAllByWriter(user);
+        List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
         List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
