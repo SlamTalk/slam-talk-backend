@@ -24,7 +24,6 @@ public class CommunityMapper {
                 .category(requestDTO.getCategory())
                 .build();
 
-
         return community;
     }
 
