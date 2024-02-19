@@ -19,6 +19,7 @@ public class CommunityResponseDTO {
     private String title;
     private String content;
     private String userNickname;
+    private Long userId;
     private CommunityCategory category;
     private List<String> imageUrls;
     private LocalDateTime updatedAt;
