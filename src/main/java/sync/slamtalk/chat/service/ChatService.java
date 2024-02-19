@@ -40,7 +40,7 @@ public interface ChatService {
     List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId);
 
 
-    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId);
+    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId,int count);
 
 
     // 사용자 채팅리스트 가져오기
