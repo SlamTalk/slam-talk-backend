@@ -23,4 +23,5 @@ public class CommunityResponseDTO {
     private CommunityCategory category;
     private List<String> imageUrls;
     private LocalDateTime updatedAt;
+    private List<CommentResponseDTO> comments;
 }

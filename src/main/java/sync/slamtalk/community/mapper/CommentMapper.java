@@ -1,11 +1,13 @@
 package sync.slamtalk.community.mapper;
 
+import org.springframework.stereotype.Component;
 import sync.slamtalk.community.dto.CommentCreateRequestDTO;
 import sync.slamtalk.community.dto.CommentResponseDTO;
 import sync.slamtalk.community.entity.Comment;
 import sync.slamtalk.community.entity.Community;
 import sync.slamtalk.user.entity.User;
 
+@Component
 public class CommentMapper {
 
     // CommunityComment 엔티티를 CommunityCommentDto로 변환
