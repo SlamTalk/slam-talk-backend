@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
+import sync.slamtalk.community.repository.CommunityRepository;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.mate.dto.MatePostToDto;
@@ -49,6 +50,7 @@ public class UserService {
     private final TeamMatchingRepository teamMatchingRepository;
     private final MatePostRepository matePostRepository;
     private final BasketballCourtRepository basketballCourtRepository;
+    private final CommunityRepository communityRepository;
     private final AwsS3RepositoryImpl awsS3Service;
     private final EntityToDtoMapper entityToDtoMapper;
 
@@ -105,14 +107,16 @@ public class UserService {
      */
     private Result getResult(Long userId, User user) {
         // 레벨 score 계산하기
-        long levelScore = 0L;
+        // 유저 초기값 Level1로 설정
+        long levelScore = UserLevelScore.LEVEL_THRESHOLD;
         long mateCount = getMateCount(userId, user);
         long teamCount = getTeamCount(userId, user);
         // user 출석개수 반환
         long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
                 .orElse(0L);
         long userReportCount = basketballCourtRepository.countBasketballCourtByAdminStatusEqualsAndInformerId(AdminStatus.ACCEPT, userId);
-
+        // 게시글 작성 개수 count
+        levelScore += communityRepository.countAllByUserAndIsDeletedFalse(user) * UserLevelScore.COMMUNITY_SCORE;
         // Mate 게시판 상태가 Complete
         levelScore += mateCount * UserLevelScore.MATE_LEVEL_SCORE;
         // teamMatching 게시판 상태가 Complete
@@ -287,7 +291,7 @@ public class UserService {
      * @return List<ToTeamFormDTO> : 팀 스케줄 리스트
      * */
     private List<ToTeamFormDTO> getMyTeamMatchingScheduleList(User user) {
-        List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriter(user);
+        List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(user.getId());
 
         List<ToTeamFormDTO> authoredPost = allByWriter.stream()
@@ -342,7 +346,7 @@ public class UserService {
      * @return List<MatePostToDto> : 메이트 스케줄 리스트
      * */
     private List<MatePostToDto> getMyMateScheduleList(User user) {
-        List<MatePost> allByWriter = matePostRepository.findAllByWriter(user);
+        List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(user.getId());
 
         List<MatePostToDto> authoredPost = allByWriter.stream()
