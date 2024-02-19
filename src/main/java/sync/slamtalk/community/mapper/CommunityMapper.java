@@ -40,6 +40,7 @@ public class CommunityMapper {
                 .communityId(community.getCommunityId())
                 .title(community.getTitle())
                 .userNickname(community.getUser().getNickname())
+                .userId(community.getUser().getId())
                 .content(community.getContent())
                 .category(community.getCategory())
                 .imageUrls(imageUrls)
@@ -55,6 +56,7 @@ public class CommunityMapper {
                         .title(community.getTitle())
                         .category(community.getCategory())
                         .userNickname(community.getUser().getNickname())
+                        .userId(community.getUser().getId())
                         .build())
                 .collect(Collectors.toList());
     }
