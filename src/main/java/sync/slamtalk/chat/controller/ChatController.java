@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
-import sync.slamtalk.chat.dto.Request.ChatPreviousDTO;
 import sync.slamtalk.chat.dto.Response.ChatRoomDTO;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.service.ChatServiceImpl;
@@ -93,8 +92,6 @@ public class ChatController {
             tags = {"채팅"}
     )
     public ApiResponse history(@Param("roomId")Long roomId, @AuthenticationPrincipal Long userId,@Param("count") int count){
-        //int count = chatPreviousDTO.getCount();
-
         List<ChatMessageDTO> previousChatMessages = chatService.getPreviousChatMessages(userId, roomId,count);
         if (previousChatMessages == null) {
             log.debug("컨트롤러에서 가져온 메세지가 없습니다");
