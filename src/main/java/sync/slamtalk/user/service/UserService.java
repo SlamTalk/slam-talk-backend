@@ -244,7 +244,10 @@ public class UserService {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        log.debug("[유저 마이페이지 수정] 닉네임 : ", updateUserDetailInfoReq.getNickname());
+        log.debug("[유저 마이페이지 수정] 닉네임 = {} ", updateUserDetailInfoReq.getNickname());
+        log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
+        log.debug("[유저 마이페이지 수정] 자기소개 = {} ", updateUserDetailInfoReq.getSelfIntroduction());
+        log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
 
         // 닉네임 검증
         if (!user.getNickname().equals(updateUserDetailInfoReq.getNickname()) && updateUserDetailInfoReq.getNickname() != null) {
