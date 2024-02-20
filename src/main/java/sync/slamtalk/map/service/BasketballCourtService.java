@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
+import sync.slamtalk.map.dto.BasketballCourtFullResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
-import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
@@ -30,9 +30,9 @@ public class BasketballCourtService {
     }
 
     //특정 농구장 전체 정보
-    public BasketballCourtResponseDTO getCourtFullInfoById(Long courtId) {
+    public BasketballCourtFullResponseDTO getCourtFullInfoById(Long courtId) {
         return basketballCourtRepository.findByCourtIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
-                .map(basketballCourtMapper::toFullDto)
+                .map(basketballCourtMapper::toFullChatDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
 

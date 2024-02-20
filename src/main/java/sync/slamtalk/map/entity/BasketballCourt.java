@@ -156,4 +156,9 @@ public class BasketballCourt extends BaseEntity {
         this.adminStatus = adminStatus;
     }
 
+    // 채팅방 업데이트
+    public void updateChatroom(ChatRoom chatroom) {
+        this.chatroom = chatroom;
+    }
+
 }
