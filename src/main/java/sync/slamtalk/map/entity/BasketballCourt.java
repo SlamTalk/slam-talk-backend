@@ -60,16 +60,20 @@ public class BasketballCourt extends BaseEntity {
     private Integer hoopCount; // 골대 수
 
     @Column(name = "night_lighting")
-    private Boolean nightLighting; // 야간 조명 유무
+    @Enumerated(EnumType.STRING)
+    private NightLighting nightLighting; // 야간 조명 유무
 
     @Column(name = "opening_hours", length = 50)
-    private Boolean openingHours; // 개방 시간
+    @Enumerated(EnumType.STRING)
+    private OpeningHours openingHours; // 개방 시간
 
     @Column(name = "fee", length = 100)
-    private Boolean fee; // 사용료
+    @Enumerated(EnumType.STRING)
+    private Fee fee; // 사용료
 
     @Column(name = "parking_available")
-    private Boolean parkingAvailable; // 주차 가능 여부
+    @Enumerated(EnumType.STRING)
+    private ParkingAvailable parkingAvailable; // 주차 가능 여부
 
     @Column(name = "phone_num", length = 20)
     private String phoneNum; // 전화번호
@@ -115,19 +119,19 @@ public class BasketballCourt extends BaseEntity {
         this.hoopCount = hoopCount;
     }
     //야간 조명 유무 업데이트
-    public void updateNightLighting(Boolean nightLighting) {
+    public void updateNightLighting(NightLighting nightLighting) {
         this.nightLighting = nightLighting;
     }
     //영업시간 업데이트
-    public void updateOpeningHours(Boolean openingHours) {
+    public void updateOpeningHours(OpeningHours openingHours) {
         this.openingHours = openingHours;
     }
     //입장료 업데이트
-    public void updateFee(Boolean fee) {
+    public void updateFee(Fee fee) {
         this.fee = fee;
     }
     //주차 가능 유무 업데이트
-    public void updateParkingAvailable(Boolean parkingAvailable) {
+    public void updateParkingAvailable(ParkingAvailable parkingAvailable) {
         this.parkingAvailable = parkingAvailable;
     }
     //전화번호 업데이트
