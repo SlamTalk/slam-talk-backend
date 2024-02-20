@@ -84,7 +84,7 @@ public class ChatController {
     }
 
 
-    // 채팅방에서 내역 추가 요청 할 때
+    // 과거 내역 추가 요청
     @PostMapping("/api/chat/history")
     @Operation(
             summary = "과거 내역 조회",
@@ -94,7 +94,7 @@ public class ChatController {
     public ApiResponse history(@Param("roomId")Long roomId, @AuthenticationPrincipal Long userId,@Param("count") int count){
         List<ChatMessageDTO> previousChatMessages = chatService.getPreviousChatMessages(userId, roomId,count);
         if (previousChatMessages == null) {
-            log.debug("컨트롤러에서 가져온 메세지가 없습니다");
+            log.debug("과거 메세지가 없습니다");
             previousChatMessages = new ArrayList<>(); // 빈 리스트로 초기화
         }
         return ApiResponse.ok(previousChatMessages);
