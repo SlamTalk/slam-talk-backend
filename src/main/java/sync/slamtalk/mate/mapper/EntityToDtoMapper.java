@@ -129,19 +129,19 @@ public class EntityToDtoMapper {
     public MatePostToDto fromUnrefinedToMatePostDto(UnrefinedMatePostDto dto){
         List<PositionListDto> positionList = new ArrayList<>();
 
-        if(dto.getMaxParticipantsCenters() > 0){
+        if(dto.getMaxParticipantsCenters() > 0 || dto.getCurrentParticipantsCenters() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), dto.getMaxParticipantsCenters(), dto.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsForwards() > 0){
+        if(dto.getMaxParticipantsForwards() > 0 || dto.getCurrentParticipantsForwards() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), dto.getMaxParticipantsForwards(), dto.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsGuards() > 0){
+        if(dto.getMaxParticipantsGuards() > 0 || dto.getCurrentParticipantsGuards() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), dto.getMaxParticipantsGuards(), dto.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsOthers() > 0){
+        if(dto.getMaxParticipantsOthers() > 0 || dto.getCurrentParticipantsOthers() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), dto.getMaxParticipantsOthers(), dto.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
