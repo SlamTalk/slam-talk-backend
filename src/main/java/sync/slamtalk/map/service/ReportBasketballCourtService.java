@@ -14,6 +14,10 @@
     import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
     import sync.slamtalk.map.entity.AdminStatus;
     import sync.slamtalk.map.entity.BasketballCourt;
+    import sync.slamtalk.map.entity.Fee;
+    import sync.slamtalk.map.entity.NightLighting;
+    import sync.slamtalk.map.entity.OpeningHours;
+    import sync.slamtalk.map.entity.ParkingAvailable;
     import sync.slamtalk.map.mapper.BasketballCourtMapper;
     import sync.slamtalk.map.repository.BasketballCourtRepository;
     import sync.slamtalk.user.UserRepository;
@@ -104,16 +108,20 @@
                 court.updateHoopCount(requestDTO.getHoopCount());
             }
             if (requestDTO.getNightLighting() != null) {
-                court.updateNightLighting(requestDTO.getNightLighting());
+                NightLighting nightLighting = NightLighting.fromString(requestDTO.getNightLighting());
+                court.updateNightLighting(nightLighting);
             }
             if (requestDTO.getOpeningHours() != null) {
-                court.updateOpeningHours(requestDTO.getOpeningHours());
+                OpeningHours openingHours = OpeningHours.fromString(requestDTO.getOpeningHours());
+                court.updateOpeningHours(openingHours);
             }
             if (requestDTO.getFee() != null) {
-                court.updateFee(requestDTO.getFee());
+                Fee fee = Fee.fromString(requestDTO.getFee());
+                court.updateFee(fee);
             }
             if (requestDTO.getParkingAvailable() != null) {
-                court.updateParkingAvailable(requestDTO.getParkingAvailable());
+                ParkingAvailable parkingAvailable = ParkingAvailable.fromString(requestDTO.getParkingAvailable());
+                court.updateParkingAvailable(parkingAvailable);
             }
             if (requestDTO.getPhoneNum() != null) {
                 court.updatePhoneNum(requestDTO.getPhoneNum());
@@ -146,16 +154,20 @@
                 court.updateHoopCount(basketballCourtAdminRequestDTO.getHoopCount());
             }
             if (basketballCourtAdminRequestDTO.getNightLighting() != null) {
-                court.updateNightLighting(basketballCourtAdminRequestDTO.getNightLighting());
+                NightLighting nightLighting = NightLighting.fromString(basketballCourtAdminRequestDTO.getNightLighting());
+                court.updateNightLighting(nightLighting);
             }
             if (basketballCourtAdminRequestDTO.getOpeningHours() != null) {
-                court.updateOpeningHours(basketballCourtAdminRequestDTO.getOpeningHours());
+                OpeningHours openingHours = OpeningHours.fromString(basketballCourtAdminRequestDTO.getOpeningHours());
+                court.updateOpeningHours(openingHours);
             }
             if (basketballCourtAdminRequestDTO.getFee() != null) {
-                court.updateFee(basketballCourtAdminRequestDTO.getFee());
+                Fee fee = Fee.fromString(basketballCourtAdminRequestDTO.getFee());
+                court.updateFee(fee);
             }
             if (basketballCourtAdminRequestDTO.getParkingAvailable() != null) {
-                court.updateParkingAvailable(basketballCourtAdminRequestDTO.getParkingAvailable());
+                ParkingAvailable parkingAvailable = ParkingAvailable.fromString(basketballCourtAdminRequestDTO.getParkingAvailable());
+                court.updateParkingAvailable(parkingAvailable);
             }
             if (basketballCourtAdminRequestDTO.getPhoneNum() != null) {
                 court.updatePhoneNum(basketballCourtAdminRequestDTO.getPhoneNum());
