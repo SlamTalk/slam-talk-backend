@@ -52,7 +52,7 @@ public class UserController {
      *
      * @return UserDetailsInfoResponseDto 객체가 반환(개인정보 있는 버전, 없는 버전)
      * */
-    @GetMapping("/user/{userId}/other-info")
+    @GetMapping("/user/other-info/{userId}")
     @Operation(
             summary = "다른 유저 상세 정보 조회 api",
             description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다",
