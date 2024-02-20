@@ -1,8 +1,7 @@
-package sync.slamtalk.mate.dto;
+package sync.slamtalk.mate.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;
-import sync.slamtalk.mate.entity.MatePost;
 
 import java.util.List;
 
@@ -10,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MatePostListDTO {
+public class MatePostListDto {
     private List<MatePostToDto> matePostList;
     private String nextCursor;
 }

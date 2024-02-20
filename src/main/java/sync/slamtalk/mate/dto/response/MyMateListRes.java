@@ -2,7 +2,6 @@ package sync.slamtalk.mate.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import sync.slamtalk.mate.dto.MatePostToDto;
 
 import java.util.List;
 

@@ -1,6 +1,7 @@
 package sync.slamtalk.mate.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -9,13 +10,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.mate.dto.MateFormDTO;
-import sync.slamtalk.mate.dto.MatePostListDTO;
+import sync.slamtalk.mate.dto.response.MatePostListDto;
 import sync.slamtalk.mate.dto.MateSearchCondition;
+import sync.slamtalk.mate.dto.request.MatePostReq;
+import sync.slamtalk.mate.dto.response.MatePostRes;
 import sync.slamtalk.mate.dto.response.MyMateListRes;
+import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -31,9 +35,9 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PostMapping("/register")
-    public ResponseEntity registerMatePost(@RequestBody MateFormDTO mateFormDTO, @AuthenticationPrincipal Long id){
+    public ResponseEntity registerMatePost(@Valid @RequestBody MatePostReq matePostReq, @AuthenticationPrincipal Long id){
 
-        long matePostId = matePostService.registerMatePost(mateFormDTO, id);
+        long matePostId = matePostService.registerMatePost(matePostReq, id);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("/api/mate/read/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
@@ -45,8 +49,8 @@ public class MatePostController {
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/read/{matePostId}")
-    public ApiResponse<MateFormDTO> getMatePost(@PathVariable("matePostId") long matePostId){
-        MateFormDTO dto = matePostService.getMatePost(matePostId);
+    public ApiResponse<MatePostRes> getMatePost(@PathVariable("matePostId") long matePostId){
+        MatePostRes dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
     }
 
@@ -56,13 +60,13 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> updateMatePost(@PathVariable("matePostId") long matePostId, @RequestBody MateFormDTO mateFormDTO,
+    public ApiResponse updateMatePost(@PathVariable("matePostId") long matePostId, @Valid @RequestBody MatePostReq matePostReq,
                                                    @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
 
         // * MatePost를 저장한다.
-        matePostService.updateMatePost(matePostId, mateFormDTO, userId);
+        matePostService.updateMatePost(matePostId, matePostReq, userId);
 
         return ApiResponse.ok();
     }
@@ -73,7 +77,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @DeleteMapping("/{matePostId}")
-    public ApiResponse<MateFormDTO> deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+    public ApiResponse deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
 
@@ -92,9 +96,9 @@ public class MatePostController {
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/list")
-    public ApiResponse<MatePostListDTO> getMatePostList(MateSearchCondition condition){
+    public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition){
 
-        MatePostListDTO resultDto = matePostService.getMatePostsByCurser(condition);
+        MatePostListDto resultDto = matePostService.getMatePostsByCurser(condition);
 
         return ApiResponse.ok(resultDto);
     }
@@ -106,8 +110,8 @@ public class MatePostController {
     )
     @PatchMapping("/{matePostId}/complete")
     public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
-        matePostService.completeRecruitment(matePostId, id);
-        return ApiResponse.ok();
+        List<ParticipantDto> listDto = matePostService.completeRecruitment(matePostId, id);
+        return ApiResponse.ok(listDto);
     }
 
     @Operation(

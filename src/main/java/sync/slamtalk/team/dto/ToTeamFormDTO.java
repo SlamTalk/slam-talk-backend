@@ -66,7 +66,6 @@ public class ToTeamFormDTO {
     private LocalTime endTime;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
 
     @NonNull

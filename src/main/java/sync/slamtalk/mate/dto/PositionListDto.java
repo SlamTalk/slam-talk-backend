@@ -1,15 +1,12 @@
 package sync.slamtalk.mate.dto;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import sync.slamtalk.mate.entity.PositionType;
 
 @Getter
 @Setter
-public class PositionListDTO {
+public class PositionListDto {
     @NonNull
     String position;
     @NonNull
@@ -17,7 +14,7 @@ public class PositionListDTO {
     @NonNull
     int currentPosition;
 
-    public PositionListDTO(String position, int maxPosition, int currentPosition) {
+    public PositionListDto(String position, int maxPosition, int currentPosition) {
         this.position = position;
         this.maxPosition = maxPosition;
         this.currentPosition = currentPosition;

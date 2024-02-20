@@ -67,7 +67,7 @@ public class TeamMatchingController {
             tags = {"팀 매칭"}
     )
     @PatchMapping("/{teamMatchingId}")
-    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @RequestBody FromTeamFormDTO fromTeamFormDTO,
+    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @Valid @RequestBody FromTeamFormDTO fromTeamFormDTO,
                                               @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         Long userId = id;
@@ -100,24 +100,11 @@ public class TeamMatchingController {
             tags = {"팀 매칭","게스트"}
     )
     @GetMapping("/list")
-    public ApiResponse getTeamMatchingList(@RequestParam(name="cursor", required = false) Optional<String> cursor, @RequestParam(name="limit", required = false) Optional<Integer> limit){
-        List<ToTeamFormDTO> dtoList;
-        String cursorTime = cursor.orElse(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")));
-        int limitNumber = 10;
-        if(limit.isPresent()){
-            limitNumber = limit.get();
-        }
-        dtoList = teamMatchingService.getTeamMatchingList(limitNumber, cursorTime);
-        ToTeamMatchingListDto resultDto = new ToTeamMatchingListDto();
-        if(dtoList.size() == 0){
-            return ApiResponse.ok(resultDto);
-        }else if(dtoList.size() < limitNumber) {
-            resultDto.setCursor(null);
-        }else{
-            resultDto.setCursor(dtoList.get(dtoList.size() - 1).getCreatedAt());
-        }
-        resultDto.setTeamMatchingList(dtoList);
-        return ApiResponse.ok(resultDto);
+    public ApiResponse getTeamMatchingList(TeamSearchCondition condition){
+
+        ToTeamMatchingListDto dtoList = teamMatchingService.getTeamMatchingList(condition);
+
+        return ApiResponse.ok(dtoList);
     }
 
     @Operation(

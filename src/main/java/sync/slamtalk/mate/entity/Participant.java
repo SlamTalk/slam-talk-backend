@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
-import sync.slamtalk.mate.dto.PositionListDTO;
+import sync.slamtalk.mate.dto.PositionListDto;
 
 import java.util.List;
 import java.util.Objects;
@@ -42,14 +42,14 @@ public class Participant extends BaseEntity {
     public Participant() {
     }
 
-    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
+    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel, MatePost post) {
 
         this.participantId = participantId;
         this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;
-        this.matePost = null;
+        this.connectParent(post);
     }
 
     public ApplyStatusType updateApplyStatus(ApplyStatusType applyStatus) {
@@ -58,7 +58,6 @@ public class Participant extends BaseEntity {
     }
 
     public boolean softDeleteParticipant() {
-        this.applyStatus = ApplyStatusType.CANCELED;
         this.delete();
         return true;
     }
@@ -80,8 +79,7 @@ public class Participant extends BaseEntity {
         return true;
     }
 
-    // todo : 테스트 용이성을 위해 임시로 주석 처리
-    public boolean checkCapabilities(List<PositionListDTO> requiredPosition, List<String> requiredSkillLevel) {
+    public boolean checkCapabilities(List<PositionListDto> requiredPosition, List<String> requiredSkillLevel) {
 //        if(requiredSkillLevel.contains(this.skillLevel.getLevel()) == false){
 //            return false;
 //        }
