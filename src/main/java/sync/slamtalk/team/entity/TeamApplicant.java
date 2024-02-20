@@ -32,6 +32,7 @@ public class TeamApplicant extends BaseEntity {
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED
+    private Long chatroomId;
     @Enumerated(EnumType.STRING)
     private SkillLevelType skillLevel;
 
