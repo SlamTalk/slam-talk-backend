@@ -28,6 +28,8 @@ import sync.slamtalk.user.dto.response.UserDetailsOtherInfo;
 import sync.slamtalk.user.dto.response.UserSchedule;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserAttendance;
+import sync.slamtalk.user.entity.UserBasketballPositionType;
+import sync.slamtalk.user.entity.UserBasketballSkillLevelType;
 import sync.slamtalk.user.error.UserErrorResponseCode;
 import sync.slamtalk.user.repository.UserAttendanceRepository;
 import sync.slamtalk.user.utils.UserLevelScore;
@@ -255,17 +257,20 @@ public class UserService {
         }
 
         // 자기 소개 한마디이 null이 아니라면 값 update 하기
-        if (!user.getSelfIntroduction().equals(updateUserDetailInfoReq.getSelfIntroduction()) && updateUserDetailInfoReq.getSelfIntroduction() != null) {
-            user.updateSelfIntroduction(updateUserDetailInfoReq.getSelfIntroduction());
+        String newIntroduction = updateUserDetailInfoReq.getSelfIntroduction();
+        if (newIntroduction != null && !newIntroduction.equals(user.getSelfIntroduction())) {
+            user.updateSelfIntroduction(newIntroduction);
         }
 
         // 유저 포지션가 null이 아니라면 값 update 하기
-        if (!user.getBasketballPosition().equals(updateUserDetailInfoReq.getBasketballPosition()) && updateUserDetailInfoReq.getBasketballPosition() != null) {
+        UserBasketballPositionType newBasketballPosition = updateUserDetailInfoReq.getBasketballPosition();
+        if (newBasketballPosition != null && !newBasketballPosition.equals(user.getBasketballPosition())) {
             user.updatePosition(updateUserDetailInfoReq.getBasketballPosition());
         }
 
         // 유저 스킬 레벨 업데이트가 null이 아니라면 update 하기
-        if (!user.getBasketballSkillLevel().equals(updateUserDetailInfoReq.getBasketballSkillLevel()) && updateUserDetailInfoReq.getBasketballSkillLevel() != null) {
+        UserBasketballSkillLevelType newBasketballSkillLevel = updateUserDetailInfoReq.getBasketballSkillLevel();
+        if (newBasketballSkillLevel != null && !newBasketballSkillLevel.equals(user.getBasketballSkillLevel())) {
             user.updateBasketballSkillLevel(updateUserDetailInfoReq.getBasketballSkillLevel());
         }
     }
