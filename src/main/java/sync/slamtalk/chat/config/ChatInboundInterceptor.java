@@ -95,6 +95,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(roomId);
             if(chatRoomOptional.isPresent()){
                 ChatRoom chatRoom = chatRoomOptional.get();
+                // BasketBallChatRoom 은 구독했을 때 유저의 채팅리스트에 추가됨
                 if(chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
                     // userchatroom 에 넣어주기
                     Optional<Long> optionaladdedResult = addUserChatRoom(headerAccessor);
@@ -103,28 +104,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     }
                 }
             }
-
-
-            // 처음방문했을 때 메세지
-            String customMessageContent = null;
-
-            Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
-            if(optionalUserChatRoom.isPresent()){
-                UserChatRoom userChatRoom = optionalUserChatRoom.get();
-                if(userChatRoom.getIsFirst().equals(true)){
-//                    // 처음 방문했으면 처음방문메세지 전송
-//                    String nickname = userChatRoom.getUser().getNickname();
-//                    userChatRoom.updateIsFirst(false); // 방문체크
-//                    customMessageContent = nickname + " 님이 입장하셨습니다.";
-//                    byte[] payload = customMessageContent.getBytes(StandardCharsets.UTF_8);
-//                    log.debug("payload:{}",payload);
-//                    return MessageBuilder.withPayload(payload).copyHeadersIfAbsent(message.getHeaders()).build();
-                }
-            }
-            if(optionalUserChatRoom.isEmpty()){
-                throw new RuntimeException("Auth");
-            }
-
             log.debug("==SUBSCRIBE STEP3==");
         }
 
