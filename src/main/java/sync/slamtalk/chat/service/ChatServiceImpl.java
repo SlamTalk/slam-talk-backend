@@ -527,6 +527,7 @@ public class ChatServiceImpl implements ChatService{
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .user(user)
                     .roomType(chatRoom.getRoomType())
+                    .BasketBallId(chatRoom.getBasketBallId())
                     .name(chatRoom.getName())
                     .chat(chatRoom)
                     .isFirst(true) // 방문 초기화
@@ -577,7 +578,6 @@ public class ChatServiceImpl implements ChatService{
 
         // redis 로 가져온데이터 반환
         return Optional.of(messages);
-
     }
 
 
