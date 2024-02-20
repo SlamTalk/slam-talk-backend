@@ -134,7 +134,7 @@ public class UserController {
      * @param file 파일 크기 1MB
      * @param updateUserDetailInfoReq 유저 프로필 업데이트 DTO
      * */
-    @PatchMapping("/user/update")
+    @PostMapping("/user/update")
     @Operation(
             summary = "마이페이지 수정 api",
             description = "마이페이지 수정할 때 닉네임, 프로필, 한마디, 포지션, 농구실력 을 수정 가능합니다. " +
