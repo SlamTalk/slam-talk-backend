@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
@@ -32,7 +33,6 @@ import java.util.stream.Stream;
 
 @Service
 @Slf4j
-@Transactional
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService{
     private final ChatRoomRepository chatRoomRepository;
@@ -45,7 +45,6 @@ public class ChatServiceImpl implements ChatService{
     // 채팅방 생성
     // * 생성시점에 userChatRoom 에 추가됨 *
     @Override
-    @Transactional
     public long createChatRoom(ChatCreateDTO chatCreateDTO) {
         long roomNum = 0L;
         RoomType roomType = RoomType.DIRECT;
@@ -146,12 +145,14 @@ public class ChatServiceImpl implements ChatService{
 
     // 채팅방에 메세지 저장(STOMP: SEND)
     @Override
-    @Transactional
     public void saveMessage(ChatMessageDTO chatMessageDTO) {
         long chatRoomId = Long.parseLong(chatMessageDTO.getRoomId());
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
         if(chatRoom.isPresent()){ // chatRoom 이 존재하면
+
             ChatRoom Room = chatRoom.get();
+
+            // messages 저장
             // Message create
             Messages messages = Messages.builder()
                     .chatRoom(Room)
@@ -161,8 +162,12 @@ public class ChatServiceImpl implements ChatService{
                     .creation_time(chatMessageDTO.getTimestamp().toString())
                     .build();
             messagesRepository.save(messages);
-//            // redis 에도 저장..?
-//            redisService.saveMessage(chatMessageDTO,42300);
+
+            chatMessageDTO.setMessageId(messages.getId().toString());
+
+            // redis 먼저 저장
+            redisService.saveMessage(chatMessageDTO,43200);
+
         }else{
             throw new BaseException(ErrorResponseCode.CHAT_FAIL);
         }
@@ -277,6 +282,7 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     @Override
+    @Transactional
     public List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId) {
         List<ChatMessageDTO> ansList = new ArrayList<>();
 
@@ -317,16 +323,14 @@ public class ChatServiceImpl implements ChatService{
 
 
     // 과거 메세지 추가 요청
-    /*
-
-     */
     @Override
-    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId) {
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId,int count) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
 
         // 추가로 가져올 메세지 갯수
-        int needCnt = 20;
+        int needCnt = 20 * count;
 
         // redis 먼저 조회
         Optional<List<ChatMessageDTO>> optionalList = redisFirstDataBaseLater(userId, chatRoomId, needCnt);
@@ -348,6 +352,7 @@ public class ChatServiceImpl implements ChatService{
                 log.debug("userChatroom 존재함");
                 UserChatRoom userChatRoom = existUserChatRoom.get();
                 Long readIndex = userChatRoom.getReadIndex();
+                log.debug("=== readIndex : {}",readIndex);
 
                 // 20개씩 내역 페이징
                 Pageable pageable = PageRequest.of(0, 20); // 첫 페이지, 최대 20개
@@ -391,9 +396,34 @@ public class ChatServiceImpl implements ChatService{
         // redis 에서 가져온 내역이 있는 경우
 
         // TODO 갯수 20개 못가져온경우 추가적으로 db 페이징
+        List<ChatMessageDTO> chatMessageDTOS = optionalList.get();
+        String messageId = chatMessageDTOS.get(chatMessageDTOS.size() - 1).getMessageId();
+        if(chatMessageDTOS.size()<needCnt){
+            int more = needCnt - chatMessageDTOS.size();
+            // 20 개 - redis 로 가져온 내역 갯수 = 추가 내역 페이징
+            Pageable pageable = PageRequest.of(0, more); // 첫 페이지, 최대 20개
+            List<Messages> messagesList = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, Long.parseLong(messageId), pageable);
+            for(Messages m : messagesList){
+                Optional<User> optionalUser = userRepository.findById(m.getSenderId());
+                String imgUrl = null;
+                if(optionalUser.isPresent()){
+                    imgUrl = optionalUser.get().getImageUrl();
+                }
+
+                ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
+                        .messageId(m.getId().toString())
+                        .senderId(m.getSenderId())
+                        .roomId(m.getChatRoom().getId().toString())
+                        .content(m.getContent())
+                        .senderNickname(m.getSenderNickname())
+                        .timestamp(m.getCreation_time())
+                        .imgUrl(imgUrl)
+                        .build();
+                optionalList.get().add(chatMessageDTO);
+            }
+        }
 
         return optionalList.get();
-
     }
 
     // 특정 방에 저장된 메세지 중 가장 마지막 메세지 가져옴
@@ -406,6 +436,7 @@ public class ChatServiceImpl implements ChatService{
 
     // userChatRoom 에 readIndex 저장하기
     @Override
+    @Transactional
     public void saveReadIndex(Long userId,Long chatRoomId,Long readIndex) {
 
         Optional<UserChatRoom> matchingChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
@@ -420,7 +451,6 @@ public class ChatServiceImpl implements ChatService{
 
     // 특정방을 나갈 때 userChatRoom softDelete
     @Override
-    @Transactional
     public Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId) {
         Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
 
@@ -517,7 +547,9 @@ public class ChatServiceImpl implements ChatService{
 
 
     // redis 에서 메세지 가져오기
-    private Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Override
+    public Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count){
 
         List<ChatMessageDTO> msgList = new ArrayList<>();
         

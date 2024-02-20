@@ -52,6 +52,7 @@ public class RedisService {
         // 정렬된 세트에 대한 만료 시간 설정도 고려해야 할 수 있음
         redisTemplate.expire(chatRoomMessageKey, timeoutInSeconds, TimeUnit.SECONDS);
 
+        log.debug("===redis 저장 된 아이디 :{}",messageDTO.getMessageId());
         log.debug("====redis 저장 완료====");
     }
 
@@ -69,19 +70,33 @@ public class RedisService {
         //log.debug("=========> messageKey : {}",messageKey);
         Set<String> keys = stringRedisTemplate.keys(messageKey);
 
-        List<String> keyCollect = keys.stream()
+
+        Set<String> sortedKeys = keys.stream()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toCollection(LinkedHashSet::new)); // 순서를 유지하는 Set으로 수집
+
+        for(String k : sortedKeys){
+            log.debug("== all key:{}",k);
+        }
+
+
+
+        log.debug("== readIndex : {}", readIndex);
+
+        List<String> keyCollect = sortedKeys.stream()
                 .map(key -> key.split(":"))
                 // 분할된 배열에서 메시지 ID가 숫자 형태인지, 그리고 readIndex보다 작은지 확인
-                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Integer.parseInt(parts[3]) < readIndex)
+                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Long.parseLong(parts[3]) <= readIndex)
                 // 원래 키 형태로 복원
                 .map(parts -> String.join(":", parts))
                 // 메시지 ID에 따라 내림차순 정렬
-                .sorted((key1, key2) -> Integer.compare(Integer.parseInt(key2.split(":")[3]), Integer.parseInt(key1.split(":")[3])))
+                //.sorted((key1, key2) -> Integer.compare(Integer.parseInt(key2.split(":")[3]), Integer.parseInt(key1.split(":")[3])))
                 // 상위 20개만 선택
                 .limit(20)
                 .collect(Collectors.toList());
 
         for(String key : keyCollect){
+            log.debug("== key : {}",key);
             Map<Object, Object> entry = stringRedisTemplate.opsForHash().entries(key);
 
             if(entry.isEmpty()){
@@ -105,7 +120,7 @@ public class RedisService {
                     .content(entry.get("messageContent").toString())
                     .timestamp(entry.get("sendTime").toString())
                     .build();
-            //log.debug("====완성:{}",chatMessageDTO.getContent());
+            log.debug("====완성:{}",chatMessageDTO.getContent());
             chatList.add(chatMessageDTO);
         }
         return chatList;

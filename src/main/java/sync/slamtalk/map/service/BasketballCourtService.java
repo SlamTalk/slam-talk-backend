@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
+import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
+import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
 import sync.slamtalk.map.entity.AdminStatus;
@@ -32,6 +34,20 @@ public class BasketballCourtService {
         return basketballCourtRepository.findByCourtIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
                 .map(basketballCourtMapper::toFullDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
+    }
+
+    // 검토중인 농구장 간략 정보
+    public List<BasketballCourtReportSummaryDTO> getUserReportedCourtSummaryInfo(Long userId) {
+        return basketballCourtRepository.findByInformerIdAndAdminStatus(userId, AdminStatus.STAND).stream()
+                .map(basketballCourtMapper::toStatusDto)
+                .collect(Collectors.toList());
+    }
+
+    // 검토중인 농구장 전체 정보
+    public BasketballCourtReportResponseDTO getUserReportedCourtFullInfo(Long courtId, Long userId) {
+        return basketballCourtRepository.findByCourtIdAndInformerIdAndAdminStatus(courtId, userId, AdminStatus.STAND)
+                .map(basketballCourtMapper::toFullStatusDto)
+                .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
 
 }

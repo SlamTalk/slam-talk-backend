@@ -67,7 +67,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         setRefreshTokenCookie(response, refreshToken);
 
-        response.sendRedirect("http://localhost:3000/social-login?loginSuccess=true&firstLoginCheck=" + user.getFirstLoginCheck());
+//        response.sendRedirect("http://localhost:3000/social-login?loginSuccess=true&firstLoginCheck=" + user.getFirstLoginCheck());
+        response.sendRedirect("https://slam-talk.vercel.app/social-login?loginSuccess=true&firstLoginCheck=" + user.getFirstLoginCheck());
 
         // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
         if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
