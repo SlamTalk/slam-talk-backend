@@ -44,6 +44,7 @@ public interface ChatService {
     List<ChatMessageDTO> getChatMessages(Long chatRoomId, Long messageId);
 
 
+    // 과거 내역 요청
     List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId,int count);
 
 
@@ -59,11 +60,15 @@ public interface ChatService {
     Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId);
 
 
+    // 첫방문/재방문 검사
+    Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
+
+
     // 채팅방 첫방문, 재방문 판별
     Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
 
 
-    // Redis 에서 메세지 조회
+    // Redis 조회 후 DB 조회
     Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count);
 
 }

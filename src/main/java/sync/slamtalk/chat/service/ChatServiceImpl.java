@@ -22,12 +22,13 @@ import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
-import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -537,6 +538,7 @@ public class ChatServiceImpl implements ChatService{
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .user(user)
                     .roomType(chatRoom.getRoomType())
+                    .BasketBallId(chatRoom.getBasketBallId())
                     .name(chatRoom.getName())
                     .chat(chatRoom)
                     .isFirst(true) // 방문 초기화
@@ -587,7 +589,6 @@ public class ChatServiceImpl implements ChatService{
 
         // redis 로 가져온데이터 반환
         return Optional.of(messages);
-
     }
 
 
