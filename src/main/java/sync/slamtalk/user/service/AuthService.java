@@ -165,19 +165,22 @@ public class AuthService {
 
         String refreshToken = tokenProvider.getTokenFromCookie(request, refreshAuthorizationCookieName);
 
+        log.debug("[엑세스 토큰 재발급] refreshToken = {}", refreshToken);
         // 리프래쉬 토큰 만료 검사
         if(!tokenProvider.validateToken(refreshToken)){
+            log.debug("[엑세스 토큰 재발급] 토큰 만료가 됨 1");
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
         // 엑세스 토큰 만료가 되었다면 재발급 하기
         Optional<JwtTokenDto> optionalJwtTokenResponseDto = tokenProvider.generateNewAccessToken(refreshToken);
-
         if (optionalJwtTokenResponseDto.isEmpty()) {
+            log.debug("[엑세스 토큰 재발급] 토큰 만료가 됨 2");
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
 
         JwtTokenDto jwtTokenDto = optionalJwtTokenResponseDto.get();
+        log.debug("[엑세스 토큰 재발급] jwtTokenDto.getAccessToken() = {}", jwtTokenDto.getAccessToken());
 
         /* 엑세스 토큰 헤더에 저장*/
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());

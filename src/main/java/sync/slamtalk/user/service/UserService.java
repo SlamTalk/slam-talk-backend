@@ -247,7 +247,7 @@ public class UserService {
         log.debug("[유저 마이페이지 수정] 닉네임 = {} ", updateUserDetailInfoReq.getNickname());
         log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
         log.debug("[유저 마이페이지 수정] 자기소개 = {} ", updateUserDetailInfoReq.getSelfIntroduction());
-        log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
+        log.debug("[유저 마이페이지 수정] 스킬레벨 = {} ", updateUserDetailInfoReq.getBasketballSkillLevel());
 
         // 닉네임 검증
         if (!user.getNickname().equals(updateUserDetailInfoReq.getNickname()) && updateUserDetailInfoReq.getNickname() != null) {
