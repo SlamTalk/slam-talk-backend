@@ -9,7 +9,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
-import sync.slamtalk.mate.dto.MatePostToDto;
+import sync.slamtalk.mate.dto.response.MatePostToDto;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
