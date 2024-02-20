@@ -244,14 +244,18 @@ public class UserService {
     ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        log.debug("[유저 마이페이지 수정] 닉네임 : ", updateUserDetailInfoReq.getNickname());
+
         // 닉네임 검증
         if (!user.getNickname().equals(updateUserDetailInfoReq.getNickname()) && updateUserDetailInfoReq.getNickname() != null) {
+            log.debug("[유저 마이페이지 수정] 닉네임 변경 시도!");
             checkNicknameExistence(updateUserDetailInfoReq.getNickname());
             user.updateNickname(updateUserDetailInfoReq.getNickname());
         }
 
         // 이미지 파일이 존재한다면 업데이트
         if (file != null && !file.isEmpty()) {
+            log.debug("[유저 마이페이지 수정] 파일 업데이트 시도!");
             String fileUrl = awsS3Service.uploadFile(file);
             user.updateProfileUrl(fileUrl);
         }
@@ -259,18 +263,21 @@ public class UserService {
         // 자기 소개 한마디이 null이 아니라면 값 update 하기
         String newIntroduction = updateUserDetailInfoReq.getSelfIntroduction();
         if (newIntroduction != null && !newIntroduction.equals(user.getSelfIntroduction())) {
+            log.debug("[유저 마이페이지 수정] 자기소개 업데이트");
             user.updateSelfIntroduction(newIntroduction);
         }
 
         // 유저 포지션가 null이 아니라면 값 update 하기
         UserBasketballPositionType newBasketballPosition = updateUserDetailInfoReq.getBasketballPosition();
         if (newBasketballPosition != null && !newBasketballPosition.equals(user.getBasketballPosition())) {
+            log.debug("[유저 마이페이지 수정] 포지션 업데이트");
             user.updatePosition(updateUserDetailInfoReq.getBasketballPosition());
         }
 
         // 유저 스킬 레벨 업데이트가 null이 아니라면 update 하기
         UserBasketballSkillLevelType newBasketballSkillLevel = updateUserDetailInfoReq.getBasketballSkillLevel();
         if (newBasketballSkillLevel != null && !newBasketballSkillLevel.equals(user.getBasketballSkillLevel())) {
+            log.debug("[유저 마이페이지 수정] 스킬 레벨 업데이트");
             user.updateBasketballSkillLevel(updateUserDetailInfoReq.getBasketballSkillLevel());
         }
     }
