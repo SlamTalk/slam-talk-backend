@@ -89,7 +89,9 @@ public class SecurityConfig {
                                     "/api/mate/read/**",
                                     "/api/mate/list",
                                     "/api/match/read/**",
-                                    "/api/match/list"
+                                    "/api/match/list",
+                                    "/api/community/category/**",
+                                    "/api/community/board/**"
                                     ).permitAll();
                             request.requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.getKey());
                             request.anyRequest().authenticated();
