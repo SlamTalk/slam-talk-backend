@@ -1,5 +1,6 @@
 package sync.slamtalk.mate.dto.response;
 import lombok.Data;
+import lombok.NonNull;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.Participant;
 import sync.slamtalk.mate.entity.PositionType;
@@ -18,8 +19,10 @@ public class ParticipantDto {
 
     private ApplyStatusType applyStatus;
 
+    @NonNull
     private PositionType position;
 
+    @NonNull
     private SkillLevelType skillLevel;
 
     public ParticipantDto() {

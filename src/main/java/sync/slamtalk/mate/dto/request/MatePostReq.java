@@ -20,11 +20,8 @@ import java.util.ArrayList;
 public class MatePostReq {
 
     @NotBlank
-    @Length(min = 4, max = 30)
     private String title;
 
-    @NotBlank
-    @Length(min = 4, max = 500)
     private String content;
 
     @NonNull
@@ -40,7 +37,6 @@ public class MatePostReq {
     private LocalTime endTime;
 
     @NotBlank
-    @Length(max = 100)
     private String locationDetail;
 
     @NonNull

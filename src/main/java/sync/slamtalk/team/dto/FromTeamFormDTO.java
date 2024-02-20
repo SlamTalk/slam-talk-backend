@@ -18,19 +18,15 @@ import java.time.LocalTime;
 @Setter
 public class FromTeamFormDTO {
     @NotBlank(message = "팀명을 입력해주세요.")
-    @Length(min = 2, max = 30)
     private String teamName;
 
     @NotBlank(message = "제목을 입력해주세요.")
-    @Length(min = 4, max = 30)
     private String title;
 
-    @NotBlank(message = "내용을 입력해주세요.")
-    @Length(min = 4, max = 500)
+    @NonNull
     private String content;
 
     @NotBlank(message = "상세 위치를 입력해주세요.")
-    @Length(max = 100)
     private String locationDetail;
 
     @NonNull
