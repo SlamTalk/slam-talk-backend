@@ -1,5 +1,6 @@
 package sync.slamtalk.mate.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +12,7 @@ import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -28,13 +30,17 @@ public class MatePostRes {
     private String writerImageUrl;
     private String title;
     private String content;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate scheduledDate;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
     private String locationDetail;
     private RecruitedSkillLevelType skillLevel;
     private List<String> skillLevelList;
     private RecruitmentStatusType recruitmentStatus;
+    private LocalDateTime createdAt;
 
     private List<PositionListDto> positionList;
     private List<ParticipantDto> participants;

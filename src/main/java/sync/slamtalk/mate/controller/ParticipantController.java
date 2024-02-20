@@ -48,14 +48,16 @@ public class ParticipantController {
         ParticipantDto dto;
         if(applyStatus == ApplyStatusType.ACCEPTED){
             dto =  participantService.acceptParticipant(matePostId, participantTableId, userId);
+            return ApiResponse.ok(dto);
         }else if(applyStatus == ApplyStatusType.REJECTED){
             dto = participantService.rejectParticipant(matePostId, participantTableId, userId);
+            return ApiResponse.ok(dto);
         }else if(applyStatus == ApplyStatusType.CANCELED){
-            dto =  participantService.cancelParticipant(matePostId, participantTableId, userId);
+            participantService.cancelParticipant(matePostId, participantTableId, userId);
+            return ApiResponse.ok("취소되었습니다.");
         }else{
             return ApiResponse.fail("잘못된 요청입니다.");
         }
-        return ApiResponse.ok(dto);
     }
 
     @Operation(

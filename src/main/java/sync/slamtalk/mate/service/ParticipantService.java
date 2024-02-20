@@ -58,8 +58,8 @@ public class ParticipantService {
 
         if(post.getRecruitmentStatus().equals(RecruitmentStatusType.RECRUITING)){
             Participant participant = new Participant(participantId, participantNickname, fromParticipantDto.getPosition(),
-                    fromParticipantDto.getSkillLevel());
-            participant.connectParent(post);
+                    fromParticipantDto.getSkillLevel(), post);
+
             Participant resultParticipant = participantRepository.save(participant);
 
             ParticipantDto resultdto = new ParticipantDto(resultParticipant);
@@ -118,7 +118,7 @@ public class ParticipantService {
     }
 
 
-    public ParticipantDto cancelParticipant(long matePostId, long participantTableId, long writerId){
+    public void cancelParticipant(long matePostId, long participantTableId, long writerId){
         Participant participant = participantRepository.findById(participantTableId).orElseThrow(()->new BaseException(PARTICIPANT_NOT_FOUND));
 
         MatePost matePost = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
@@ -130,12 +130,10 @@ public class ParticipantService {
         if(matePost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             if(participant.getApplyStatus() == ApplyStatusType.WAITING){
                 participant.disconnectParent();
-                participant.updateApplyStatus(ApplyStatusType.CANCELED);
                 participantRepository.delete(participant);
             }else{
                 throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
             }
-            return new ParticipantDto(participant);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }

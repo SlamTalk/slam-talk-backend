@@ -15,9 +15,11 @@ import sync.slamtalk.mate.dto.MateSearchCondition;
 import sync.slamtalk.mate.dto.request.MatePostReq;
 import sync.slamtalk.mate.dto.response.MatePostRes;
 import sync.slamtalk.mate.dto.response.MyMateListRes;
+import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.service.MatePostService;
 
 import java.net.URI;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -58,7 +60,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}")
-    public ApiResponse updateMatePost(@PathVariable("matePostId") long matePostId, @RequestBody MatePostReq matePostReq,
+    public ApiResponse updateMatePost(@PathVariable("matePostId") long matePostId, @Valid @RequestBody MatePostReq matePostReq,
                                                    @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
@@ -108,8 +110,8 @@ public class MatePostController {
     )
     @PatchMapping("/{matePostId}/complete")
     public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
-        MatePostRes resultDto = matePostService.completeRecruitment(matePostId, id);
-        return ApiResponse.ok(resultDto);
+        List<ParticipantDto> listDto = matePostService.completeRecruitment(matePostId, id);
+        return ApiResponse.ok(listDto);
     }
 
     @Operation(

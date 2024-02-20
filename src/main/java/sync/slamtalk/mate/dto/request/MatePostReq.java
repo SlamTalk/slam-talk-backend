@@ -40,6 +40,7 @@ public class MatePostReq {
     private LocalTime endTime;
 
     @NotBlank
+    @Length(max = 100)
     private String locationDetail;
 
     @NonNull
@@ -47,19 +48,15 @@ public class MatePostReq {
     private RecruitedSkillLevelType skillLevel;
 
     @NonNull
-    @Length(min = 0, max = 5)
     private int maxParticipantsCenters;
 
     @NonNull
-    @Length(min = 0, max = 5)
     private int maxParticipantsGuards;
 
     @NonNull
-    @Length(min = 0, max = 5)
     private int maxParticipantsForwards;
 
     @NonNull
-    @Length(min = 0, max = 5)
     private int maxParticipantsOthers;
 
 

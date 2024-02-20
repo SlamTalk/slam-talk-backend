@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
@@ -15,6 +17,8 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UnrefinedTeamMatchingDto {
 
     private Long teamMatchingId;
@@ -22,9 +26,6 @@ public class UnrefinedTeamMatchingDto {
     private Long writerId;
     private String writerNickname;
     private String writerImageUrl;
-    private Long opponentId;
-    private String opponentNickname;
-    private String opponentTeamName;
     private String title;
     private String content;
     private String location;

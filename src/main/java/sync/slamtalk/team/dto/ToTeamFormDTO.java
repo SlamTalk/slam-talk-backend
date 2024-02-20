@@ -35,12 +35,6 @@ public class ToTeamFormDTO {
     @NotBlank(message = "이미지를 입력해주세요.")
     private String writerImageUrl;
 
-    private Long opponentId;
-
-    private String opponentNickname;
-
-    private String opponentTeamName;
-
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 
@@ -72,7 +66,6 @@ public class ToTeamFormDTO {
     private LocalTime endTime;
 
     @NonNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
 
     @NonNull

@@ -22,6 +22,8 @@ public class ParticipantDto {
 
     private SkillLevelType skillLevel;
 
+    public ParticipantDto() {
+    }
 
     public ParticipantDto(Participant participant) {
         this.participantTableId = participant.getParticipantTableId();

@@ -3,17 +3,12 @@ package sync.slamtalk.team.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
-import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.dto.PositionListDTO;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
 import sync.slamtalk.team.dto.ToApplicantDto;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static sync.slamtalk.team.error.TeamErrorResponseCode.TEAM_POST_NOT_FOUND;
 
 @Entity
 @Getter

@@ -2,15 +2,10 @@ package sync.slamtalk.team.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.mate.dto.FromParticipantDto;
-import sync.slamtalk.mate.dto.MatePostListDTO;
-import sync.slamtalk.mate.dto.MatePostToDto;
-import sync.slamtalk.mate.dto.UnrefinedMatePostDTO;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
@@ -24,8 +19,6 @@ import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +40,7 @@ public class TeamMatchingService {
     private final QueryRepository queryRepository;
     private final EntityToDtoMapper entityToDtoMapper;
 
-    private static final int FIRST_PAGE = 0;
+
     /**
      * Objective : 팀 매칭 글을 등록하는 메소드 입니다.
      * Flow :
@@ -96,9 +89,10 @@ public class TeamMatchingService {
         if(teamMatchingEntity.getIsDeleted()){
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
         }
-        if(teamMatchingEntity.getWriter().getId() != userId){
+        if(teamMatchingEntity.getWriter().getId().equals(userId) == false){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
+
         teamMatchingEntity.updateTeamMatching(fromTeamFormDTO);
         return ApiResponse.ok();
     }
@@ -141,20 +135,10 @@ public class TeamMatchingService {
      */
     @Transactional(readOnly = true)
     public ToTeamMatchingListDto getTeamMatchingList(TeamSearchCondition condition){
-//        PageRequest request = PageRequest.of(FIRST_PAGE, limit);
-//        LocalDateTime cursor = LocalDateTime.parse(stringCursor, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
-//        log.debug("[TeamMatchingService] cursor : {}, request : {}",cursor, request);
-//        long startTime = System.currentTimeMillis();
-//        List<TeamMatching> result = teamMatchingRepository.findAllByCreatedAtBefore(cursor, request);
-//        log.debug("[TeamMatchingService] result : {}", result);
-//        long endTime = System.currentTimeMillis();
-//        log.debug("[TeamMatchingService] executed query time : {}", endTime - startTime);
-//        List<ToTeamFormDTO> dtoList = result.stream().map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO())).toList();
-//        return dtoList;
 
         List<UnrefinedTeamMatchingDto> listedTeamMatchings = queryRepository.findTeamMatchingList(condition);
 
-        List<ToTeamFormDTO> refinedDto = listedTeamMatchings.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedTeamMatchingToDto(dto)).collect(Collectors.toList());
+        List<ToTeamFormDTO> refinedDto = listedTeamMatchings.stream().map(dto -> entityToDtoMapper.fromUnrefinedTeamMatchingToDto(dto)).collect(Collectors.toList());
         List<ToTeamFormDTO> result = refinedDto.stream().map(dto -> {
                     List<ToApplicantDto> refined = queryRepository.findApplicantListByTeamMatchingId(dto.getTeamMatchingId());
                     dto.setTeamApplicants(refined);
@@ -317,7 +301,10 @@ public class TeamMatchingService {
 
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             if(teamApplicant.getApplyStatus() == ApplyStatusType.WAITING) {
-                teamPost.declareOpponent(applicantUser.getId(), applicantUser.getNickname(), teamApplicant.getTeamName());
+                if (teamPost.getOpponent() != null) {
+                    throw new BaseException(ALEADY_DECLARED_OPPONENT);
+                }
+                teamPost.declareOpponent(applicantUser);
                 teamApplicant.updateApplyStatus(ApplyStatusType.ACCEPTED);
             }else{
                 throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
@@ -343,15 +330,14 @@ public class TeamMatchingService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(teamPost.getOpponentId() == null){
+            if(teamPost.getOpponent() == null){
                 throw new BaseException(OPPONENT_NOT_DECLARED);
             }
             List<TeamApplicant> applicantList = teamPost.getTeamApplicants();
             if(applicantList.size() > 0){
                 for(TeamApplicant teamApplicant : applicantList) {
                     if(teamApplicant.getApplyStatus() == ApplyStatusType.REJECTED || teamApplicant.getApplyStatus() == ApplyStatusType.WAITING){
-                        teamApplicant.disconnectTeamMatching();
-                        teamApplicantRepository.delete(teamApplicant);
+                        teamApplicant.delete();
                     }
                 }
             }else{

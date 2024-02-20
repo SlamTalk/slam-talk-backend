@@ -18,19 +18,19 @@ public class EntityToDtoMapper {
     public List<PositionListDto> toPositionListDto(MatePost matePost){
         List<PositionListDto> positionList = new ArrayList<>();
 
-        if(matePost.getMaxParticipantsCenters() > 0){
+        if(matePost.getMaxParticipantsCenters() > 0 || matePost.getCurrentParticipantsCenters() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsForwards() > 0){
+        if(matePost.getMaxParticipantsForwards() > 0 || matePost.getCurrentParticipantsForwards() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsGuards() > 0){
+        if(matePost.getMaxParticipantsGuards() > 0 || matePost.getCurrentParticipantsGuards() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsOthers() > 0){
+        if(matePost.getMaxParticipantsOthers() > 0 || matePost.getCurrentParticipantsOthers() > 0){
             PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
@@ -220,9 +220,6 @@ public class EntityToDtoMapper {
         resultDto.setWriterId(inputDto.getWriterId());
         resultDto.setWriterNickname(inputDto.getWriterNickname());
         resultDto.setWriterImageUrl(inputDto.getWriterImageUrl());
-        resultDto.setOpponentId(inputDto.getOpponentId());
-        resultDto.setOpponentNickname(inputDto.getOpponentNickname());
-        resultDto.setOpponentTeamName(inputDto.getOpponentTeamName());
         resultDto.setScheduledDate(inputDto.getScheduledDate());
         resultDto.setStartTime(inputDto.getStartTime());
         resultDto.setEndTime(inputDto.getEndTime());

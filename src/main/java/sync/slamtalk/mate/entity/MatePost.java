@@ -236,28 +236,32 @@ public class MatePost extends BaseEntity implements Post{
                 switch(position){
                         case CENTER:
                                 if(getCurrentParticipantsCenters() >= getMaxParticipantsCenters()){
-                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        //throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }else{
                                         updateCurrentParticipantsCenters(getCurrentParticipantsCenters() + 1);
                                 }
                                 break;
                         case GUARD:
                                 if(getCurrentParticipantsGuards() >= getMaxParticipantsGuards()){
-                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        //throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }else{
                                         updateCurrentParticipantsGuards(getCurrentParticipantsGuards() + 1);
                                 }
                                 break;
                         case FORWARD:
                                 if(getCurrentParticipantsForwards() >= getMaxParticipantsForwards()){
-                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        //throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }else{
                                         updateCurrentParticipantsForwards(getCurrentParticipantsForwards() + 1);
                                 }
                                 break;
                         case UNSPECIFIED:
                                 if(getCurrentParticipantsOthers() >= getMaxParticipantsOthers()){
-                                        throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        //throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+                                        updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }else{
                                         updateCurrentParticipantsOthers(getCurrentParticipantsOthers() + 1);
                                 }

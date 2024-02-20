@@ -67,7 +67,7 @@ public class TeamMatchingController {
             tags = {"팀 매칭"}
     )
     @PatchMapping("/{teamMatchingId}")
-    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @RequestBody FromTeamFormDTO fromTeamFormDTO,
+    public ApiResponse updateTeamMatchingPage(@PathVariable("teamMatchingId") long teamMatchingId, @Valid @RequestBody FromTeamFormDTO fromTeamFormDTO,
                                               @AuthenticationPrincipal Long id){
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         Long userId = id;

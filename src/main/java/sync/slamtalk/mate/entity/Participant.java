@@ -42,14 +42,14 @@ public class Participant extends BaseEntity {
     public Participant() {
     }
 
-    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel) {
+    public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel, MatePost post) {
 
         this.participantId = participantId;
         this.participantNickname = participantNickname;
         this.position = position;
         this.skillLevel = skillLevel;
         this.applyStatus = ApplyStatusType.WAITING;
-        this.matePost = null;
+        this.connectParent(post);
     }
 
     public ApplyStatusType updateApplyStatus(ApplyStatusType applyStatus) {
@@ -58,7 +58,6 @@ public class Participant extends BaseEntity {
     }
 
     public boolean softDeleteParticipant() {
-        this.applyStatus = ApplyStatusType.CANCELED;
         this.delete();
         return true;
     }
@@ -80,7 +79,6 @@ public class Participant extends BaseEntity {
         return true;
     }
 
-    // todo : 테스트 용이성을 위해 임시로 주석 처리
     public boolean checkCapabilities(List<PositionListDto> requiredPosition, List<String> requiredSkillLevel) {
 //        if(requiredSkillLevel.contains(this.skillLevel.getLevel()) == false){
 //            return false;

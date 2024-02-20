@@ -39,9 +39,9 @@ public class TeamMatching extends BaseEntity implements Post {
     @JoinColumn(name = "writer_id")
     private User writer;
 
-    private Long opponentId;
-
-    private String opponentNickname;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opponent_id")
+    private User opponent;
 
     boolean skillLevelHigh = false;
 
@@ -51,10 +51,7 @@ public class TeamMatching extends BaseEntity implements Post {
 
     boolean skillLevelBeginner = false;
 
-    @Column(nullable = false)
     private String teamName;
-
-    private String opponentTeamName;
 
     @Column(nullable = false)
     private String title;
@@ -94,19 +91,20 @@ public class TeamMatching extends BaseEntity implements Post {
 
     private static final int MAX_APPLICANTS = 5;
 
-    public void declareOpponent(long opponentId, String opponentNickname, String opponentTeamName){
-        if(this.opponentId != null){
-            throw new BaseException(ALEADY_DECLARED_OPPONENT);
-        }
-        this.opponentId = opponentId;
-        this.opponentNickname = opponentNickname;
-        this.opponentTeamName = opponentTeamName;
+    public void declareOpponent(User opponent){
+        this.opponent = opponent;
+        this.opponent.getOpponentTeamMatchings().add(this);
+    }
+
+    public void cancelOpponent(){
+        this.opponent.getOpponentTeamMatchings().remove(this);
+        this.opponent = null;
     }
 
     public void splitAndStoreLocation(String locationDetail){
         String[] splited = locationDetail.split(" ", 2);
         this.location = splited[0];
-        this.locationDetail = splited[1];
+        this.locationDetail = splited.length > 1 ? splited[1] : "";
     }
 
     public String returnConcatenatedLocation(){
@@ -235,7 +233,6 @@ public class TeamMatching extends BaseEntity implements Post {
         this.recruitmentStatus = recruitmentStatus;
     }
 
-
     public void connectParentUser(User user){ // * writerId를 User 객체로 대체할 것!
         this.writer = user;
         this.writer.getTeamMatchings().add(this);
@@ -244,7 +241,7 @@ public class TeamMatching extends BaseEntity implements Post {
     // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
     public List<ToApplicantDto> makeApplicantDto(){
         List<TeamApplicant> teamApplicants = getTeamApplicants();
-        List<ToApplicantDto> dto = teamApplicants.stream().map(TeamApplicant::makeDto).collect(Collectors.toList());
+        List<ToApplicantDto> dto = teamApplicants.stream().filter(teamApplicant -> teamApplicant.getIsDeleted() == false).map(TeamApplicant::makeDto).collect(Collectors.toList());
         return dto;
     }
 }

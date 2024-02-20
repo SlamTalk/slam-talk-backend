@@ -1,5 +1,6 @@
 package sync.slamtalk.mate.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,17 +12,13 @@ import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
-import sync.slamtalk.mate.repository.ParticipantRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
@@ -35,13 +32,9 @@ public class MatePostService {
 
     private final MatePostRepository matePostRepository;
     private final ParticipantService participantService;
-    private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final EntityToDtoMapper entityToDtoMapper;
     private final QueryRepository queryRepository;
-
-    private static final int FIRST_PAGE = 0;
-    private static final int DEFAULT_PAGE_SIZE = 10;
 
     /**
      * Objective : 메이트찾기 게시글을 등록한다.
@@ -51,7 +44,7 @@ public class MatePostService {
      * 3. MatePost를 저장한다.
      * 4. 저장된 게시글의 아이디를 반환한다.
      */
-    public long registerMatePost(MatePostReq matePostReq, long userId){
+    public long registerMatePost(@Valid MatePostReq matePostReq, long userId){
         User user = userRepository.findById(userId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
         MatePost matePost = matePostReq.toEntity();
         matePost.connectParent(user);
@@ -107,6 +100,7 @@ public class MatePostService {
                 .recruitmentStatus(post.getRecruitmentStatus())
                 .positionList(positionList)
                 .participants(participantsToArrayList)
+                .createdAt(post.getCreatedAt())
                 .build();
         return matePostRes;
     }
@@ -155,11 +149,15 @@ public class MatePostService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
+        if(post.getRecruitmentStatus() == RecruitmentStatusType.COMPLETED){
+            throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
+        }
+
         EntityToDtoMapper entityToDtoMapper = new EntityToDtoMapper();
 
         String[] splitedLocationString = matePostReq.getLocationDetail().split(" ", 2);
         String location = splitedLocationString[0];
-        String locationDetail = splitedLocationString[1].length() > 0 ? splitedLocationString[1] : "";
+        String locationDetail = splitedLocationString.length > 1 ? splitedLocationString[1] : "";
         LocalDate scheduledDate = matePostReq.getScheduledDate();
         LocalTime startTime = matePostReq.getStartTime();
         LocalTime endTime = matePostReq.getEndTime();
@@ -170,33 +168,33 @@ public class MatePostService {
         Integer maxParticipantsForwards = matePostReq.getMaxParticipantsForwards();
         Integer maxParticipantsOthers = matePostReq.getMaxParticipantsOthers();
 
-        if(maxParticipantsCenters != null){
-            if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
-                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
-            }
-            post.updateMaxParticipantsCenters(maxParticipantsCenters);
-        }
-
-        if(maxParticipantsGuards != null){
-            if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
-                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
-            }
-            post.updateMaxParticipantsGuards(maxParticipantsGuards);
-        }
-
-        if(maxParticipantsForwards != null){
-            if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
-                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
-            }
-            post.updateMaxParticipantsForwards(maxParticipantsForwards);
-        }
-
-        if(maxParticipantsOthers != null){
-            if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
-                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
-            }
-            post.updateMaxParticipantsOthers(maxParticipantsOthers);
-        }
+//        if(maxParticipantsCenters != null){
+//            if(post.getCurrentParticipantsCenters() > maxParticipantsCenters){
+//                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+//            }
+//            post.updateMaxParticipantsCenters(maxParticipantsCenters);
+//        }
+//
+//        if(maxParticipantsGuards != null){
+//            if(post.getCurrentParticipantsGuards() > maxParticipantsGuards){
+//                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+//            }
+//            post.updateMaxParticipantsGuards(maxParticipantsGuards);
+//        }
+//
+//        if(maxParticipantsForwards != null){
+//            if(post.getCurrentParticipantsForwards() > maxParticipantsForwards){
+//                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+//            }
+//            post.updateMaxParticipantsForwards(maxParticipantsForwards);
+//        }
+//
+//        if(maxParticipantsOthers != null){
+//            if(post.getCurrentParticipantsOthers() > maxParticipantsOthers){
+//                throw new BaseException(EXCEED_OR_UNDER_LIMITED_NUMBER);
+//            }
+//            post.updateMaxParticipantsOthers(maxParticipantsOthers);
+//        }
 
             post.updateContent(matePostReq.getContent());
             post.updateTitle(matePostReq.getTitle());
@@ -248,7 +246,7 @@ public class MatePostService {
         3-3. 참여자 목록을 순회하며 수락되지 않은 참여자들을 데이터베이스에서 삭제한다. (hard delete)
         4. 글의 모집 상태를 완료로 변경한다.
      */
-    public MatePostRes completeRecruitment(long matePostId, long userId) {
+    public List<ParticipantDto> completeRecruitment(long matePostId, long userId) {
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
         if(!post.isCorrespondToUser(userId)){
@@ -257,26 +255,21 @@ public class MatePostService {
 
         if(post.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
             List<Participant> participants = post.getParticipants();
-            if(participants.isEmpty()){
-                throw new BaseException(NO_ACCEPTED_PARTICIPANT);
-            }
 
-            List<Long> usersId = new ArrayList<>();
-            for(Participant participant : participants){
-                if(participant.getApplyStatus() == ApplyStatusType.ACCEPTED){
-                    usersId.add(participant.getParticipantId());
-                }else{
-                    participant.disconnectParent();
-                    participantRepository.delete(participant); // * 수락되지 않은 참여자들은 데이터베이스에서 삭제한다.(hard delete)
+            if(participants.size() == 0 || participants.stream().filter(participant -> participant.getApplyStatus() == ApplyStatusType.ACCEPTED).count() == 0){
+                throw new BaseException(NO_ACCEPTED_PARTICIPANT);
+            }else{
+                for(Participant participant : participants){
+                    if(participant.getApplyStatus() != ApplyStatusType.ACCEPTED){
+                        participant.softDeleteParticipant();
+                    }
                 }
             }
-
             post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
-            return getMatePostRes(matePostId, post);
         }else{
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
-
+        return participantService.getParticipants(post.getMatePostId());
     }
 
     /**
