@@ -82,6 +82,10 @@
             // AdminStatus 변경
             court.updateAdminStatus(AdminStatus.ACCEPT);
 
+            // 채팅방에 농구장 매핑
+            ChatRoom chatRoom = court.getChatroom();
+            chatRoom.setBasketballCourt(court);
+
             return basketballCourtRepository.save(court);
         }
 
