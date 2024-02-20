@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
+import sync.slamtalk.community.dto.CommentResponseDTO;
 import sync.slamtalk.community.dto.CommunityCreateRequestDTO;
 import sync.slamtalk.community.dto.CommunityEditRequestDTO;
 import sync.slamtalk.community.dto.CommunityErrorResponseCode;
@@ -31,7 +32,7 @@ public class CommunityService {
     private final CommunityMapper communityMapper;
     private final UserRepository userRepository;
     private final AwsS3RepositoryImpl awsS3Repository;
-
+    private final CommentService commentService;
 
     // 게시글 등록
     @Transactional
@@ -129,7 +130,9 @@ public class CommunityService {
         Community community = communityRepository.findByCommunityIdAndIsDeletedFalse(communityId)
                 .orElseThrow(() -> new BaseException(CommunityErrorResponseCode.POST_NOT_FOUND));
 
-        return communityMapper.toCommunityResponseDTO(community);
+        List<CommentResponseDTO> commentResponseDTO = commentService.getCommentsList(communityId);
+
+        return communityMapper.toCommunityAndCommentResponseDTO(community,commentResponseDTO);
     }
 
     // 게시글 삭제
