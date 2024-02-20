@@ -5,16 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
-import sync.slamtalk.user.UserRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Controller
