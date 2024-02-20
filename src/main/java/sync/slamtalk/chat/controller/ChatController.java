@@ -41,7 +41,7 @@ public class ChatController {
     )
     public ApiResponse create(@RequestBody ChatCreateDTO dto){
         long chatRoom = chatService.createChatRoom(dto);
-        return ApiResponse.ok(chatRoom,"채팅방이 생성되었습니다."); // TODO ApiResponse 수정
+        return ApiResponse.ok(chatRoom,"채팅방이 생성되었습니다.");
     }
 
 
@@ -56,6 +56,8 @@ public class ChatController {
         List<ChatRoomDTO> chatLIst = chatService.getChatLIst(userId);
         return ApiResponse.ok(chatLIst);
     }
+
+
 
     // 채팅방 접속 시 채팅 내역
     @PostMapping("/api/chat/participation")
@@ -84,6 +86,7 @@ public class ChatController {
     }
 
 
+
     // 채팅방에서 내역 추가 요청 할 때
     @PostMapping("/api/chat/history")
     @Operation(
@@ -99,6 +102,20 @@ public class ChatController {
         }
         return ApiResponse.ok(previousChatMessages);
 
+    }
+
+
+
+    // 제보하기를 통한 농구장 채팅방 생성 요청
+    @PostMapping("/api/chat/create/basketball")
+    @Operation(
+            summary = "농구장 채팅방 생성",
+            description = "이 기능은 농구장 채팅방을 생성하는 기능입니다.",
+            tags = {"채팅"}
+    )
+    public ApiResponse create_basketball(@RequestBody ChatCreateDTO chatCreateDTO){
+        long basketballChatRoom = chatService.createBasketballChatRoom(chatCreateDTO);
+        return ApiResponse.ok(basketballChatRoom,"채팅방이 생성되었습니다");
     }
 
 
