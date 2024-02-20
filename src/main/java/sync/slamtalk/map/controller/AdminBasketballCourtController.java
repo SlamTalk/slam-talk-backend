@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
+import sync.slamtalk.map.dto.BasketballCourtAdminRequestDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
@@ -45,8 +45,8 @@ public class AdminBasketballCourtController {
             tags = {"지도"}
     )
     public ApiResponse<BasketballCourtResponseDTO> updateBasketballCourt(@PathVariable Long courtId,
-                                                                         @RequestBody BasketballCourtRequestDTO basketballCourtRequestDTO) {
-        BasketballCourt updatedCourt = reportBasketballCourtService.updateCourt(courtId, basketballCourtRequestDTO);
+                                                                         @RequestBody BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
+        BasketballCourt updatedCourt = reportBasketballCourtService.updateCourt(courtId, basketballCourtAdminRequestDTO);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt), "농구장 정보 업데이트 완료");
     }
 }

@@ -130,7 +130,6 @@ public class ChatServiceImpl implements ChatService{
                     .chat(saved)
                     .name(chatCreateDTO.getName())
                     .togetherId(chatCreateDTO.getTogether_id())
-                    //.BasketBallId()
                     .build();
 
             if(roomType.equals(RoomType.DIRECT)){
@@ -142,6 +141,17 @@ public class ChatServiceImpl implements ChatService{
         return roomNum;
     }
 
+
+    // 농구장 채팅방 생성
+    @Override
+    public long createBasketballChatRoom(ChatCreateDTO chatCreateDTO) {
+        ChatRoom chatRoom = ChatRoom.builder()
+                .name(chatCreateDTO.getName())
+                .roomType(RoomType.BASKETBALL)
+                .build();
+        ChatRoom saved = chatRoomRepository.save(chatRoom);
+        return saved.getId();
+    }
 
 
     // 채팅방에 메세지 저장(STOMP: SEND)

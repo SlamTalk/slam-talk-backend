@@ -59,6 +59,8 @@ public class TeamMatching extends BaseEntity implements Post {
     @Column(nullable = false)
     private String content;
 
+    private String location;
+
     private String locationDetail;
 
     @Column(nullable = false)
@@ -99,11 +101,14 @@ public class TeamMatching extends BaseEntity implements Post {
         this.opponent = null;
     }
 
-    public void configureSkillLevel(SkillLevelList list){
-        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
-        if(list.isSkillLevelLow()) this.skillLevelLow = true;
-        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
-        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
+    public void splitAndStoreLocation(String locationDetail){
+        String[] splited = locationDetail.split(" ", 2);
+        this.location = splited[0];
+        this.locationDetail = splited.length > 1 ? splited[1] : "";
+    }
+
+    public String returnConcatenatedLocation(){
+        return this.location + " " + this.locationDetail;
     }
 
     @Override
@@ -111,7 +116,7 @@ public class TeamMatching extends BaseEntity implements Post {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TeamMatching that = (TeamMatching) o;
-        return teamMatchingId == that.teamMatchingId;
+        return teamMatchingId.equals(that.teamMatchingId);
     }
 
     @Override
@@ -127,6 +132,7 @@ public class TeamMatching extends BaseEntity implements Post {
                 ", teamName='" + teamName + '\'' +
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
+                ", location='" + location + '\'' +
                 ", locationDetail='" + locationDetail + '\'' +
                 ", numberOfMembers=" + numberOfMembers +
                 ", skillLevel=" + skillLevel +
@@ -139,26 +145,30 @@ public class TeamMatching extends BaseEntity implements Post {
     public void updateTeamMatching(FromTeamFormDTO fromTeamFormDTO){
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
-        this.locationDetail = fromTeamFormDTO.getLocationDetail();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(fromTeamFormDTO.getSkillLevel());
+        configureSkillLevel(skillList);
         this.startTime = fromTeamFormDTO.getStartTime();
         this.endTime = fromTeamFormDTO.getEndTime();
         this.scheduledDate = fromTeamFormDTO.getScheduledDate();
         this.teamName = fromTeamFormDTO.getTeamName();
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
+        this.splitAndStoreLocation(fromTeamFormDTO.getLocationDetail());
     }
 
-    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user){ // * writerId를 User 객체로 대체할 것!
+    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user){
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
-        this.locationDetail = fromTeamFormDTO.getLocationDetail();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(fromTeamFormDTO.getSkillLevel());
+        configureSkillLevel(skillList);
         this.startTime = fromTeamFormDTO.getStartTime();
         this.endTime = fromTeamFormDTO.getEndTime();
         this.scheduledDate = fromTeamFormDTO.getScheduledDate();
         this.teamName = fromTeamFormDTO.getTeamName();
         this.numberOfMembers = fromTeamFormDTO.getNumberOfMembers();
         this.recruitmentStatus = RecruitmentStatusType.RECRUITING;
+        this.splitAndStoreLocation(fromTeamFormDTO.getLocationDetail());
         this.connectParentUser(user);
     }
 
@@ -174,7 +184,7 @@ public class TeamMatching extends BaseEntity implements Post {
         dto.setWriterId(this.writer.getId());
         dto.setWriterNickname(this.writer.getNickname());
         dto.setWriterImageUrl(this.writer.getImageUrl());
-        dto.setLocationDetail(this.locationDetail);
+        dto.setLocationDetail(this.returnConcatenatedLocation());
         dto.setSkillLevel(this.skillLevel);
         dto.setSkillLevelList(mapper.toSkillLevelTypeList(this.skillLevel));
         dto.setScheduledDate(this.scheduledDate);
@@ -195,6 +205,17 @@ public class TeamMatching extends BaseEntity implements Post {
         super.delete();
     }
 
+    public void configureSkillLevel(SkillLevelList list){
+        this.skillLevelBeginner = false;
+        this.skillLevelLow = false;
+        this.skillLevelMiddle = false;
+        this.skillLevelHigh = false;
+
+        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+        if(list.isSkillLevelLow()) this.skillLevelLow = true;
+        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
+    }
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
     public boolean isCorrespondTo(long loginId){
@@ -212,17 +233,6 @@ public class TeamMatching extends BaseEntity implements Post {
         this.recruitmentStatus = recruitmentStatus;
     }
 
-    public void connectOpponent(User opponent){
-        if(opponent.equals(this.writer)){
-            throw new BaseException(PROHIBITED_TO_APPLY_TO_YOUR_POST);
-        }
-        if(this.opponent != null){
-            throw new BaseException(ALEADY_DECLARED_OPPONENT);
-        }
-        this.opponent = opponent;
-        this.opponent.getOpponentTeamMatchings().add(this);
-    }
-
     public void connectParentUser(User user){ // * writerId를 User 객체로 대체할 것!
         this.writer = user;
         this.writer.getTeamMatchings().add(this);
@@ -231,7 +241,7 @@ public class TeamMatching extends BaseEntity implements Post {
     // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
     public List<ToApplicantDto> makeApplicantDto(){
         List<TeamApplicant> teamApplicants = getTeamApplicants();
-        List<ToApplicantDto> dto = teamApplicants.stream().map(TeamApplicant::makeDto).collect(Collectors.toList());
+        List<ToApplicantDto> dto = teamApplicants.stream().filter(teamApplicant -> teamApplicant.getIsDeleted() == false).map(TeamApplicant::makeDto).collect(Collectors.toList());
         return dto;
     }
 }

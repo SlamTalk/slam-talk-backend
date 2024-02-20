@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import sync.slamtalk.map.dto.BasketballCourtFullResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
@@ -74,6 +75,41 @@ public class BasketballCourtMapper {
                 basketballCourt.getInformerId()
         );
     }
+
+    public BasketballCourtFullResponseDTO toFullChatDto(BasketballCourt basketballCourt) {
+        if (basketballCourt == null) {
+            return null;
+        }
+
+        List<String> convenienceList = basketballCourt.getConvenience() != null
+                ? Arrays.asList(basketballCourt.getConvenience().split(","))
+                : Collections.emptyList();
+
+        return new BasketballCourtFullResponseDTO(
+                basketballCourt.getCourtId(),
+                basketballCourt.getCourtName(),
+                basketballCourt.getAddress(),
+                basketballCourt.getLatitude(),
+                basketballCourt.getLongitude(),
+                basketballCourt.getCourtType(),
+                basketballCourt.getIndoorOutdoor(),
+                basketballCourt.getCourtSize(),
+                basketballCourt.getHoopCount(),
+                basketballCourt.getNightLighting(),
+                basketballCourt.getOpeningHours(),
+                basketballCourt.getFee(),
+                basketballCourt.getParkingAvailable(),
+                basketballCourt.getPhoneNum(),
+                basketballCourt.getWebsite(),
+                convenienceList,
+                basketballCourt.getAdditionalInfo(),
+                basketballCourt.getPhotoUrl(),
+                basketballCourt.getInformerId(),
+                basketballCourt.getChatroom().getId()
+        );
+    }
+
+
 
     public BasketballCourtReportResponseDTO toFullStatusDto(BasketballCourt basketballCourt) {
         if (basketballCourt == null) {

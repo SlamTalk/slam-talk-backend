@@ -89,12 +89,14 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
             if(chatRoomOptional.isPresent()){
                 ChatRoom chatRoom = chatRoomOptional.get();
 
+
                 // basketball chat 이 아닌 경우 userchatRoom 에 이미 추가 되어 있어야 함
                 if(!chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
                     stompHandler.isExistUserChatRoom(headerAccessor);
                 }
 
                 // basketball chat 인 경우 userChatRoom 에 추가
+                // BasketBallChatRoom 은 구독했을 때 유저의 채팅리스트에 추가됨
                 if(chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
                     Optional<Long> optionaladdedResult = stompHandler.addUserChatRoom(headerAccessor);
                     if(optionaladdedResult.isEmpty()){
@@ -102,7 +104,9 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     }
                 }
             }
+
             log.debug("=== SUBSCRIBE 완료 ===");
+
         }
 
 

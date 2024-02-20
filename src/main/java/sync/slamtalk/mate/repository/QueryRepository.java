@@ -1,19 +1,17 @@
 package sync.slamtalk.mate.repository;
 
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.DateTimeExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.dto.*;
+import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
-import sync.slamtalk.user.entity.QUser;
-import sync.slamtalk.user.entity.User;
+import sync.slamtalk.team.dto.TeamSearchCondition;
+import sync.slamtalk.team.dto.ToApplicantDto;
+import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,8 +21,8 @@ import java.util.List;
 import static com.querydsl.core.types.Projections.bean;
 import static sync.slamtalk.mate.entity.QMatePost.matePost;
 import static sync.slamtalk.mate.entity.QParticipant.participant;
-import static sync.slamtalk.mate.entity.QTeam.team;
-import static sync.slamtalk.user.entity.QUser.user;
+import static sync.slamtalk.team.entity.QTeamApplicant.teamApplicant;
+import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
 
 @Slf4j
 @Repository
@@ -40,9 +38,9 @@ public class QueryRepository {
         this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
-    public List<UnrefinedMatePostDTO> findMatePostList(MateSearchCondition condition) {
+    public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
         return queryFactory
-                .select(bean(UnrefinedMatePostDTO.class,
+                .select(bean(UnrefinedMatePostDto.class,
                         matePost.writer.id.as("writerId"),
                         matePost.writer.nickname.as("writerNickname"),
                         matePost.writer.imageUrl.as("imageUrl"),
@@ -68,11 +66,11 @@ public class QueryRepository {
                         )
                 )
                 .from(matePost)
-                .where(eqLocation(condition.getLocation()),
+                .where(eqLocation("matePost", condition.getLocation()),
                         eqPosition(condition.getPosition()),
-                        eqSkillLevel(condition.getSkillLevel()),
-                        ltCreatedAt(condition.getCursorTime()),
-                        beforeScheduledTime(),
+                        eqSkillLevel("matePost", condition.getSkillLevel()),
+                        ltCreatedAt("matePost", condition.getCursorTime()),
+                        beforeScheduledTime("matePost", condition.isIncludingExpired()),
                         matePost.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
@@ -80,10 +78,10 @@ public class QueryRepository {
                 .fetch();
     }
 
-    public List<FromParticipantDto> findParticipantByMatePostId(long matePostId) {
+    public List<ParticipantDto> findParticipantByMatePostId(long matePostId) {
         return queryFactory
                 .select(
-                        bean(FromParticipantDto.class,
+                        bean(ParticipantDto.class,
                                 participant.participantTableId.as("participantTableId"),
                                 participant.matePost.matePostId.as("matePostId"),
                                 participant.participantId.as("participantId"),
@@ -98,8 +96,64 @@ public class QueryRepository {
                         eqMatePostId(matePostId),
                         participant.isDeleted.eq(false)
                 )
-                .orderBy(matePost.createdAt.desc())
+                .orderBy(participant.createdAt.asc())
+                .fetch();
+    }
+
+    public List<UnrefinedTeamMatchingDto> findTeamMatchingList(TeamSearchCondition condition) {
+        return queryFactory
+                .select(bean(UnrefinedTeamMatchingDto.class,
+                teamMatching.teamMatchingId,
+                teamMatching.teamName,
+                teamMatching.writer.id.as("writerId"),
+                teamMatching.writer.nickname.as("writerNickname"),
+                teamMatching.writer.imageUrl.as("writerImageUrl"),
+                teamMatching.title,
+                teamMatching.content,
+                teamMatching.location,
+                teamMatching.locationDetail,
+                teamMatching.numberOfMembers,
+                teamMatching.skillLevel,
+                teamMatching.scheduledDate,
+                teamMatching.startTime,
+                teamMatching.endTime,
+                teamMatching.createdAt,
+                teamMatching.recruitmentStatus
+                        )
+                )
+                .from(teamMatching)
+                .where(eqLocation("teamMatching", condition.getLocation()),
+                        eqSkillLevel("teamMatching", condition.getSkillLevel()),
+                        ltCreatedAt("teamMatching", condition.getCursorTime()),
+                        beforeScheduledTime("teamMatching", condition.isIncludingExpired()),
+                        eqNumberOfVersus(condition.getNov()),
+                        teamMatching.isDeleted.eq(false)
+                )
+                .orderBy(teamMatching.createdAt.desc())
                 .limit(10)
+                .fetch();
+    }
+
+
+    public List<ToApplicantDto> findApplicantListByTeamMatchingId(long teamMatchingId) {
+        return queryFactory
+                .select(
+                        bean(ToApplicantDto.class,
+                                teamApplicant.teamApplicantTableId,
+                                teamApplicant.applicantId,
+                                teamApplicant.applicantNickname,
+                                teamApplicant.teamMatching.teamMatchingId.as("teamMatchingId"),
+                                teamApplicant.applyStatus,
+                                teamApplicant.teamName,
+                                teamApplicant.skillLevel
+                        )
+                )
+                .from(teamApplicant)
+                .where(
+                        eqTeamMatchingId(teamMatchingId),
+                        teamApplicant.isDeleted.eq(false)
+                )
+                .orderBy(teamApplicant.createdAt.asc())
                 .fetch();
     }
 
@@ -110,17 +164,43 @@ public class QueryRepository {
             return null;
         }
     }
-    private BooleanExpression eqSkillLevel(SkillLevelType skillLevel) {
+
+    private BooleanExpression eqTeamMatchingId(Long teamMatchingId) {
+        if(teamMatchingId != null){
+            return teamApplicant.teamMatching.teamMatchingId.eq(teamMatchingId);
+        } else {
+            return null;
+        }
+    }
+
+    private BooleanExpression eqSkillLevel(String entityType, SkillLevelType skillLevel) {
         if(skillLevel != null){
-            if(skillLevel.equals(SkillLevelType.BEGINNER)){
-                return matePost.skillLevelBeginner.eq(true);
-            } else if(skillLevel.equals(SkillLevelType.LOW)){
-                return matePost.skillLevelLow.eq(true);
-            } else if(skillLevel.equals(SkillLevelType.MIDDLE)){
-                return matePost.skillLevelMiddle.eq(true);
-            } else if(skillLevel.equals(SkillLevelType.HIGH)){
-                return matePost.skillLevelHigh.eq(true);
+            if(entityType.equals("matePost")){
+                if(skillLevel.equals(SkillLevelType.BEGINNER)){
+                    return matePost.skillLevelBeginner.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.LOW)){
+                    return matePost.skillLevelLow.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.MIDDLE)){
+                    return matePost.skillLevelMiddle.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.HIGH)){
+                    return matePost.skillLevelHigh.eq(true);
+                } else {
+                    return null;
+                }
+            }else if(entityType.equals("teamMatching")){
+                if(skillLevel.equals(SkillLevelType.BEGINNER)){
+                    return teamMatching.skillLevelBeginner.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.LOW)){
+                    return teamMatching.skillLevelLow.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.MIDDLE)){
+                    return teamMatching.skillLevelMiddle.eq(true);
+                } else if(skillLevel.equals(SkillLevelType.HIGH)){
+                    return teamMatching.skillLevelHigh.eq(true);
+                } else {
+                    return null;
+                }
             } else {
+                log.debug("eqSkillLevel : entityType is not matePost or teamMatching");
                 return null;
             }
         } else {
@@ -128,10 +208,18 @@ public class QueryRepository {
         }
     }
 
-    private BooleanExpression eqLocation(String location) {
+    private BooleanExpression eqLocation(String entityType, String location) {
         if(location != null){
-            return matePost.location.eq(location);
+            if(entityType.equals("matePost")){
+                return matePost.location.eq(location);
+            } else if(entityType.equals("teamMatching")){
+                return teamMatching.location.eq(location);
+            } else {
+                log.debug("eqLocation : entityType is not matePost or teamMatching");
+                return null;
+            }
         } else {
+            log.debug("eqLocation : location is null");
             return null;
         }
     }
@@ -152,29 +240,51 @@ public class QueryRepository {
         }
     }
 
-    private BooleanExpression beforeScheduledTime() {
-        BooleanExpression isBeforeScheduledDate = matePost.scheduledDate.after(LocalDate.now());
+    private BooleanExpression beforeScheduledTime(String entityType, boolean includingExpired) {
+        if(includingExpired == false){
+            if(entityType.equals("matePost")){
+                BooleanExpression isBeforeScheduledDate = matePost.scheduledDate.after(LocalDate.now());
 
-        BooleanExpression isTodayAndBeforeScheduledTime = matePost.scheduledDate.eq(LocalDate.now())
-                .and(matePost.startTime.after(LocalTime.now()));
+                BooleanExpression isTodayAndBeforeScheduledTime = matePost.scheduledDate.eq(LocalDate.now())
+                        .and(matePost.startTime.after(LocalTime.now()));
 
-        return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
-    }
+                return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
+            }else if(entityType.equals("teamMatching")){
+                BooleanExpression isBeforeScheduledDate = teamMatching.scheduledDate.after(LocalDate.now());
 
-    private BooleanExpression ltCreatedAt(LocalDateTime cursorTime) {
-        if(cursorTime == null){
+                BooleanExpression isTodayAndBeforeScheduledTime = teamMatching.scheduledDate.eq(LocalDate.now())
+                        .and(teamMatching.startTime.after(LocalTime.now()));
+
+                return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
+            } else {
+                log.debug("beforeScheduledTime : entityType is not matePost or teamMatching");
+                return null;
+            }
+        } else{
             return null;
         }
-
-        return matePost.createdAt.lt(cursorTime);
     }
 
-    public List<Tuple> queryForTest(TestCondition condition){
-        return queryFactory
-                .select(team.id, team.name, team.location, team.sport)
-                .from(team)
-                .where(eqLocation(condition.getLocation()))
-                .fetch();
+    private BooleanExpression ltCreatedAt(String entityType, LocalDateTime cursorTime) {
+        if(cursorTime != null){
+            if(entityType.equals("matePost")){
+                return matePost.createdAt.lt(cursorTime);
+            } else if(entityType.equals("teamMatching")){
+                return teamMatching.createdAt.lt(cursorTime);
+            } else {
+                log.debug("ltCreatedAt : entityType is not matePost or teamMatching");
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
+    private BooleanExpression eqNumberOfVersus(String numberOfMembers) {
+        if(numberOfMembers != null){
+            return teamMatching.numberOfMembers.eq(numberOfMembers);
+        } else {
+            return null;
+        }
+    }
 }

@@ -17,6 +17,10 @@ public interface ChatService {
     long createChatRoom(ChatCreateDTO chatCreateDTO);
 
 
+    // 농구장 채팅방 생성
+    long createBasketballChatRoom(ChatCreateDTO chatCreateDTO);
+
+
     // 메세지 저장
     void saveMessage(ChatMessageDTO chatMessageDTO);
 
@@ -57,6 +61,10 @@ public interface ChatService {
 
 
     // 첫방문/재방문 검사
+    Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
+
+
+    // 채팅방 첫방문, 재방문 판별
     Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
 
 

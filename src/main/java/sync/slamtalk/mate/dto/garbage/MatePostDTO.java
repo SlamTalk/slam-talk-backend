@@ -1,13 +1,15 @@
-package sync.slamtalk.mate.dto;
+package sync.slamtalk.mate.dto.garbage;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.querydsl.core.annotations.QueryProjection;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
+import sync.slamtalk.mate.dto.PositionListDto;
+import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
 
 import java.time.LocalDate;
@@ -29,16 +31,20 @@ public class MatePostDTO {
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate scheduledDate;
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
     @NonNull
+    @Length(min = 4, max = 30)
     private String title;
     @NonNull
+    @Length(min = 4, max = 500)
     private String content;
     @NonNull
-    private List<PositionListDTO> positionList = new ArrayList<>();
+    private List<PositionListDto> positionList = new ArrayList<>();
 
     private List<String> skillList = new ArrayList<>();
 
@@ -53,10 +59,10 @@ public class MatePostDTO {
     @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
-    private List<FromParticipantDto> fromParticipants = new ArrayList<>();
+    private List<ParticipantDto> fromParticipants = new ArrayList<>();
 
 
-    public MatePostDTO(long matePostId, long writerId, String writerNickname, LocalDate scheduledDate, LocalTime startTime, LocalTime endTime, String title, String content, List<PositionListDTO> positionList, List<String> skillList, RecruitmentStatusType recruitmentStatus, String locationDetail, List<Participant> participants, LocalDateTime createdAt) {
+    public MatePostDTO(long matePostId, long writerId, String writerNickname, LocalDate scheduledDate, LocalTime startTime, LocalTime endTime, String title, String content, List<PositionListDto> positionList, List<String> skillList, RecruitmentStatusType recruitmentStatus, String locationDetail, List<Participant> participants, LocalDateTime createdAt) {
         this.matePostId = matePostId;
         this.writerId = writerId;
         this.writerNickname = writerNickname;

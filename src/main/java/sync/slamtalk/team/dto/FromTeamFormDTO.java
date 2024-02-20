@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 
 import java.time.LocalDate;
@@ -22,7 +23,7 @@ public class FromTeamFormDTO {
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 
-    @NotBlank(message = "내용을 입력해주세요.")
+    @NonNull
     private String content;
 
     @NotBlank(message = "상세 위치를 입력해주세요.")

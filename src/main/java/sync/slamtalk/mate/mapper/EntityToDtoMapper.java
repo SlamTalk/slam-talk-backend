@@ -3,7 +3,10 @@ package sync.slamtalk.mate.mapper;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import sync.slamtalk.mate.dto.*;
+import sync.slamtalk.mate.dto.response.MatePostToDto;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.team.dto.ToTeamFormDTO;
+import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,23 +15,23 @@ import java.util.List;
 @Component
 public class EntityToDtoMapper {
 
-    public List<PositionListDTO> toPositionListDto(MatePost matePost){
-        List<PositionListDTO> positionList = new ArrayList<>();
+    public List<PositionListDto> toPositionListDto(MatePost matePost){
+        List<PositionListDto> positionList = new ArrayList<>();
 
-        if(matePost.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+        if(matePost.getMaxParticipantsCenters() > 0 || matePost.getCurrentParticipantsCenters() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+        if(matePost.getMaxParticipantsForwards() > 0 || matePost.getCurrentParticipantsForwards() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+        if(matePost.getMaxParticipantsGuards() > 0 || matePost.getCurrentParticipantsGuards() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
-        if(matePost.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+        if(matePost.getMaxParticipantsOthers() > 0 || matePost.getCurrentParticipantsOthers() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
 
@@ -122,43 +125,24 @@ public class EntityToDtoMapper {
     }
 
 
-    public MatePostDTO toMatePostDto(MatePost matePost){
-        MatePostDTO matePostDTO = new MatePostDTO();
-        matePostDTO.setWriterId(matePost.getWriterId());
-        matePostDTO.setWriterNickname(matePost.getWriterNickname());
-        matePostDTO.setMatePostId(matePost.getMatePostId());
-        matePostDTO.setScheduledDate(matePost.getScheduledDate());
-        matePostDTO.setStartTime(matePost.getStartTime());
-        matePostDTO.setEndTime(matePost.getEndTime());
-        matePostDTO.setTitle(matePost.getTitle());
-        matePostDTO.setContent(matePost.getContent());
-        matePostDTO.setRecruitmentStatus(matePost.getRecruitmentStatus());
-        matePostDTO.setLocationDetail(matePost.getLocationDetail());
-        matePostDTO.setParticipants(matePost.getParticipants());
-        matePostDTO.setPositionList(toPositionListDto(matePost));
-        matePostDTO.setSkillList(matePost.toSkillLevelTypeList());
-        matePostDTO.setPositionList(toPositionListDto(matePost));
-        matePostDTO.setCreatedAt(matePost.getCreatedAt());
-        return matePostDTO;
-    }
 
-    public MatePostToDto fromUnrefinedToMatePostDto(UnrefinedMatePostDTO dto){
-        List<PositionListDTO> positionList = new ArrayList<>();
+    public MatePostToDto fromUnrefinedToMatePostDto(UnrefinedMatePostDto dto){
+        List<PositionListDto> positionList = new ArrayList<>();
 
-        if(dto.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), dto.getMaxParticipantsCenters(), dto.getCurrentParticipantsCenters());
+        if(dto.getMaxParticipantsCenters() > 0 || dto.getCurrentParticipantsCenters() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), dto.getMaxParticipantsCenters(), dto.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), dto.getMaxParticipantsForwards(), dto.getCurrentParticipantsForwards());
+        if(dto.getMaxParticipantsForwards() > 0 || dto.getCurrentParticipantsForwards() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), dto.getMaxParticipantsForwards(), dto.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), dto.getMaxParticipantsGuards(), dto.getCurrentParticipantsGuards());
+        if(dto.getMaxParticipantsGuards() > 0 || dto.getCurrentParticipantsGuards() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), dto.getMaxParticipantsGuards(), dto.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
-        if(dto.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), dto.getMaxParticipantsOthers(), dto.getCurrentParticipantsOthers());
+        if(dto.getMaxParticipantsOthers() > 0 || dto.getCurrentParticipantsOthers() > 0){
+            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), dto.getMaxParticipantsOthers(), dto.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
 
@@ -189,22 +173,22 @@ public class EntityToDtoMapper {
      * @return MatePostToDto : response dto
      * */
     public MatePostToDto FromMatePostToMatePostDto(MatePost matePost){
-        List<PositionListDTO> positionList = new ArrayList<>();
+        List<PositionListDto> positionList = new ArrayList<>();
 
         if(matePost.getMaxParticipantsCenters() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
+            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsForwards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
+            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsGuards() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
+            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
             positionList.add(positionListDTO);
         }
         if(matePost.getMaxParticipantsOthers() > 0){
-            PositionListDTO positionListDTO = new PositionListDTO(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
+            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
             positionList.add(positionListDTO);
         }
 
@@ -226,4 +210,27 @@ public class EntityToDtoMapper {
 
         return resultDto;
     }
+
+    public ToTeamFormDTO fromUnrefinedTeamMatchingToDto(UnrefinedTeamMatchingDto inputDto){
+        ToTeamFormDTO resultDto = new ToTeamFormDTO();
+        resultDto.setTeamMatchingId(inputDto.getTeamMatchingId());
+        resultDto.setTeamName(inputDto.getTeamName());
+        resultDto.setTitle(inputDto.getTitle());
+        resultDto.setContent(inputDto.getContent());
+        resultDto.setWriterId(inputDto.getWriterId());
+        resultDto.setWriterNickname(inputDto.getWriterNickname());
+        resultDto.setWriterImageUrl(inputDto.getWriterImageUrl());
+        resultDto.setScheduledDate(inputDto.getScheduledDate());
+        resultDto.setStartTime(inputDto.getStartTime());
+        resultDto.setEndTime(inputDto.getEndTime());
+        resultDto.setLocationDetail(inputDto.getLocation() + " " + inputDto.getLocationDetail());
+        resultDto.setNumberOfMembers(inputDto.getNumberOfMembers());
+        resultDto.setSkillLevel(inputDto.getSkillLevel());
+        resultDto.setSkillLevelList(toSkillLevelTypeList(inputDto.getSkillLevel()));
+        resultDto.setCreatedAt(inputDto.getCreatedAt());
+        resultDto.setRecruitmentStatusType(inputDto.getRecruitmentStatus());
+
+        return resultDto;
+    }
+
 }
