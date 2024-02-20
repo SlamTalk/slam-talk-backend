@@ -65,7 +65,7 @@ public class CommunityController {
     @Operation(
             summary = "게시글 목록 조회",
             description = "이 기능은 작성된 게시글 목록 정보를 조회하는 기능입니다.",
-            tags = {"게시판"}
+            tags = {"게시판","게스트"}
     )
     public ApiResponse<List<CommunityResponseDTO>> getPostList() {
         List<CommunityResponseDTO> communities = communityService.getPostList();
@@ -77,7 +77,7 @@ public class CommunityController {
     @Operation(
             summary = "게시글 조회",
             description = "이 기능은 작성된 게시글 정보를 조회하는 기능입니다.",
-            tags = {"게시판"}
+            tags = {"게시판","게스트"}
     )
     public ApiResponse<CommunityResponseDTO> getPost(@PathVariable Long communityId) {
         CommunityResponseDTO communityResponseDTO = communityService.getPost(communityId);
@@ -89,7 +89,7 @@ public class CommunityController {
     @Operation(
             summary = "태그 별 게시글 목록 조회",
             description = "이 기능은 태그 별로 작성된 게시글 목록 정보를 조회하는 기능입니다.",
-            tags = {"게시판"}
+            tags = {"게시판","게스트"}
     )
     public ApiResponse<List<CommunityResponseDTO>> getCommunitiesByCategory(
             @PathVariable("category") CommunityCategory category) {

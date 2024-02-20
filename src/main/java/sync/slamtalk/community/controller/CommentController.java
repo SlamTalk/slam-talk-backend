@@ -1,11 +1,9 @@
 package sync.slamtalk.community.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,19 +34,6 @@ public class CommentController {
 
         CommentResponseDTO responseDTO = commentService.createComment(requestDTO, userId, communityId);
         return ApiResponse.ok(responseDTO, "댓글을 성공적으로 등록하였습니다.");
-    }
-
-    // 댓글 조회
-    @GetMapping("/comment")
-    @Operation(
-            summary = "댓글 조회",
-            description = "이 기능은 작성된 댓글을 조회하는 기능입니다.",
-            tags = {"게시판"}
-    )
-    public ApiResponse<List<CommentResponseDTO>> getComment(@PathVariable Long communityId) {
-        List<CommentResponseDTO> comments = commentService.getCommentsList(communityId);
-        return ApiResponse.ok(comments);
-
     }
 
     // 댓글 수정
