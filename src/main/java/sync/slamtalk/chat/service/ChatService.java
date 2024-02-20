@@ -17,6 +17,10 @@ public interface ChatService {
     long createChatRoom(ChatCreateDTO chatCreateDTO);
 
 
+    // 농구장 채팅방 생성
+    long createBasketballChatRoom(ChatCreateDTO chatCreateDTO);
+
+
     // 메세지 저장
     void saveMessage(ChatMessageDTO chatMessageDTO);
 
@@ -54,8 +58,12 @@ public interface ChatService {
     // 특정방을 나갈 때 userChatRoom softDelete
     Optional<UserChatRoom> exitRoom(Long userId, Long chatRoomId);
 
+
+    // 채팅방 첫방문, 재방문 판별
     Optional<Boolean> isVisitedFirst(Long userId, Long roomId);
 
+
+    // Redis 에서 메세지 조회
     Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count);
 
 }
