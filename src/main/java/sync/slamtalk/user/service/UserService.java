@@ -249,7 +249,7 @@ public class UserService {
         }
 
         // 이미지 파일이 존재한다면 업데이트
-        if (!file.isEmpty()) {
+        if (file != null && !file.isEmpty()) {
             String fileUrl = awsS3Service.uploadFile(file);
             user.updateProfileUrl(fileUrl);
         }
