@@ -30,23 +30,21 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.name=:roomName and m.chat.roomType=:roomType")
     List<UserChatRoom>findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
 
+
     // TeamMatchingId로 UserChatRoom 검색
     Optional<UserChatRoom> findByTeamMatchingId(Long teamMatchingId);
+
 
     // DirectId로 UserChatRoom 검색
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.directId=:directId")
     Optional<UserChatRoom> findByDirectId(Long userId,Long directId);
 
-//    // BasketballId로 UserChatRoom 검색
-//    Optional<UserChatRoom> findByBasketBallId(Long basketballId);
 
-
+    // BasketballId로 UserChatRoom 검색
     @Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.chat.basketBallId = :basketballId")
     Optional<UserChatRoom> findUserChatRoomByBasketballId(@Param("basketballId") Long basketballId);
 
 
     // TogetherId로 UserChatRoom 검색
     Optional<UserChatRoom> findByTogetherId(Long togetherId);
-
-
 }
