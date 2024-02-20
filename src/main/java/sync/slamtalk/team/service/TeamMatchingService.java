@@ -357,7 +357,7 @@ public class TeamMatchingService {
     public MyTeamMatchingListRes getMyTeamMatchingList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
-        List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriter(user);
+        List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(userId);
 
         List<ToTeamFormDTO> authoredPost = new ArrayList<>(allByWriter.stream()

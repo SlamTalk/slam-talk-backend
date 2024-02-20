@@ -24,21 +24,23 @@ public interface MatePostRepository extends JpaRepository<MatePost, Long> {
             "join Participant p on m.matePostId = p.matePost.matePostId " +
             "where p.participantId = :userId " +
             "and m.recruitmentStatus = 'COMPLETED' " +
-            "and p.applyStatus = 'ACCEPTED'")
+            "and p.applyStatus = 'ACCEPTED'" +
+            "and m.isDeleted = false ")
     long findMateCompleteParticipationCount(@Param("userId") Long userId);
 
-    @Query("select count(*) from MatePost m where m.writer = :writer and m.recruitmentStatus = 'COMPLETED'")
+    @Query("select count(*) from MatePost m where m.writer = :writer and m.recruitmentStatus = 'COMPLETED' and m.isDeleted = false ")
     long countMatePostByWriter(@Param("writer") User writer);
 
     /* 내가 쓴 글 조회*/
     @EntityGraph(attributePaths = {"participants", "writer"})
-    List<MatePost> findAllByWriter(@Param("writer") User writer);
+    List<MatePost> findAllByWriterAndIsDeletedFalse(@Param("writer") User writer);
 
     /* 내가 참여한 글 조회*/
     @Query("select distinct m " +
             "from MatePost m " +
             "join fetch m.participants p " +
-            "where p.participantId =:participantId")
+            "where p.participantId =:participantId " +
+            "and m.isDeleted = false ")
     List<MatePost> findAllByApplicationId(@Param("participantId") Long participantId);
 
 }

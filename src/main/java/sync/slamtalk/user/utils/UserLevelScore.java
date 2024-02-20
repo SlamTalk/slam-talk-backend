@@ -5,9 +5,10 @@ package sync.slamtalk.user.utils;
  * */
 public class UserLevelScore {
     /* 레벨 시스템을 위한 상수 */
-    public static final Long LEVEL_THRESHOLD = 50L;
+    public static final Long LEVEL_THRESHOLD = 10L;
     public static final Long MATE_LEVEL_SCORE = 5L;
     public static final Long TEAM_MATCHING_LEVEL_SCORE = 5L;
+    public static final Long COMMUNITY_SCORE = 3L;
     public static final Long ATTEND_SCORE = 1L;
     public static final Long BASKETBALL_COURT_TIP_SCORE = 30L;
 }

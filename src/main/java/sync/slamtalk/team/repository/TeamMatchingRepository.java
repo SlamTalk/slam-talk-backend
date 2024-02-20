@@ -26,15 +26,16 @@ public interface TeamMatchingRepository extends JpaRepository<TeamMatching, Long
             "join TeamApplicant a on t.teamMatchingId = a.teamMatching.teamMatchingId " +
             "where a.applicantId = :userId " +
             "and t.recruitmentStatus = 'COMPLETED' " +
-            "and a.applyStatus = 'ACCEPTED'")
+            "and a.applyStatus = 'ACCEPTED'" +
+            "and t.isDeleted = false ")
     long findTeamMatchingByCompleteParticipationCount(@Param("userId") Long userId);
 
-    @Query("select count(*) from TeamMatching t where t.writer = :writer and t.recruitmentStatus = 'COMPLETED'")
+    @Query("select count(*) from TeamMatching t where t.writer = :writer and t.recruitmentStatus = 'COMPLETED' and t.isDeleted = false ")
     long countTeamMatchingByWriter(@Param("writer") User writer);
 
     /* 내가 작성한 팀매칭 리스트를 조회*/
     @EntityGraph(attributePaths = {"teamApplicants", "writer"})
-    List<TeamMatching> findAllByWriter(@Param("writer") User writer);
+    List<TeamMatching> findAllByWriterAndIsDeletedFalse(@Param("writer") User writer);
 
     /* 내가 지원한 팀매칭 리스트를 조회*/
     @Query("select distinct t " +
