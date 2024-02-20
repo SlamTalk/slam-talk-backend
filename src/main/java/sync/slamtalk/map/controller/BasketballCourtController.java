@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.map.dto.BasketballCourtFullResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
@@ -55,9 +55,9 @@ public class BasketballCourtController {
             description = "이 기능은 클릭한 마커에 해당하는 농구장의 전체 정보 응답을 보내는 기능입니다.", // 기능 설명
             tags = {"지도", "게스트"}
     )
-    public ApiResponse<BasketballCourtResponseDTO> getCourtFullInfoById(@PathVariable Long courtId) {
+    public ApiResponse<BasketballCourtFullResponseDTO> getCourtFullInfoById(@PathVariable Long courtId) {
 
-        BasketballCourtResponseDTO basketballCourtResponseDTO = basketballCourtService.getCourtFullInfoById(courtId);
+        BasketballCourtFullResponseDTO basketballCourtResponseDTO = basketballCourtService.getCourtFullInfoById(courtId);
         return ApiResponse.ok(basketballCourtResponseDTO, "농구장 상세 정보를 성공적으로 가져왔습니다.");
 
     }
