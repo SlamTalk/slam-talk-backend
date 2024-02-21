@@ -3,6 +3,8 @@ package sync.slamtalk.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -26,12 +28,13 @@ public class GlobalRestControllerAdvice {
         return ApiResponse.fail(e.getMessage());
     }
 
-    // 응답 상태가 BAD_REQUEST && BaseException 호출 시
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    // BaseException 호출 시 ResponseCodeDetails의 code를 이용해서 HTTP 상태 코드 반환
     @ExceptionHandler(BaseException.class)
-    public ApiResponse<String> handleBaseException(BaseException e){
-        log.debug("Exception catched in RestControllerAdvice : {}",e.getMessage());
-        return ApiResponse.fail(e.getErrorCode());
+    public ResponseEntity<ApiResponse<String>> handleBaseException(BaseException e){
+        log.debug("Exception caught in RestControllerAdvice : {}", e.getMessage());
+        ApiResponse<String> apiResponse = ApiResponse.fail(e.getErrorCode());
+        // 동적으로 상태 코드 설정
+        return new ResponseEntity<>(apiResponse, HttpStatus.valueOf(e.getErrorCode().getCode()));
     }
 
     // 응답 상태가 BAD_REQUEST && MethodArgumentNotValidException 호출 시
@@ -41,4 +44,14 @@ public class GlobalRestControllerAdvice {
         log.debug("Exception cathced in RestControllerAdvice:{}",e.getMessage());
         return ApiResponse.fail(e.getMessage());
     }
+
+    // enum 타입 클라이언트가 잘못 요청 했을 경우 발생하는 exception
+    // HttpMessageNotReadableException
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ApiResponse<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e){
+        log.debug("Exception cathced in RestControllerAdvice:{}",e.getMessage());
+        return ApiResponse.fail(e.getMessage());
+    }
+
 }

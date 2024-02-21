@@ -23,6 +23,7 @@ public class ApiResponse<T> {
 
 
     private ApiResponse(boolean success, String message, T results){
+        this.status = 200;
         this.success= success;
         this.message = message;
         this.results = results;
@@ -54,15 +55,15 @@ public class ApiResponse<T> {
     }
 
 
-    // 성공 응답
+    // 실패 응답
     public static <T>ApiResponse<T> fail(){
         return new ApiResponse<>(false,"요청에 실패했습니다",null);
     }
 
 
     // 실패 응답
-    public static <T>ApiResponse<T> fail(ResponseCode responseCode){
-        return new ApiResponse<>(responseCode.getStatus(), responseCode.getMessage());
+    public static <T>ApiResponse<T> fail(ResponseCodeDetails responseCodeInterface){
+        return new ApiResponse<>(responseCodeInterface.getStatus(), responseCodeInterface.getMessage());
     }
 
 

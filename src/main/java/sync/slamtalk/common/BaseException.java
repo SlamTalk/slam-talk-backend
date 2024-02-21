@@ -5,14 +5,14 @@ package sync.slamtalk.common;
    기능별 커스텀 에러 응답을 준다.
 */
 public class BaseException extends RuntimeException{
-    private ResponseCode responseCode = ResponseCode.UNCATEGORIZED;
+    private final ResponseCodeDetails responseCodeInterface;
 
-    public BaseException(ResponseCode responseCode){
+    public BaseException(ResponseCodeDetails responseCodeInterface){
         super("error");
-        this.responseCode = responseCode;
+        this.responseCodeInterface = responseCodeInterface;
     }
 
-    public ResponseCode getErrorCode(){
-        return responseCode;
+    public ResponseCodeDetails getErrorCode(){
+        return responseCodeInterface;
     }
 }

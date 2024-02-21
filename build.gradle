@@ -23,21 +23,57 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.projectlombok:lombok:1.18.28'
+    testImplementation 'junit:junit:4.13.1'
 
-	runtimeOnly "com.mysql:mysql-connector-j" // mysql
+    runtimeOnly "com.mysql:mysql-connector-j" // mysql
 	runtimeOnly 'com.h2database:h2' // h2
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// oauth 2.0
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	// spring security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	/* swagger 의존성 추가*/
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
+	/* jwt 의존성 추가 */
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.12.3'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.12.3'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.3'
+
+	/* Redis 설정 */
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'io.lettuce:lettuce-core'
+
+	/* AWS S3Bucket 연동 */
+	implementation 'io.awspring.cloud:spring-cloud-aws-s3:3.0.2'
+
+	/* 이메일인증 */
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+	/* QueryDSL */
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+clean {
+	delete file('src/main/generated')
+}
+
