@@ -225,6 +225,7 @@ public class ChatServiceImpl implements ChatService{
         for(UserChatRoom ucr : chatRoom){
 
             boolean isDelete = ucr.getIsDeleted().booleanValue();
+            log.debug("=========== 유저가 가지고 있는 채팅방이름 : {}, 채팅방 아이디 : {}",ucr.getChat().getName(),ucr.getChat().getId());
             log.debug("isDelete:{}",isDelete);
 
 
@@ -249,11 +250,17 @@ public class ChatServiceImpl implements ChatService{
                 if(ucr.getRoomType().equals(RoomType.DIRECT) || ucr.getRoomType().equals(RoomType.MATCHING)){
                     List<UserChatRoom> optionalList = userChatRoomRepository.findByChat_Id(ucr.getChat().getId());
 
+                    if(optionalList.isEmpty()){
+                        log.debug("1:1,팀매칭인데 가져온 채팅방 아이디 조회했을 때 가져온게 없음 : {}",ucr.getChat().getId());
+                    }
+
                     for(UserChatRoom x : optionalList){
                         if(x.getUser().getId().equals(userId) && x.getIsDeleted().equals(Boolean.FALSE)){ //&& !x.getUser().getId().equals(userId)
-                            // 자기 자신이 아니고, 삭제가 되지 않은 경우
+                            // 자기 자신이고, 삭제가 되지 않은 경우
                             Long directId = x.getDirectId();
                             Optional<User> optionalUser = userRepository.findById(directId);
+
+                            log.debug("현재 유저 : {}, 가져오려는 방 : {}",userId,directId);
 
                             if(optionalUser.isPresent()){
                                 profile = optionalUser.get().getImageUrl();
