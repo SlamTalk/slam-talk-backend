@@ -44,4 +44,8 @@ public class ChatRoomDTO implements Serializable {
     public void updatecourtId(Long courtId){
         this.courtId = courtId;
     }
+
+    public void updatePartnerId(String pid){
+        this.partnerId = pid;
+    }
 }
