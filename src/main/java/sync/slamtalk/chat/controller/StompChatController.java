@@ -44,6 +44,8 @@ public class StompChatController {
         if(message.getContent()!=null){
             if(message.getContent().equals("EXIT")){
                 Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
+
+                log.debug("현재 유저가 가지고 있는 방의 상태 : {}",optionalUserChatRoom.get().getChat().getIsDeleted());
                 if(optionalUserChatRoom.isEmpty()){
                     log.debug("해당 유저는 해당 채팅방에 참여하고 있지 않음");
                 }
