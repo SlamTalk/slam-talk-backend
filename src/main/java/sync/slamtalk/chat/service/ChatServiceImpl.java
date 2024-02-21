@@ -64,12 +64,22 @@ public class ChatServiceImpl implements ChatService{
             Long userA = participants.get(0);
             Long userB = participants.get(1);
 
-            // 유저 한명만 조회하면 됨 다른 유저도 똑같이 상대 유저의 id 를 directId 로 가지고 있을 것이기 때문
-            Optional<UserChatRoom> optionalUC1 = userChatRoomRepository.findByDirectId(userA, userB);
-            if(optionalUC1.isPresent()){
-                log.debug("동일한 디엠방 존재함");
-                return optionalUC1.get().getChat().getId();
+            Optional<UserChatRoom> optionalChatRoom_1 = userChatRoomRepository.findByDirectId(userA, userB);
+            Optional<UserChatRoom> optionalChatRoom_2 = userChatRoomRepository.findByDirectId(userB, userA);
+
+            if(optionalChatRoom_1.isPresent() && optionalChatRoom_2.isPresent()){
+                // A유저의 채팅방 중 roomType = DIRECT && directId 가 B유저
+                // B유저의 채팅방 중 roomType = DIRECT && directId 가 A유저
+
+                // A 유저, B 유저 모두 삭제 하지 않은 경우
+                if(optionalChatRoom_1.get().getIsDeleted() && optionalChatRoom_2.get().getIsDeleted()){
+                    // A유저 B유저 모두 동일한 채팅방 아이디를 가지고 있을 것이기 때문
+                    return optionalChatRoom_1.get().getChat().getId();
+                }
+                // A 유저, B 유저 둘 중 하나라도 삭제한 경우 새로 생성
+
             }
+
         }
 
         // TM,MM 은 id 로 검사
@@ -99,7 +109,6 @@ public class ChatServiceImpl implements ChatService{
         // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .roomType(roomType)
-                //.basketballCourt()
                 .togetherId(chatCreateDTO.getTogether_id())
                 .teamMatchingId(chatCreateDTO.getTeamMatching_id())
                 .name(chatCreateDTO.getName())
@@ -121,6 +130,7 @@ public class ChatServiceImpl implements ChatService{
 
             Optional<User> optionalUser = userRepository.findById(user);
 
+            // UserChatRoom 생성
             UserChatRoom userChatRoom = UserChatRoom.builder()
                     .user(optionalUser.get())
                     .isFirst(true)
@@ -129,7 +139,7 @@ public class ChatServiceImpl implements ChatService{
                     .chat(saved)
                     .name(chatCreateDTO.getName())
                     .togetherId(chatCreateDTO.getTogether_id())
-                    .teamMatchingId(chatCreateDTO.getTeamMatching_id()) //  2.21
+                    .teamMatchingId(chatCreateDTO.getTeamMatching_id())
                     .build();
 
             if(roomType.equals(RoomType.DIRECT) || roomType.equals(RoomType.MATCHING)){
@@ -218,31 +228,20 @@ public class ChatServiceImpl implements ChatService{
         log.debug("userId:{}",userId);
         List<UserChatRoom> chatRoom = userChatRoomRepository.findByUser_Id(userId);
         if(chatRoom.isEmpty()){
-            log.debug("nothing");
+            log.debug("유저가 가지고 있는 채팅방이 없습니다.");
             return null;
         }
 
-
-        for(UserChatRoom u : chatRoom){
-            log.debug("유저가 가지고 있는 채팅방 아이디, 이름 : {} ,{}",u.getChat().getId(),u.getChat().getName());
-        }
 
         // 유저가 가지고 있는 채팅방 리스트를 돌면서 가져오기
         for(UserChatRoom ucr : chatRoom){
 
             boolean isDelete = ucr.getIsDeleted().booleanValue();
-            //log.debug("=========== 유저가 가지고 있는 채팅방이름 : {}, 채팅방 아이디 : {}",ucr.getChat().getName(),ucr.getChat().getId());
-            log.debug("isDelete:{}",isDelete);
-
 
             // 삭제 되지 않은 채팅방만 가져옴
             if(isDelete==false){
 
                 String profile = null;
-                if(ucr.getRoomType()==null){
-                    log.debug("getroomType null!!!!");
-                }
-
                 ChatRoomDTO dto = ChatRoomDTO.builder()
                         .roomId(ucr.getId().toString())
                         .roomType(ucr.getRoomType().toString())
@@ -252,37 +251,70 @@ public class ChatServiceImpl implements ChatService{
                         .build();
 
                 // 1:1 인 경우 상대방 프로필
-                // 1:1, 팀매칭만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
-                if(ucr.getRoomType().equals(RoomType.DIRECT) || ucr.getRoomType().equals(RoomType.MATCHING)){
+                // 1:1 만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
+                if(ucr.getRoomType().equals(RoomType.DIRECT)){
                     List<UserChatRoom> optionalList = userChatRoomRepository.findByChat_Id(ucr.getChat().getId());
 
                     if(optionalList.isEmpty()){
-                        log.debug("1:1,팀매칭인데 가져온 채팅방 아이디 조회했을 때 가져온게 없음 : {}",ucr.getChat().getId());
+                        log.debug("1:1인데 가져온 채팅방 아이디 조회했을 때 가져온게 없음 : {}",ucr.getChat().getId());
                     }
 
                     for(UserChatRoom x : optionalList){
                         if(x.getUser().getId().equals(userId) && x.getIsDeleted().equals(Boolean.FALSE)){ //&& !x.getUser().getId().equals(userId)
-                            // 자기 자신이고, 삭제가 되지 않은 경우
+                            // 유저 가지고 있는 것중 삭제되지 않은 채팅방
+
+                            // directId 는 상대방의 아이디
                             Long directId = x.getDirectId();
                             Optional<User> optionalUser = userRepository.findById(directId);
 
                             log.debug("현재 유저 : {}, 가져오려는 방 : {}",userId,directId);
 
+//                            // 상대방의 채팅리스트에서 나의 아이디가 direct 로 있는 경우
+//                            Optional<UserChatRoom> userChatRoomOptional = userChatRoomRepository.findByDirectId(directId, userId);
+//                            if(userChatRoomOptional.isPresent()){
+//                                UserChatRoom userChatRoom = userChatRoomOptional.get();
+//                                if(userChatRoom.getIsDeleted().equals(Boolean.FALSE)){
+//                                    if(optionalUser.isPresent()){
+//                                        profile = optionalUser.get().getImageUrl();
+//                                        dto.updateImgUrl(profile);
+//                                        dto.updateName(optionalUser.get().getNickname());
+//                                        dto.updatePartnerId(optionalUser.get().getId().toString());
+//                                    }
+//                                }else if(userChatRoom.getIsDeleted().equals(Boolean.TRUE)){
+//                                    dto.updateImgUrl(null);
+//                                    dto.updateName("알 수 없는 유저");
+//                                    dto.updatePartnerId("0");
+//                                }
+//                            }
+
+
+                            // 상대방의 이미지, 상대방 이름, 상대방 아이디 저장
                             if(optionalUser.isPresent()){
                                 profile = optionalUser.get().getImageUrl();
                                 dto.updateImgUrl(profile);
                                 dto.updateName(optionalUser.get().getNickname());
+                                dto.updatePartnerId(optionalUser.get().getId().toString());
                             }
-
-                            log.debug("지금 내 자신 : {}",userId);
-                            log.debug("자기 자신이 아닌 상대방 :{}",directId);
                         }
                     }
                 }
 
+                // 팀매칭 게시판 아이디
+                if(ucr.getRoomType().equals(RoomType.MATCHING)){
+                    dto.updatePartnerId(ucr.getTeamMatchingId().toString());
+                }
+
+                // 같이하기 게시판 아이디
+                if(ucr.getRoomType().equals(RoomType.TOGETHER)){
+                    dto.updatePartnerId(ucr.getTogetherId().toString());
+                }
+
+                // 농구장 아이디
                 if(ucr.getRoomType().equals(RoomType.BASKETBALL)){
                     dto.updatecourtId(ucr.getChat().getBasketballCourt().getCourtId());
                 }
+
+
                 // 마지막 메세지
                 PageRequest pageRequest = PageRequest.of(0, 1);
                 Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
@@ -390,8 +422,6 @@ public class ChatServiceImpl implements ChatService{
 
                 // 메세지가 있는 경우
                 for (Messages msg : byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc) {
-//                    log.debug("messageId: {}", msg.getId());
-//                    log.debug("content: {}", msg.getContent());
 
                     log.debug("db에서 메세지 불러오기 성공");
                     Optional<User> optionalUser = userRepository.findById(msg.getSenderId());
@@ -419,7 +449,7 @@ public class ChatServiceImpl implements ChatService{
         }
         // redis 에서 가져온 내역이 있는 경우
 
-        // TODO 갯수 20개 못가져온경우 추가적으로 db 페이징
+        // 갯수 20개 못가져온경우 추가적으로 db 페이징
         List<ChatMessageDTO> chatMessageDTOS = optionalList.get();
         String messageId = chatMessageDTOS.get(chatMessageDTOS.size() - 1).getMessageId();
         if(chatMessageDTOS.size()<needCnt){
