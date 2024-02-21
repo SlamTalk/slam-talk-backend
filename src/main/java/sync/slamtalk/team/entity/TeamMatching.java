@@ -56,6 +56,7 @@ public class TeamMatching extends BaseEntity implements Post {
     @Column(nullable = false)
     private String title;
 
+    @Lob
     @Column(nullable = false)
     private String content;
 

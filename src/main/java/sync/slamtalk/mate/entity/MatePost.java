@@ -45,6 +45,7 @@ public class MatePost extends BaseEntity implements Post{
         @Column(nullable = false)
         private String title; // 글 제목
 
+        @Lob
         @Column(nullable = false)
         private String content; // 글 내용
 
