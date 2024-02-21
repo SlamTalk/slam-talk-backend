@@ -72,7 +72,7 @@ public class ChatServiceImpl implements ChatService{
                 // B유저의 채팅방 중 roomType = DIRECT && directId 가 A유저
 
                 // A 유저, B 유저 모두 삭제 하지 않은 경우
-                if(optionalChatRoom_1.get().getIsDeleted() && optionalChatRoom_2.get().getIsDeleted()){
+                if(!optionalChatRoom_1.get().getIsDeleted() && !optionalChatRoom_2.get().getIsDeleted()){
                     // A유저 B유저 모두 동일한 채팅방 아이디를 가지고 있을 것이기 때문
                     return optionalChatRoom_1.get().getChat().getId();
                 }
