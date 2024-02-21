@@ -221,11 +221,16 @@ public class ChatServiceImpl implements ChatService{
             return null;
         }
 
+
+        for(UserChatRoom u : chatRoom){
+            log.debug("유저가 가지고 있는 채팅방 아이디, 이름 : {} ,{}",u.getChat().getId(),u.getChat().getName());
+        }
+
         // 유저가 가지고 있는 채팅방 리스트를 돌면서 가져오기
         for(UserChatRoom ucr : chatRoom){
 
             boolean isDelete = ucr.getIsDeleted().booleanValue();
-            log.debug("=========== 유저가 가지고 있는 채팅방이름 : {}, 채팅방 아이디 : {}",ucr.getChat().getName(),ucr.getChat().getId());
+            //log.debug("=========== 유저가 가지고 있는 채팅방이름 : {}, 채팅방 아이디 : {}",ucr.getChat().getName(),ucr.getChat().getId());
             log.debug("isDelete:{}",isDelete);
 
 
