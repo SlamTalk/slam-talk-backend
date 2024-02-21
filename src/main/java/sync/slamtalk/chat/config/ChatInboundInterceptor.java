@@ -81,7 +81,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             // userId 추출
             Long userId = stompHandler.extractUserId(headerAccessor);
-            Optional<User> findUser = userRepository.findById(userId);
 
 
             // userChatRoom 검사
@@ -92,15 +91,31 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
                 // basketball chat 이 아닌 경우 userchatRoom 에 이미 추가 되어 있어야 함
                 if(!chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
+                    log.debug("이미 참여하고 있는 농구장");
                     stompHandler.isExistUserChatRoom(headerAccessor);
                 }
 
                 // basketball chat 인 경우 userChatRoom 에 추가
                 // BasketBallChatRoom 은 구독했을 때 유저의 채팅리스트에 추가됨
                 if(chatRoom.getRoomType().equals(RoomType.BASKETBALL)){
-                    Optional<Long> optionaladdedResult = stompHandler.addUserChatRoom(headerAccessor);
-                    if(optionaladdedResult.isEmpty()){
-                        throw new RuntimeException("NFR");
+
+                    // destination 가져오기
+                    String dest = headerAccessor.getDestination();
+                    Long basketRoomId = stompHandler.extractRoomId(dest);
+
+                    // 이미 유저가 참여중인 농구장 채팅방인지 확인
+                    Optional<Boolean> existAlreadyUserChatRoom = stompHandler.isExistAlreadyUserChatRoom(userId, basketRoomId);
+
+
+                    // 존재하지 않는 경우에만 유저의 채팅 리스트에 추가
+                    if(existAlreadyUserChatRoom.isEmpty()){
+                        log.debug("유저의 채팅 리스트에 추가");
+                        stompHandler.addUserChatRoom(headerAccessor);
+                    }
+
+                    // 이미 존재하는 경우 디버그
+                    if(existAlreadyUserChatRoom.isPresent()){
+                        log.debug("이미 참여 하고 있는 방 재 입장");
                     }
                 }
             }
@@ -150,7 +165,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
             // userId 가져오기
             Long userId = stompHandler.extractUserId(headerAccessor);
-
 
 
             // 뒤로 가기

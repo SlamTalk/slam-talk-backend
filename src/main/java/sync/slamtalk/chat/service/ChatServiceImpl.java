@@ -22,6 +22,7 @@ import sync.slamtalk.chat.repository.MessagesRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
+import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
@@ -159,8 +160,16 @@ public class ChatServiceImpl implements ChatService{
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatCreateDTO.getName())
                 .roomType(RoomType.BASKETBALL)
+                .basketBallId(chatCreateDTO.getBasket_ball_id())
                 .build();
         ChatRoom saved = chatRoomRepository.save(chatRoom);
+
+        // 농구장에 채팅방 연결
+        Optional<BasketballCourt> optionalBasketballCourt = basketballCourtRepository.findById(chatCreateDTO.getBasket_ball_id());
+        if(optionalBasketballCourt.isPresent()){
+            saved.setBasketballCourt(optionalBasketballCourt.get());
+        }
+
         return saved.getId();
     }
 
@@ -269,24 +278,6 @@ public class ChatServiceImpl implements ChatService{
 
                             log.debug("현재 유저 : {}, 가져오려는 방 : {}",userId,directId);
 
-//                            // 상대방의 채팅리스트에서 나의 아이디가 direct 로 있는 경우
-//                            Optional<UserChatRoom> userChatRoomOptional = userChatRoomRepository.findByDirectId(directId, userId);
-//                            if(userChatRoomOptional.isPresent()){
-//                                UserChatRoom userChatRoom = userChatRoomOptional.get();
-//                                if(userChatRoom.getIsDeleted().equals(Boolean.FALSE)){
-//                                    if(optionalUser.isPresent()){
-//                                        profile = optionalUser.get().getImageUrl();
-//                                        dto.updateImgUrl(profile);
-//                                        dto.updateName(optionalUser.get().getNickname());
-//                                        dto.updatePartnerId(optionalUser.get().getId().toString());
-//                                    }
-//                                }else if(userChatRoom.getIsDeleted().equals(Boolean.TRUE)){
-//                                    dto.updateImgUrl(null);
-//                                    dto.updateName("알 수 없는 유저");
-//                                    dto.updatePartnerId("0");
-//                                }
-//                            }
-
 
                             // 상대방의 이미지, 상대방 이름, 상대방 아이디 저장
                             if(optionalUser.isPresent()){
@@ -311,7 +302,7 @@ public class ChatServiceImpl implements ChatService{
 
                 // 농구장 아이디
                 if(ucr.getRoomType().equals(RoomType.BASKETBALL)){
-                    dto.updatecourtId(ucr.getChat().getBasketballCourt().getCourtId());
+                    dto.updatecourtId(ucr.getChat().getBasketBallId());
                 }
 
 
@@ -566,8 +557,9 @@ public class ChatServiceImpl implements ChatService{
         return dto.getName();
     }
 
+
     // userChatRoom 에 추가하기
-    public Optional<Long> createUserChatRoom(Long userId, Long chatRoomId){
+    public void createUserChatRoom(Long userId, Long chatRoomId){
 
         // 유저 필드 가져오기
         Optional<User> optionalUser = userRepository.findById(userId);
@@ -576,33 +568,24 @@ public class ChatServiceImpl implements ChatService{
         }
         User user = optionalUser.get();
 
-        // 채팅방 필드 가져오기
-        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(chatRoomId);
-        if(chatRoomOptional.isPresent()){
 
-            ChatRoom chatRoom = chatRoomOptional.get();
+        // 농구장 채팅방 필드 가져오기
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findById(chatRoomId);
+        if(optionalChatRoom.isPresent()){
+            log.debug("채팅방 이름 : {}", optionalChatRoom.get().getName());
 
-            // userChatRoom entity 생성
+            // UserChatRoom 생성
             UserChatRoom userChatRoom = UserChatRoom.builder()
+                    .chat(optionalChatRoom.get())
                     .user(user)
-                    .roomType(chatRoom.getRoomType())
-                    .BasketBallId(chatRoom.getBasketBallId())
-                    .name(chatRoom.getName())
-                    .chat(chatRoom)
-                    .isFirst(true) // 방문 초기화
-                    .readIndex(0L) // 읽은 메세지 초기화
-                    .imageUrl(user.getImageUrl())
+                    .name(optionalChatRoom.get().getName())
+                    .BasketBallId(optionalChatRoom.get().getBasketBallId())
+                    .roomType(RoomType.BASKETBALL)
+                    .readIndex(0L)
                     .build();
-
-            // userChatRoom entity 저장
             UserChatRoom saved = userChatRoomRepository.save(userChatRoom);
-
-            // chatRoom 에 userChatRoom 추가
-            //chatRoom.addUserChatRoom(saved);
-
-            return Optional.ofNullable(saved.getId());
+            log.debug("농구장 채팅방 userChatRoom 에 저장완료 : {}",saved);
         }
-        return Optional.empty();
     }
 
 
