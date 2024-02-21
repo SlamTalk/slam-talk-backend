@@ -216,8 +216,8 @@ public class AwsS3RepositoryImpl implements AwsS3Repository{
     private void extensionValidator(MultipartFile multipartFile){
         String contentType = multipartFile.getContentType();
 
-        // 확장자가 jpeg,png 인 파일들만 받아서 처리
-        if(ObjectUtils.isEmpty(contentType) || (!contentType.contains("image/jpeg") && !contentType.contains("image/png"))){
+        // 확장자가 jpeg,png,jpg 인 파일들만 받아서 처리
+        if(ObjectUtils.isEmpty(contentType) || (!contentType.contains("image/jpeg") && !contentType.contains("image/png")) && !contentType.contains("image/jpg")){
             throw new BaseException(ErrorResponseCode.S3_BUCKET_INVALID_EXTENSION);
         }
     }
