@@ -9,6 +9,8 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.UserChatRoom;
+import sync.slamtalk.chat.repository.ChatRoomRepository;
+import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 
@@ -22,6 +24,8 @@ public class StompHandler {
 
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider tokenProvider;
+    private final UserChatRoomRepository userChatRoomRepository;
+    private final ChatRoomRepository chatRoomRepository;
 
 
 
@@ -58,6 +62,7 @@ public class StompHandler {
         Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(RoomId);
         // ChatRoom 이 존재하지 않는다면
         if(!existChatRoom.isPresent()){
+            log.debug("=== isExistChatRoom === ChatRoom 존재하지않음");
             throw new RuntimeException("NFR");
         }
     }
@@ -148,17 +153,29 @@ public class StompHandler {
 
 
     // 사용자 채팅방에 추가
-    public Optional<Long> addUserChatRoom(StompHeaderAccessor accessor){
+    public void addUserChatRoom(StompHeaderAccessor accessor){
         Long userId = extractUserId(accessor);
 
         String destination = accessor.getDestination();
         Long roomId = extractRoomId(destination);
 
-        Optional<Long> userChatRoom = chatService.createUserChatRoom(userId, roomId);
-        if(userChatRoom.isEmpty()){
-            return Optional.empty();
+        chatService.createUserChatRoom(userId, roomId);
+    }
+
+
+    // 사용자 채팅방에 이미 참여하고 있는 농구장인지 확인
+    public Optional<Boolean> isExistAlreadyUserChatRoom(Long userId, Long roomId){
+
+        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByBasketBallId(roomId);
+
+        Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId,roomId);
+
+        if(optionalUserChatRoom.isPresent()){
+            log.debug("유저가 이미 가지고 있음");
+            return Optional.of(Boolean.TRUE);
         }
-        return userChatRoom;
+        log.debug("유저가 가지고 있지 않음");
+        return Optional.empty();
     }
 
 
