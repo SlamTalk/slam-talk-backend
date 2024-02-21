@@ -107,8 +107,7 @@ public class ChatServiceImpl implements ChatService{
 
         ChatRoom saved = chatRoomRepository.save(chatRoom);
         roomNum = saved.getId();
-        
-        
+
         // direct 상대방 아이디
         List<Long> participants = chatCreateDTO.getParticipants();
         Long userA = participants.get(0);
@@ -130,12 +129,14 @@ public class ChatServiceImpl implements ChatService{
                     .chat(saved)
                     .name(chatCreateDTO.getName())
                     .togetherId(chatCreateDTO.getTogether_id())
+                    .teamMatchingId(chatCreateDTO.getTeamMatching_id()) //  2.21
                     .build();
 
-            if(roomType.equals(RoomType.DIRECT)){
+            if(roomType.equals(RoomType.DIRECT) || roomType.equals(RoomType.MATCHING)){
                 userChatRoom.setDirectId(directs.get(dIndex--));
             }
             UserChatRoom savedUserChatRoom = userChatRoomRepository.save(userChatRoom);
+            log.debug("userChatRoom 저장 완료 : {}", savedUserChatRoom.getChat().getId());
         }
 
         return roomNum;
