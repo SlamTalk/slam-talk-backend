@@ -50,7 +50,7 @@ public class CookieUtil {
     ) {
         ResponseCookie cookie = ResponseCookie.from(name, value) // 쿠키 이름과 값 설정
                 .path("/") // 쿠키 전체 도메인으로 경로 설정
-                .sameSite("Lax") // 쿠키가 같은 사이트 요청뿐만 아니라 크로스-사이트 요청에서도 전송될 수 있음
+                .sameSite("None") // 쿠키가 같은 사이트 요청뿐만 아니라 크로스-사이트 요청에서도 전송될 수 있음
                 .httpOnly(true) // XSS 공격으로부터 쿠키를 보호
                 .secure(true) // HTTPS를 통해서만 전송
                 .domain(domain) // 쿠키가 유효한 도메인을 지정
@@ -82,7 +82,7 @@ public class CookieUtil {
                 if (name.equals(cookie.getName())) {
                     ResponseCookie rcookie = ResponseCookie.from(name, "")
                             .path("/")
-                            .sameSite("Lax")
+                            .sameSite("None")
                             .httpOnly(true)
                             .secure(true)
                             .domain(domain)
