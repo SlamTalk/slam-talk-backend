@@ -82,7 +82,7 @@ public class CookieUtil {
                 if (name.equals(cookie.getName())) {
                     ResponseCookie rcookie = ResponseCookie.from(name, "")
                             .path("/")
-                            .sameSite("None")
+                            .sameSite("Lax")
                             .httpOnly(true)
                             .secure(true)
                             .domain(domain)
