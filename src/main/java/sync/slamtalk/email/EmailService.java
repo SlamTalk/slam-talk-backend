@@ -51,9 +51,9 @@ public class EmailService {
                 "        padding: 0 300px;\">\n";
         text += "<div class=\"content\">\n";
         text += "<img src = \"" + imageLogoURI + "\" alt = \"slam talk logo\" style=\"width: 128px; display: block; margin: 0 auto;\">\n";
-        text += "<h1 style = \"color: black\" > 이메일 인증을 진행해주세요</h1 >\n";
-        text += "<p > 안녕하세요.슬램톡을 이용해주셔서 감사합니다 :)</p >\n";
-        text += "<p > 슬램톡 회원가입을 위해 아래 인증코드를 화면에 입력해주세요.</p >\n";
+        text += "<h1 style = \"color: black; text-align: center;\" > 이메일 인증을 진행해주세요</h1 >\n";
+        text += "<p style = \"text-align: center\"> 안녕하세요.슬램톡을 이용해주셔서 감사합니다 :)</p >\n";
+        text += "<p style = \"text-align: center\"> 슬램톡 회원가입을 위해 아래 인증코드를 화면에 입력해주세요.</p >\n";
         text += "</div >\n";
         text += "<div class=\"code\" style=\"border-radius: 6px;\n" +
                 "        color: black;\n" +
