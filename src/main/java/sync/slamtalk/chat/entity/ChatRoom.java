@@ -55,14 +55,18 @@ public class ChatRoom extends BaseEntity {
     private Set<UserChatRoom> userChats = new HashSet<>();
 
 
-    // UserChatRoom 추가
+    /**
+     * UserChatRoom 추가
+     */
     public void addUserChatRoom(UserChatRoom userChatRoom) {
         this.userChats.add(userChatRoom);
         userChatRoom.setChat(this);
     }
 
 
-    // ChatRoom 에 basketball 설정
+    /**
+     * ChatRoom 에 basketball 설정
+     */
     public void setBasketballCourt(BasketballCourt basketballCourt) {
         this.basketballCourt = basketballCourt;
         this.basketBallId = basketballCourt.getCourtId();

@@ -67,6 +67,9 @@ public class UserChatRoom extends BaseEntity {
     private Boolean isFirst = true; // 초기화
 
 
+    /**
+     * 유저 설정
+     */
     public void setUsers(User user){
         this.user = user;
         if(!user.getUserChatRooms().contains(this)){
@@ -75,7 +78,9 @@ public class UserChatRoom extends BaseEntity {
     }
 
 
-    // 채팅방 설정
+    /**
+     * 채팅방 설정
+     */
     public void setChat(ChatRoom chat) {
         this.chat = chat;
         if (!chat.getUserChats().contains(this)) {
@@ -83,17 +88,26 @@ public class UserChatRoom extends BaseEntity {
         }
     }
 
+
+    /**
+     * 개인 채팅 아이디 설정
+     */
     public void setDirectId(Long directId){
         this.directId = directId;
     }
 
 
-    // readIndex 값 업데이트하기
+    /**
+     * readIndex 값 업데이트
+     */
     public void updateReadIndex(Long newReadIndex) {
         this.readIndex = newReadIndex;
     }
 
-    // 채팅방 입장 업데이트
+
+    /**
+     * 채팅방 입장 업데이트
+     */
     public void updateIsFirst(Boolean isFirst){
         this.isFirst = isFirst;
     }

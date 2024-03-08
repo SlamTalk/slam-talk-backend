@@ -32,7 +32,7 @@ public class Messages extends BaseEntity {
     // 메세지(작성시간)
     @Column(name = "creation_time",nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private String creation_time;
+    private String creationTime;
 
     // 채팅방
     @ManyToOne(fetch = FetchType.LAZY)
