@@ -12,11 +12,9 @@ import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 
 @Slf4j
 @Component
-
 public class CustomWebSocketHandler extends WebSocketHandlerDecorator {
     private final WebSocketHandler delegate;
 
-    @Autowired
     public CustomWebSocketHandler(WebSocketHandler delegate) {
         super(delegate);
         this.delegate = delegate;
