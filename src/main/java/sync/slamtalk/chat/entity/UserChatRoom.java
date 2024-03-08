@@ -19,13 +19,13 @@ public class UserChatRoom extends BaseEntity {
 
     // 유저
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
 
     // 채팅방
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chatroom_id",nullable = false)
+    @JoinColumn(name = "chatroom_id", nullable = false)
     private ChatRoom chat;
 
     // 채팅방 이름
@@ -63,16 +63,16 @@ public class UserChatRoom extends BaseEntity {
 
 
     // 채팅방 입장 최초/재접속 판단
-    @Column(name="isFirst")
+    @Column(name = "isFirst")
     private Boolean isFirst = true; // 초기화
 
 
     /**
      * 유저 설정
      */
-    public void setUsers(User user){
+    public void setUsers(User user) {
         this.user = user;
-        if(!user.getUserChatRooms().contains(this)){
+        if (!user.getUserChatRooms().contains(this)) {
             user.getUserChatRooms().add(this);
         }
     }
@@ -83,16 +83,14 @@ public class UserChatRoom extends BaseEntity {
      */
     public void setChat(ChatRoom chat) {
         this.chat = chat;
-        if (!chat.getUserChats().contains(this)) {
-            chat.getUserChats().add(this);
-        }
+        chat.getUserChats().add(this);
     }
 
 
     /**
      * 개인 채팅 아이디 설정
      */
-    public void setDirectId(Long directId){
+    public void setDirectId(Long directId) {
         this.directId = directId;
     }
 
@@ -108,7 +106,7 @@ public class UserChatRoom extends BaseEntity {
     /**
      * 채팅방 입장 업데이트
      */
-    public void updateIsFirst(Boolean isFirst){
+    public void updateIsFirst(Boolean isFirst) {
         this.isFirst = isFirst;
     }
 

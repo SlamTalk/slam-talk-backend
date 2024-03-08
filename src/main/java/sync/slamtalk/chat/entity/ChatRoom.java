@@ -17,7 +17,7 @@ import java.util.Set;
 public class ChatRoom extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="chatroom_id") // 식별 아이디
+    @Column(name = "chatroom_id") // 식별 아이디
     private Long id;
 
 
@@ -25,7 +25,7 @@ public class ChatRoom extends BaseEntity {
     private BasketballCourt basketballCourt;
 
 
-    @Column(name = "chatroom_type",nullable = false)
+    @Column(name = "chatroom_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private RoomType roomType; // 다이렉트메세지, 농구장, 같이해요, 팀매칭
 
@@ -49,9 +49,8 @@ public class ChatRoom extends BaseEntity {
     private Long teamMatchingId;
 
 
-
     // 사용자는 여러개의 채팅방을 가질 수 있음
-    @OneToMany(mappedBy = "chat",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserChatRoom> userChats = new HashSet<>();
 
 
