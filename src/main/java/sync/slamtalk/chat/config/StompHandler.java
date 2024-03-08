@@ -9,12 +9,12 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.UserChatRoom;
-import sync.slamtalk.chat.repository.ChatRoomRepository;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -25,17 +25,14 @@ public class StompHandler {
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider tokenProvider;
     private final UserChatRoomRepository userChatRoomRepository;
-    private final ChatRoomRepository chatRoomRepository;
 
     /**
      * 토큰에서 아이디 추출
      */
     public Long extractUserId(StompHeaderAccessor accessor) {
         List<String> authorization = accessor.getNativeHeader("authorization");
-        String Token = authorization.get(0);
-        Long userid = tokenProvider.stompExtractUserIdFromToken(Token);
-
-        return userid;
+        String token = authorization.get(0);
+        return tokenProvider.stompExtractUserIdFromToken(token);
     }
 
 
@@ -61,10 +58,10 @@ public class StompHandler {
      */
     public void isExistChatRoom(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
-        Long RoomId = extractRoomId(destination);
-        Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(RoomId);
+        Long roomId = extractRoomId(Objects.requireNonNull(destination));
+        Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(roomId);
         // ChatRoom 이 존재하지 않는다면
-        if (!existChatRoom.isPresent()) {
+        if (existChatRoom.isEmpty()) {
             log.debug("=== isExistChatRoom === ChatRoom 존재하지않음");
             throw new RuntimeException("NFR");
         }
@@ -80,11 +77,11 @@ public class StompHandler {
         Long userId = extractUserId(accessor);
 
         String destination = accessor.getDestination();
-        Long RoomId = extractRoomId(destination);
+        Long roomId = extractRoomId(Objects.requireNonNull(destination));
 
-        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, RoomId);
+        Optional<UserChatRoom> existUserChatRoom = chatService.isExistUserChatRoom(userId, roomId);
         // UserChatRoom 이 존재하지 않는다면
-        if (!existUserChatRoom.isPresent()) {
+        if (existUserChatRoom.isEmpty()) {
             throw new RuntimeException("Auth");
         }
     }
@@ -166,7 +163,7 @@ public class StompHandler {
         Long userId = extractUserId(accessor);
 
         String destination = accessor.getDestination();
-        Long roomId = extractRoomId(destination);
+        Long roomId = extractRoomId(Objects.requireNonNull(destination));
 
         chatService.createUserChatRoom(userId, roomId);
     }
@@ -176,8 +173,6 @@ public class StompHandler {
      * 사용자 채팅방에 이미 참여하고 있는 농구장인지 확인
      */
     public Optional<Boolean> isExistAlreadyUserChatRoom(Long userId, Long roomId) {
-
-        Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByBasketBallId(roomId);
 
         Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
 
