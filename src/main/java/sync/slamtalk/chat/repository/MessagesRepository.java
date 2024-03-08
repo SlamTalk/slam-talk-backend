@@ -4,33 +4,32 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import sync.slamtalk.chat.entity.Messages;
 
 import java.util.List;
 
-public interface MessagesRepository extends JpaRepository<Messages,Long> {
+public interface MessagesRepository extends JpaRepository<Messages, Long> {
 
 
     /**
      * 특정 roomId 에 해당하는 모든 Message 조회(과거~최근)
      */
-     List<Messages> findByChatRoomId(Long chatRoomId);
+    List<Messages> findByChatRoomId(Long chatRoomId);
 
 
     /**
      * 특정 채팅방의 가장 최근 메시지를 조회
      */
     @Query("select m from Messages m where m.chatRoom.id =:chatroom_id order by m.creationTime desc ")
-    Page<Messages> findLatestByChatRoomId(@Param("chatroom_id")Long chatRoomId, Pageable pageable);
+    Page<Messages> findLatestByChatRoomId(@Param("chatroom_id") Long chatRoomId, Pageable pageable);
 
 
     /**
      * 특정 roomId 에 해당하는 모든 Message 조회(최근~과거)
      */
     @Query("select m from Messages m where m.chatRoom.id=:chatRoomId order by m.creationTime desc")
-    List<Messages> findAllByChatRoom(@Param("chatRoomId")Long chatRoomId);
+    List<Messages> findAllByChatRoom(@Param("chatRoomId") Long chatRoomId);
 
 
     /**

@@ -28,14 +28,14 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
      * 특정 userId 와 특정 roomId 로 userChatRoom 엔터티 조회
      */
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.id=:roomId")
-    Optional<UserChatRoom>findByUserChatroom(Long userId, Long roomId);
+    Optional<UserChatRoom> findByUserChatroom(Long userId, Long roomId);
 
 
     /**
      * 특정 chatRoomName , 특정 chatRoomType 으로 userChatRoom 엔터티 조회
      */
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.chat.name=:roomName and m.chat.roomType=:roomType")
-    List<UserChatRoom>findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
+    List<UserChatRoom> findByUserChatroomExist(Long userId, String roomName, RoomType roomType);
 
 
     /**
@@ -48,14 +48,14 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
      * DirectId로 UserChatRoom 조회
      */
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.directId=:directId")
-    Optional<UserChatRoom> findByDirectId(Long userId,Long directId);
+    Optional<UserChatRoom> findByDirectId(Long userId, Long directId);
 
 
     /**
      * BasketballId로 UserChatRoom 조회
      */
     @Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.user.id=:userId and ucr.BasketBallId = :basketballId")
-    Optional<UserChatRoom> findUserChatRoomByBasketballId(Long userId,@Param("basketballId") Long basketballId);
+    Optional<UserChatRoom> findUserChatRoomByBasketballId(Long userId, @Param("basketballId") Long basketballId);
 
 
     /**
