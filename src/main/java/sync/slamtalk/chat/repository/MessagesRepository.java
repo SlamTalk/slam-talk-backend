@@ -10,7 +10,6 @@ import sync.slamtalk.chat.entity.Messages;
 
 import java.util.List;
 
-@EnableJpaRepositories
 public interface MessagesRepository extends JpaRepository<Messages,Long> {
 
 
