@@ -32,7 +32,9 @@ public class ChatController {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
 
-    // 채팅방 생성
+    /**
+     * 채팅방 생성
+     */
     @PostMapping("/api/chat/create")
     @Operation(
             summary = "채팅방 생성",
@@ -45,7 +47,9 @@ public class ChatController {
     }
 
 
-    // 채팅 리스트
+    /**
+     * 채팅리스트
+     */
     @GetMapping("/api/chat/list")
     @Operation(
             summary = "채팅리스트 조회",
@@ -58,8 +62,9 @@ public class ChatController {
     }
 
 
-
-    // 채팅방 접속 시 채팅 내역
+    /**
+     * 채팅방 접속 시 채팅 내역
+     */
     @PostMapping("/api/chat/participation")
     @Operation(
             summary = "새로운 채팅 내역 조회",
@@ -87,7 +92,9 @@ public class ChatController {
 
 
 
-    // 과거 내역 추가 요청
+    /**
+     * 과거 내역 추가 요청
+     */
     @PostMapping("/api/chat/history")
     @Operation(
             summary = "과거 내역 조회",
@@ -106,7 +113,9 @@ public class ChatController {
 
 
 
-    // 제보하기를 통한 농구장 채팅방 생성 요청
+    /**
+     * 제보하기를 통한 농구장 채팅방 생성 요청
+     */
     @PostMapping("/api/chat/create/basketball")
     @Operation(
             summary = "농구장 채팅방 생성",

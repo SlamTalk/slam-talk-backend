@@ -22,13 +22,12 @@ public class StompChatController {
     private final ChatServiceImpl chatService;
     private final UserChatRoomRepository userChatRoomRepository;
 
-
-    /*
-    입장/퇴장 메세지 발행
-    "/pub/chat/bot/roomId" 로 날린 데이터에 대해서
-    "/sub/chat/bot/roomId" 로 구독자들(클라이언트)에게 해당 message 를 전달
-    - 입장 : 첫접속/ 재접속 인지 확인하고 입장 메세지 발행
-    - 퇴장 : 퇴장 메세지 발행
+    /**
+     * 입장/퇴장 메세지 발행
+     *     "/pub/chat/bot/roomId" 로 날린 데이터에 대해서
+     *     "/sub/chat/bot/roomId" 로 구독자들(클라이언트)에게 해당 message 를 전달
+     *     - 입장 : 첫접속/ 재접속 인지 확인하고 입장 메세지 발행
+     *     - 퇴장 : 퇴장 메세지 발행
      */
     @MessageMapping(value = "/chat/bot/{roomId}") // 발행
     @SendTo("/sub/chat/bot/{roomId}") // 수신
@@ -75,10 +74,10 @@ public class StompChatController {
         return "";
     }
 
-    /*
-    메세지 발행
-    "/pub/chat/message" 로 날린 데이터에 대해서
-    "/sub/chat/room/roomId" 로 구독자들(클라이언트)에게 해당 message 를 전달
+    /**
+     * 메세지 발행
+     *     "/pub/chat/message" 로 날린 데이터에 대해서
+     *     "/sub/chat/room/roomId" 로 구독자들(클라이언트)에게 해당 message 를 전달
      */
     @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
@@ -87,11 +86,11 @@ public class StompChatController {
     }
 
 
-    /*
-    뒤로 가기 메세지 발행(🌟readIndex update🌟)
-    "/pub/chat/back" 으로 날린 데이터에 대해서
-    "/sub/chat/room/roomId" 로 구독자(클라이언트)들에게 해당 message 를 전달
-    ChatInboundInterceptor 에서 readIndex 가 업데이트 되도록 함
+    /**
+     * 뒤로 가기 메세지 발행(🌟readIndex update🌟)
+     *     "/pub/chat/back" 으로 날린 데이터에 대해서
+     *     "/sub/chat/room/roomId" 로 구독자(클라이언트)들에게 해당 message 를 전달
+     *     ChatInboundInterceptor 에서 readIndex 가 업데이트 되도록 함
      */
     @MessageMapping("/chat/back/{roomId}")
     @SendTo("/sub/chat/back/{roomId}")
