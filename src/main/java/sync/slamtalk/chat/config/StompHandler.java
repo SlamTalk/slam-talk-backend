@@ -34,6 +34,7 @@ public class StompHandler {
         String token = authorization.get(0);
         return tokenProvider.stompExtractUserIdFromToken(token);
     }
+
     /**
      * 채팅 유저 아이디 추출
      */
