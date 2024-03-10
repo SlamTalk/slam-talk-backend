@@ -9,13 +9,4 @@ public enum SkillLevelType {
     HIGH("고수"), MIDDLE("중수"), LOW("하수"), BEGINNER("입문"), UNSPECIFIED("미지정");
 
     private final String level;
-
-    public static SkillLevelType fromLevel(String description) {
-        for (SkillLevelType level : values()) {
-            if (level.getLevel().equals(description)) {
-                return level;
-            }
-        }
-        throw new IllegalArgumentException("일치하는 레벨이 없습니다 " + description + " found");
-    }
 }

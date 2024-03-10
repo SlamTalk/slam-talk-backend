@@ -54,7 +54,7 @@ public class MatePostService {
         MatePost matePost = matePostReq.toEntity();
         matePost.connectParent(user);
         MatePost result = matePostRepository.save(matePost);
-        return result.getMatePostId(); // * 저장된 게시글의 아이디를 반환한다.
+        return result.getId(); // * 저장된 게시글의 아이디를 반환한다.
     }
 
     /**
@@ -90,7 +90,7 @@ public class MatePostService {
         List<PositionListDto> positionList = entityToDtoMapper.toPositionListDto(post);
 
         MatePostRes matePostRes = MatePostRes.builder()
-                .matePostId(post.getMatePostId())
+                .matePostId(post.getId())
                 .writerId(writerId)
                 .writerNickname(writerNickname)
                 .writerImageUrl(writerImageUrl)
@@ -274,7 +274,7 @@ public class MatePostService {
         } else {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
-        return participantService.getParticipants(post.getMatePostId());
+        return participantService.getParticipants(post.getId());
     }
 
     /**

@@ -197,7 +197,7 @@ public class EntityToDtoMapper {
         resultDto.setSkillLevelList(toSkillLevelTypeList(matePost.getSkillLevel()));
         resultDto.setWriterId(matePost.getWriterId());
         resultDto.setWriterNickname(matePost.getWriterNickname());
-        resultDto.setMatePostId(matePost.getMatePostId());
+        resultDto.setMatePostId(matePost.getId());
         resultDto.setScheduledDate(matePost.getScheduledDate());
         resultDto.setStartTime(matePost.getStartTime());
         resultDto.setEndTime(matePost.getEndTime());

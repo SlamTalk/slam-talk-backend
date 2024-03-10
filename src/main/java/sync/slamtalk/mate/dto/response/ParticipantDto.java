@@ -28,8 +28,8 @@ public class ParticipantDto {
     private SkillLevelType skillLevel;
 
     public ParticipantDto(Participant participant) {
-        this.participantTableId = participant.getParticipantTableId();
-        this.matePostId = participant.getMatePost().getMatePostId();
+        this.participantTableId = participant.getId();
+        this.matePostId = participant.getMatePost().getId();
         this.participantId = participant.getParticipantId();
         this.participantNickname = participant.getParticipantNickname();
         this.applyStatus = participant.getApplyStatus();
