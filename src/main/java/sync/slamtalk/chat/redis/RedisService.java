@@ -21,24 +21,24 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RedisService {
     @Autowired
-    private final RedisTemplate<String,String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
 
     // 메세지 저장
-    public void saveMessage(ChatMessageDTO messageDTO, long timeoutInSeconds){
+    public void saveMessage(ChatMessageDTO messageDTO, long timeoutInSeconds) {
         String messageKey = "chat_room:" + messageDTO.getRoomId() + ":message:" + messageDTO.getMessageId();//System.nanoTime(); //고유한 메세지 아이디 생성
-        Map<String,String> messageInfo = new HashMap<>();
+        Map<String, String> messageInfo = new HashMap<>();
 
-        messageInfo.put("messageId",messageDTO.getMessageId());
-        messageInfo.put("senderId",messageDTO.getSenderId().toString());
-        messageInfo.put("roomId",messageDTO.getRoomId());
-        messageInfo.put("senderNickName",messageDTO.getSenderNickname());
-        messageInfo.put("messageContent",messageDTO.getContent());
-        messageInfo.put("sendTime",messageDTO.getTimestamp());
+        messageInfo.put("messageId", messageDTO.getMessageId());
+        messageInfo.put("senderId", messageDTO.getSenderId().toString());
+        messageInfo.put("roomId", messageDTO.getRoomId());
+        messageInfo.put("senderNickName", messageDTO.getSenderNickname());
+        messageInfo.put("messageContent", messageDTO.getContent());
+        messageInfo.put("sendTime", messageDTO.getTimestamp());
 
         // 메시지 메타데이터 저장
-        redisTemplate.opsForHash().putAll(messageKey,messageInfo);
+        redisTemplate.opsForHash().putAll(messageKey, messageInfo);
 
         // 메시지 메타데이터에 대한 만료 시간 설정
         redisTemplate.expire(messageKey, timeoutInSeconds, TimeUnit.SECONDS);
@@ -47,19 +47,19 @@ public class RedisService {
         String roomId = messageDTO.getRoomId();
         long longRoomId = Long.parseLong(roomId);
 
-        String chatRoomMessageKey = String.format("chat_room%d:messages",longRoomId);
-        redisTemplate.opsForZSet().add(chatRoomMessageKey,messageKey,longRoomId);
+        String chatRoomMessageKey = String.format("chat_room%d:messages", longRoomId);
+        redisTemplate.opsForZSet().add(chatRoomMessageKey, messageKey, longRoomId);
 
         // 정렬된 세트에 대한 만료 시간 설정도 고려해야 할 수 있음
         redisTemplate.expire(chatRoomMessageKey, timeoutInSeconds, TimeUnit.SECONDS);
 
-        log.debug("===redis 저장 된 아이디 :{}",messageDTO.getMessageId());
+        log.debug("===redis 저장 된 아이디 :{}", messageDTO.getMessageId());
         log.debug("====redis 저장 완료====");
     }
 
 
     // 메세지 가져오기
-    public List<ChatMessageDTO> getMessages(Long roomId,Long readIndex) {
+    public List<ChatMessageDTO> getMessages(Long roomId, Long readIndex) {
 
 
         List<ChatMessageDTO> chatList = new ArrayList<>();
@@ -76,10 +76,9 @@ public class RedisService {
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toCollection(LinkedHashSet::new)); // 순서를 유지하는 Set으로 수집
 
-        for(String k : sortedKeys){
-            log.debug("== all key:{}",k);
+        for (String k : sortedKeys) {
+            log.debug("== all key:{}", k);
         }
-
 
 
         log.debug("== readIndex : {}", readIndex);
@@ -96,11 +95,11 @@ public class RedisService {
                 .limit(20)
                 .collect(Collectors.toList());
 
-        for(String key : keyCollect){
-            log.debug("== key : {}",key);
+        for (String key : keyCollect) {
+            log.debug("== key : {}", key);
             Map<Object, Object> entry = stringRedisTemplate.opsForHash().entries(key);
 
-            if(entry.isEmpty()){
+            if (entry.isEmpty()) {
                 log.debug("==redisService key값들 아무것도 가져오지 못함");
             }
 
@@ -108,7 +107,7 @@ public class RedisService {
             long userId = Long.parseLong(senderId.toString());
             Optional<User> optionalUser = userRepository.findById(userId);
             String userImg = null;
-            if(optionalUser.isPresent()){
+            if (optionalUser.isPresent()) {
                 userImg = optionalUser.get().getImageUrl();
             }
 
@@ -121,23 +120,21 @@ public class RedisService {
                     .content(entry.get("messageContent").toString())
                     .timestamp(entry.get("sendTime").toString())
                     .build();
-            log.debug("====완성:{}",chatMessageDTO.getContent());
+            log.debug("====완성:{}", chatMessageDTO.getContent());
             chatList.add(chatMessageDTO);
         }
         return chatList;
     }
 
 
-
-
     /* 이메일 인증관련 메서드*/
     public String getData(String key) {
-        ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         return valueOperations.get(key);
     }
 
     public void setData(String key, String value) {
-        ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         valueOperations.set(key, value);
     }
 

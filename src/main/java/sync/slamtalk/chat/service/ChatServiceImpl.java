@@ -43,6 +43,7 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 채팅방을 생성한다.
+     *
      * @param chatCreateDTO
      * @return chatRoomId
      */

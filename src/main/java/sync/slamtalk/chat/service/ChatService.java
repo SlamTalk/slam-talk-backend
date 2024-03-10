@@ -30,11 +30,11 @@ public interface ChatService {
 
 
     // 사용자 채팅방에 있는 채팅방인지 확인(구독여부 확인)
-    Optional<UserChatRoom> isExistUserChatRoom(Long userId,Long ChatRoomId);
+    Optional<UserChatRoom> isExistUserChatRoom(Long userId, Long ChatRoomId);
 
 
     // 채팅방 나갈때 readIndex 저장
-    void saveReadIndex(Long userId,Long chatRoomId,Long readIndex);
+    void saveReadIndex(Long userId, Long chatRoomId, Long readIndex);
 
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
@@ -45,7 +45,7 @@ public interface ChatService {
 
 
     // 과거 내역 요청
-    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId,int count);
+    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId, int count);
 
 
     // 사용자 채팅리스트 가져오기
@@ -65,6 +65,6 @@ public interface ChatService {
 
 
     // Redis 조회 후 DB 조회
-    Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId,Long chatRoomId,int count);
+    Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId, Long chatRoomId, int count);
 
 }
