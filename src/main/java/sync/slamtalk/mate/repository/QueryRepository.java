@@ -11,7 +11,6 @@ import sync.slamtalk.mate.dto.UnrefinedMatePostDto;
 import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.SkillLevelType;
-import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.TeamSearchCondition;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
@@ -31,14 +30,10 @@ import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
 @Repository
 public class QueryRepository {
 
-    private EntityManager em;
-    private JPAQueryFactory queryFactory;
-    private EntityToDtoMapper entityToDtoMapper;
+    private final JPAQueryFactory queryFactory;
 
     public QueryRepository(EntityManager em) {
-        this.em = em;
         this.queryFactory = new JPAQueryFactory(em);
-        this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
     public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
