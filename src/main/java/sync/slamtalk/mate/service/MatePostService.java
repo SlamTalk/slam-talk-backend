@@ -290,11 +290,11 @@ public class MatePostService {
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
         List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(matePost -> entityToDtoMapper.fromMatePostToMatePostDto(matePost))
                 .toList());
 
         List<MatePostToDto> participatedPost = new ArrayList<>(allByApplications.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(matePost -> entityToDtoMapper.fromMatePostToMatePostDto(matePost))
                 .map(matePostToDto -> {
                     matePostToDto.setParticipants(
                             matePostToDto.getParticipants().stream()

@@ -20,20 +20,16 @@ public class EntityToDtoMapper {
         List<PositionListDto> positionList = new ArrayList<>();
 
         if (matePost.getMaxParticipantsCenters() > 0 || matePost.getCurrentParticipantsCenters() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters()));
         }
         if (matePost.getMaxParticipantsForwards() > 0 || matePost.getCurrentParticipantsForwards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards()));
         }
         if (matePost.getMaxParticipantsGuards() > 0 || matePost.getCurrentParticipantsGuards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards()));
         }
         if (matePost.getMaxParticipantsOthers() > 0 || matePost.getCurrentParticipantsOthers() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers()));
         }
 
         return positionList;
@@ -42,41 +38,43 @@ public class EntityToDtoMapper {
     public List<String> toSkillLevelTypeList(RecruitedSkillLevelType skillLevel) {
         List<String> skillLevelTypeList = new ArrayList<>();
 
-        if (skillLevel == RecruitedSkillLevelType.BEGINNER) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.OVER_BEGINNER) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.UNDER_LOW) {
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.OVER_LOW) {
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.UNDER_MIDDLE) {
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.OVER_MIDDLE) {
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.UNDER_HIGH) {
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
-            skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
-            skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
-            skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
-        }
-        if (skillLevel == RecruitedSkillLevelType.HIGH) {
-            skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+        switch (skillLevel) {
+            case BEGINNER:
+                skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                break;
+            case OVER_BEGINNER:
+                skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                break;
+            case UNDER_LOW:
+                skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                break;
+            case OVER_LOW:
+                skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                break;
+            case UNDER_MIDDLE:
+                skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                break;
+            case OVER_MIDDLE:
+                skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                break;
+            case UNDER_HIGH:
+                skillLevelTypeList.add(SkillLevelType.BEGINNER.getLevel());
+                skillLevelTypeList.add(SkillLevelType.LOW.getLevel());
+                skillLevelTypeList.add(SkillLevelType.MIDDLE.getLevel());
+                skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                break;
+            case HIGH:
+                skillLevelTypeList.add(SkillLevelType.HIGH.getLevel());
+                break;
         }
 
         return skillLevelTypeList;
@@ -130,20 +128,16 @@ public class EntityToDtoMapper {
         List<PositionListDto> positionList = new ArrayList<>();
 
         if (dto.getMaxParticipantsCenters() > 0 || dto.getCurrentParticipantsCenters() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), dto.getMaxParticipantsCenters(), dto.getCurrentParticipantsCenters());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.CENTER.getPosition(), dto.getMaxParticipantsCenters(), dto.getCurrentParticipantsCenters()));
         }
         if (dto.getMaxParticipantsForwards() > 0 || dto.getCurrentParticipantsForwards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), dto.getMaxParticipantsForwards(), dto.getCurrentParticipantsForwards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.FORWARD.getPosition(), dto.getMaxParticipantsForwards(), dto.getCurrentParticipantsForwards()));
         }
         if (dto.getMaxParticipantsGuards() > 0 || dto.getCurrentParticipantsGuards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), dto.getMaxParticipantsGuards(), dto.getCurrentParticipantsGuards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.GUARD.getPosition(), dto.getMaxParticipantsGuards(), dto.getCurrentParticipantsGuards()));
         }
         if (dto.getMaxParticipantsOthers() > 0 || dto.getCurrentParticipantsOthers() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), dto.getMaxParticipantsOthers(), dto.getCurrentParticipantsOthers());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.UNSPECIFIED.getPosition(), dto.getMaxParticipantsOthers(), dto.getCurrentParticipantsOthers()));
         }
 
 
@@ -173,24 +167,20 @@ public class EntityToDtoMapper {
      * @param matePost : entity
      * @return MatePostToDto : response dto
      */
-    public MatePostToDto FromMatePostToMatePostDto(MatePost matePost) {
+    public MatePostToDto fromMatePostToMatePostDto(MatePost matePost) {
         List<PositionListDto> positionList = new ArrayList<>();
 
         if (matePost.getMaxParticipantsCenters() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.CENTER.getPosition(), matePost.getMaxParticipantsCenters(), matePost.getCurrentParticipantsCenters()));
         }
         if (matePost.getMaxParticipantsForwards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.FORWARD.getPosition(), matePost.getMaxParticipantsForwards(), matePost.getCurrentParticipantsForwards()));
         }
         if (matePost.getMaxParticipantsGuards() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.GUARD.getPosition(), matePost.getMaxParticipantsGuards(), matePost.getCurrentParticipantsGuards()));
         }
         if (matePost.getMaxParticipantsOthers() > 0) {
-            PositionListDto positionListDTO = new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers());
-            positionList.add(positionListDTO);
+            positionList.add(new PositionListDto(PositionType.UNSPECIFIED.getPosition(), matePost.getMaxParticipantsOthers(), matePost.getCurrentParticipantsOthers()));
         }
 
         MatePostToDto resultDto = new MatePostToDto();
