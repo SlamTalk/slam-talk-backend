@@ -2,7 +2,8 @@ package sync.slamtalk.mate.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.mate.dto.PositionListDto;
 
@@ -26,7 +27,7 @@ public class Participant extends BaseEntity {
     @JoinColumn(name = "mate_post_id")
     private MatePost matePost; // 참여자가 참여한 글
 
-    @Column(nullable = false, name="participant_id")
+    @Column(nullable = false, name = "participant_id")
     private Long participantId;
     @Column(nullable = false)
     private String participantNickname;
@@ -69,7 +70,7 @@ public class Participant extends BaseEntity {
 
     }
 
-    public boolean isCorrespondTo(Long userId){
+    public boolean isCorrespondTo(Long userId) {
         return this.participantId.equals(userId);
     }
 

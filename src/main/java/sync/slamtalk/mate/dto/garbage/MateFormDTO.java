@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -93,28 +91,28 @@ public class MateFormDTO {
         String[] temp = locationDetail.split(" ", 2);
         String location = temp[0];
         String locationDetail = temp.length > 1 ? temp[1] : "";
-            MatePost resultMatePost = MatePost.builder()
-                    .title(title)
-                    .scheduledDate(scheduledDate)
-                    .startTime(startTime)
-                    .endTime(endTime)
-                    .location(location)
-                    .locationDetail(locationDetail)
-                    .content(content)
-                    .skillLevel(skillLevel)
-                    .maxParticipantsCenters(maxParticipantsCenters)
-                    .currentParticipantsCenters(0)
-                    .maxParticipantsGuards(maxParticipantsGuards)
-                    .currentParticipantsGuards(0)
-                    .maxParticipantsForwards(maxParticipantsForwards)
-                    .currentParticipantsForwards(0)
-                    .maxParticipantsOthers(maxParticipantsOthers)
-                    .currentParticipantsOthers(0)
-                    .recruitmentStatus(RecruitmentStatusType.RECRUITING)
-                    .participants(new ArrayList<>())
-                    .build();
-            resultMatePost.configureSkillLevel(tempSkillList);
-            return resultMatePost;
+        MatePost resultMatePost = MatePost.builder()
+                .title(title)
+                .scheduledDate(scheduledDate)
+                .startTime(startTime)
+                .endTime(endTime)
+                .location(location)
+                .locationDetail(locationDetail)
+                .content(content)
+                .skillLevel(skillLevel)
+                .maxParticipantsCenters(maxParticipantsCenters)
+                .currentParticipantsCenters(0)
+                .maxParticipantsGuards(maxParticipantsGuards)
+                .currentParticipantsGuards(0)
+                .maxParticipantsForwards(maxParticipantsForwards)
+                .currentParticipantsForwards(0)
+                .maxParticipantsOthers(maxParticipantsOthers)
+                .currentParticipantsOthers(0)
+                .recruitmentStatus(RecruitmentStatusType.RECRUITING)
+                .participants(new ArrayList<>())
+                .build();
+        resultMatePost.configureSkillLevel(tempSkillList);
+        return resultMatePost;
     }
 
 }

@@ -1,4 +1,5 @@
 package sync.slamtalk.mate.dto.response;
+
 import lombok.Data;
 import lombok.NonNull;
 import sync.slamtalk.mate.entity.ApplyStatusType;

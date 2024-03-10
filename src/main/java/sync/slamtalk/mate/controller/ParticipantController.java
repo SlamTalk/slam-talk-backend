@@ -25,7 +25,7 @@ public class ParticipantController {
     )
     @PostMapping("/{matePostId}/participants/register")
     public ApiResponse<ParticipantDto> addParticipant(@PathVariable("matePostId") long matePostId, @RequestBody ParticipantDto fromParticipantDto,
-                                                      @AuthenticationPrincipal Long id){
+                                                      @AuthenticationPrincipal Long id) {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
 
@@ -42,20 +42,20 @@ public class ParticipantController {
     )
     @PatchMapping("/{matePostId}/participants/{participantTableId}")
     public ApiResponse updateParticipant(@PathVariable("matePostId") long matePostId, @PathVariable("participantTableId") long participantTableId,
-                                         @RequestParam("applyStatus") ApplyStatusType applyStatus, @AuthenticationPrincipal Long id){
+                                         @RequestParam("applyStatus") ApplyStatusType applyStatus, @AuthenticationPrincipal Long id) {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
         ParticipantDto dto;
-        if(applyStatus == ApplyStatusType.ACCEPTED){
-            dto =  participantService.acceptParticipant(matePostId, participantTableId, userId);
+        if (applyStatus == ApplyStatusType.ACCEPTED) {
+            dto = participantService.acceptParticipant(matePostId, participantTableId, userId);
             return ApiResponse.ok(dto);
-        }else if(applyStatus == ApplyStatusType.REJECTED){
+        } else if (applyStatus == ApplyStatusType.REJECTED) {
             dto = participantService.rejectParticipant(matePostId, participantTableId, userId);
             return ApiResponse.ok(dto);
-        }else if(applyStatus == ApplyStatusType.CANCELED){
+        } else if (applyStatus == ApplyStatusType.CANCELED) {
             participantService.cancelParticipant(matePostId, participantTableId, userId);
             return ApiResponse.ok("취소되었습니다.");
-        }else{
+        } else {
             return ApiResponse.fail("잘못된 요청입니다.");
         }
     }
@@ -67,7 +67,7 @@ public class ParticipantController {
     )
     @GetMapping("/{matePostId}/participants")
     // todo : 프론트엔드에서 호출 할 경우가 없다면 삭제한다.
-    public ApiResponse<List<ParticipantDto>> getParticipants(@PathVariable("matePostId") long matePostId){
+    public ApiResponse<List<ParticipantDto>> getParticipants(@PathVariable("matePostId") long matePostId) {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = 1;
 

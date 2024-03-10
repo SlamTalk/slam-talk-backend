@@ -1,9 +1,9 @@
 package sync.slamtalk.mate.dto.garbage;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.SkillLevelType;

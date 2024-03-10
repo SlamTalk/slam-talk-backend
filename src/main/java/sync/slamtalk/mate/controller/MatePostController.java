@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
-import sync.slamtalk.mate.dto.response.MatePostListDto;
 import sync.slamtalk.mate.dto.MateSearchCondition;
 import sync.slamtalk.mate.dto.request.MatePostReq;
+import sync.slamtalk.mate.dto.response.MatePostListDto;
 import sync.slamtalk.mate.dto.response.MatePostRes;
 import sync.slamtalk.mate.dto.response.MyMateListRes;
 import sync.slamtalk.mate.dto.response.ParticipantDto;
@@ -35,7 +35,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PostMapping("/register")
-    public ResponseEntity registerMatePost(@Valid @RequestBody MatePostReq matePostReq, @AuthenticationPrincipal Long id){
+    public ResponseEntity registerMatePost(@Valid @RequestBody MatePostReq matePostReq, @AuthenticationPrincipal Long id) {
 
         long matePostId = matePostService.registerMatePost(matePostReq, id);
         HttpHeaders headers = new HttpHeaders();
@@ -49,7 +49,7 @@ public class MatePostController {
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/read/{matePostId}")
-    public ApiResponse<MatePostRes> getMatePost(@PathVariable("matePostId") long matePostId){
+    public ApiResponse<MatePostRes> getMatePost(@PathVariable("matePostId") long matePostId) {
         MatePostRes dto = matePostService.getMatePost(matePostId);
         return ApiResponse.ok(dto);
     }
@@ -61,7 +61,7 @@ public class MatePostController {
     )
     @PatchMapping("/{matePostId}")
     public ApiResponse updateMatePost(@PathVariable("matePostId") long matePostId, @Valid @RequestBody MatePostReq matePostReq,
-                                                   @AuthenticationPrincipal Long id){
+                                      @AuthenticationPrincipal Long id) {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
 
@@ -77,7 +77,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @DeleteMapping("/{matePostId}")
-    public ApiResponse deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+    public ApiResponse deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id) {
         // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
         long userId = id;
 
@@ -96,7 +96,7 @@ public class MatePostController {
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/list")
-    public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition){
+    public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition) {
 
         MatePostListDto resultDto = matePostService.getMatePostsByCurser(condition);
 
@@ -109,7 +109,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}/complete")
-    public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+    public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id) {
         List<ParticipantDto> listDto = matePostService.completeRecruitment(matePostId, id);
         return ApiResponse.ok(listDto);
     }
@@ -120,7 +120,7 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @GetMapping("/my-list")
-    public ApiResponse<MyMateListRes> getMyMateList(@AuthenticationPrincipal Long userId){
+    public ApiResponse<MyMateListRes> getMyMateList(@AuthenticationPrincipal Long userId) {
         MyMateListRes myMateListRes = matePostService.getMyMateList(userId);
         return ApiResponse.ok(myMateListRes);
     }

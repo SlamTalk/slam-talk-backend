@@ -5,9 +5,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
-import org.hibernate.validator.constraints.Length;
-import sync.slamtalk.mate.entity.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import sync.slamtalk.mate.entity.MatePost;
+import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
+import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.SkillLevelList;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 
 import java.time.LocalDate;

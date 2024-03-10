@@ -10,7 +10,9 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.dto.response.ParticipantDto;
-import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.entity.Participant;
+import sync.slamtalk.mate.entity.RecruitmentStatusType;
+import sync.slamtalk.mate.entity.SkillLevelList;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
