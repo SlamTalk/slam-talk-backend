@@ -90,7 +90,7 @@ public class MatePostController {
     )
     @GetMapping("/list")
     public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition) {
-        return ApiResponse.ok(matePostService.getMatePostsByCurser(condition));
+        return ApiResponse.ok(matePostService.getMatePostsByCursor(condition));
     }
 
     @Operation(
