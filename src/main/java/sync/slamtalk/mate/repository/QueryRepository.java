@@ -104,7 +104,7 @@ public class QueryRepository {
     public List<UnrefinedTeamMatchingDto> findTeamMatchingList(TeamSearchCondition condition) {
         return queryFactory
                 .select(bean(UnrefinedTeamMatchingDto.class,
-                teamMatching.teamMatchingId,
+                teamMatching.id,
                 teamMatching.teamName,
                 teamMatching.writer.id.as("writerId"),
                 teamMatching.writer.nickname.as("writerNickname"),
@@ -157,7 +157,7 @@ public class QueryRepository {
                                 teamApplicant.teamApplicantTableId,
                                 teamApplicant.applicantId,
                                 teamApplicant.applicantNickname,
-                                teamApplicant.teamMatching.teamMatchingId.as("teamMatchingId"),
+                                teamApplicant.teamMatching.id.as("teamMatchingId"),
                                 teamApplicant.applyStatus,
                                 teamApplicant.teamName,
                                 teamApplicant.skillLevel
@@ -182,7 +182,7 @@ public class QueryRepository {
 
     private BooleanExpression eqTeamMatchingId(Long teamMatchingId) {
         if(teamMatchingId != null){
-            return teamApplicant.teamMatching.teamMatchingId.eq(teamMatchingId);
+            return teamApplicant.teamMatching.id.eq(teamMatchingId);
         } else {
             return null;
         }

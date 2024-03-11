@@ -53,7 +53,7 @@ public class TeamApplicant extends BaseEntity {
     public String toString() {
         return "TeamApplicant{" +
                 "teamApplicantTableId=" + teamApplicantTableId +
-                ", teamMatchingId=" + teamMatching.getTeamMatchingId() +
+                ", teamMatchingId=" + teamMatching.getId() +
                 ", teamName='" + teamName + '\'' +
                 ", applicantId=" + applicantId +
                 ", applicantNickname='" + applicantNickname + '\'' +

@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static sync.slamtalk.team.error.TeamErrorResponseCode.OVER_LIMITED_NUMBERS;
 
@@ -35,7 +34,8 @@ public class TeamMatching extends BaseEntity implements Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long teamMatchingId;
+    @Column(name = "team_matching_id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
@@ -116,6 +116,25 @@ public class TeamMatching extends BaseEntity implements Post {
         this.splitAndStoreLocation(fromTeamFormDTO.getLocationDetail());
     }
 
+    public static TeamMatching of(FromTeamFormDTO dto, User user) {
+        TeamMatching teamMatching = new TeamMatching();
+        teamMatching.title = dto.getTitle();
+        teamMatching.content = dto.getContent();
+        teamMatching.skillLevel = dto.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(dto.getSkillLevel());
+        teamMatching.configureSkillLevel(skillList);
+        teamMatching.startTime = dto.getStartTime();
+        teamMatching.endTime = dto.getEndTime();
+        teamMatching.scheduledDate = dto.getScheduledDate();
+        teamMatching.teamName = dto.getTeamName();
+        teamMatching.numberOfMembers = dto.getNumberOfMembers();
+        teamMatching.recruitmentStatus = RecruitmentStatusType.RECRUITING;
+        teamMatching.splitAndStoreLocation(dto.getLocationDetail());
+        teamMatching.connectParentUser(user);
+        return teamMatching;
+    }
+
+
     public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user) {
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
@@ -138,7 +157,7 @@ public class TeamMatching extends BaseEntity implements Post {
      */
     public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto) {
         EntityToDtoMapper mapper = new EntityToDtoMapper();
-        dto.setTeamMatchingId(this.teamMatchingId);
+        dto.setTeamMatchingId(this.id);
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writer.getId());

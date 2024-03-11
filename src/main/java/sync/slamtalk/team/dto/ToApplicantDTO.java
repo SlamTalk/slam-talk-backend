@@ -23,7 +23,7 @@ public class ToApplicantDTO {
         dto.setTeamName(teamApplicant.getTeamName());
         dto.setApplicantId(teamApplicant.getApplicantId());
         dto.setApplicantNickname(teamApplicant.getApplicantNickname());
-        dto.setTeamMatchingId(teamApplicant.getTeamMatching().getTeamMatchingId());
+        dto.setTeamMatchingId(teamApplicant.getTeamMatching().getId());
         dto.setSkillLevel(teamApplicant.getSkillLevel());
         dto.setApplyStatus(teamApplicant.getApplyStatus());
         return dto;

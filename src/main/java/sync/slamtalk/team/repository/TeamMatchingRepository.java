@@ -17,7 +17,7 @@ public interface TeamMatchingRepository extends JpaRepository<TeamMatching, Long
     /* 레벨 시스템 : 모집상태가 완료된 사용자의 개수를 반환하는 메서드 */
     @Query("select count(*) "
             + "from TeamMatching t "
-            + "join TeamApplicant a on t.teamMatchingId = a.teamMatching.teamMatchingId "
+            + "join TeamApplicant a on t.id = a.teamMatching.id "
             + "where a.applicantId = :userId "
             + "and t.recruitmentStatus = sync.slamtalk.mate.entity.RecruitmentStatusType.COMPLETED "
             + "and a.applyStatus = sync.slamtalk.mate.entity.ApplyStatusType.ACCEPTED "
