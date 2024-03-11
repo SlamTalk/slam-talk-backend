@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
@@ -19,8 +18,10 @@ import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
@@ -226,7 +227,7 @@ public class TeamMatchingService {
 
         TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(() -> new BaseException(APPLICANT_NOT_FOUND));
 
-        if(applicant.getApplyStatus() != ApplyStatusType.WAITING) {
+        if (applicant.getApplyStatus() != ApplyStatusType.WAITING) {
             throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
         }
 
@@ -290,7 +291,7 @@ public class TeamMatchingService {
         }
 
         // 모집 상태가 모집 중인지 확인
-        if(teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
 
@@ -325,7 +326,7 @@ public class TeamMatchingService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
 
@@ -336,7 +337,7 @@ public class TeamMatchingService {
 
         List<TeamApplicant> applicantList = teamPost.getTeamApplicants();
 
-        if(applicantList.isEmpty()) {
+        if (applicantList.isEmpty()) {
             throw new BaseException(NOT_ALLOWED_REQUEST);
         }
 
