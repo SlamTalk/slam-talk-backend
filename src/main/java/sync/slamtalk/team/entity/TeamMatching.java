@@ -7,7 +7,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
-import sync.slamtalk.team.dto.ToApplicantDto;
+import sync.slamtalk.team.dto.ToApplicantDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 import sync.slamtalk.user.entity.User;
 
@@ -16,7 +16,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static sync.slamtalk.team.error.TeamErrorResponseCode.OVER_LIMITED_NUMBERS;
 
@@ -31,6 +30,9 @@ import static sync.slamtalk.team.error.TeamErrorResponseCode.OVER_LIMITED_NUMBER
         attributeNodes = @NamedAttributeNode("teamApplicants")
 )
 public class TeamMatching extends BaseEntity implements Post {
+
+    private static final int MAX_APPLICANTS = 5;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamMatchingId;
@@ -85,23 +87,12 @@ public class TeamMatching extends BaseEntity implements Post {
     @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TeamApplicant> teamApplicants = new ArrayList<>();
 
-//    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!
-//        this.writerId = writerId;
-//    }
-
-    private static final int MAX_APPLICANTS = 5;
-
     public void declareOpponent(User opponent) {
         this.opponent = opponent;
         this.opponent.getOpponentTeamMatchings().add(this);
     }
 
-    public void cancelOpponent() {
-        this.opponent.getOpponentTeamMatchings().remove(this);
-        this.opponent = null;
-    }
-
-    public void splitAndStoreLocation(String locationDetail) {
+    private void splitAndStoreLocation(String locationDetail) {
         String[] splited = locationDetail.split(" ", 2);
         this.location = splited[0];
         this.locationDetail = splited.length > 1 ? splited[1] : "";
@@ -109,37 +100,6 @@ public class TeamMatching extends BaseEntity implements Post {
 
     public String returnConcatenatedLocation() {
         return this.location + " " + this.locationDetail;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TeamMatching that = (TeamMatching) o;
-        return teamMatchingId.equals(that.teamMatchingId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(teamMatchingId);
-    }
-
-    @Override
-    public String toString() {
-        return "teammatching{" +
-                "teamMatchingId=" + teamMatchingId +
-                ", writerId=" + writer.getId() +
-                ", teamName='" + teamName + '\'' +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", location='" + location + '\'' +
-                ", locationDetail='" + locationDetail + '\'' +
-                ", numberOfMembers=" + numberOfMembers +
-                ", skillLevel=" + skillLevel +
-                ", scheduledDate=" + scheduledDate +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                '}';
     }
 
     public void updateTeamMatching(FromTeamFormDTO fromTeamFormDTO) {
@@ -223,16 +183,16 @@ public class TeamMatching extends BaseEntity implements Post {
     }
 
     public void connectApplicant(TeamApplicant teamApplicant) {
-        if (teamApplicants.stream().filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING).count() > MAX_APPLICANTS) {
+        if (countApplicants() > MAX_APPLICANTS) {
             throw new BaseException(OVER_LIMITED_NUMBERS);
         }
         this.teamApplicants.add(teamApplicant);
     }
 
-    public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus) {
-        //todo : 같은 모집 상태로 변경 시 예외 처리
-
-        this.recruitmentStatus = recruitmentStatus;
+    private long countApplicants() {
+        return this.teamApplicants.stream()
+                .filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING)
+                .count();
     }
 
     public void connectParentUser(User user) { // * writerId를 User 객체로 대체할 것!
@@ -241,9 +201,15 @@ public class TeamMatching extends BaseEntity implements Post {
     }
 
     // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
-    public List<ToApplicantDto> makeApplicantDto() {
-        List<TeamApplicant> teamApplicants = getTeamApplicants();
-        List<ToApplicantDto> dto = teamApplicants.stream().filter(teamApplicant -> teamApplicant.getIsDeleted() == false).map(TeamApplicant::makeDto).collect(Collectors.toList());
-        return dto;
+    public List<ToApplicantDTO> makeApplicantDto() {
+        return getTeamApplicants()
+                .stream()
+                .filter(teamApplicant -> !teamApplicant.getIsDeleted())
+                .map(ToApplicantDTO::from)
+                .toList();
+    }
+
+    public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatusType) {
+        this.recruitmentStatus = recruitmentStatusType;
     }
 }

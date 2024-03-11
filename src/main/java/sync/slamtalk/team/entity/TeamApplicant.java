@@ -5,10 +5,6 @@ import lombok.*;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.SkillLevelType;
-import sync.slamtalk.team.dto.ToApplicantDto;
-
-import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Getter
@@ -20,19 +16,26 @@ public class TeamApplicant extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long teamApplicantTableId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_matching_id")
     private TeamMatching teamMatching;
+
     @Column(nullable = false)
     private String teamName;
+
     @Column(nullable = false)
     private Long applicantId;
+
     @Column(nullable = false)
     private String applicantNickname;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplyStatusType applyStatus; // WAITING, ACCEPTED, REJECTED
+
     private Long chatroomId;
+
     @Enumerated(EnumType.STRING)
     private SkillLevelType skillLevel;
 
@@ -44,39 +47,6 @@ public class TeamApplicant extends BaseEntity {
     public void disconnectTeamMatching() {
         this.teamMatching.getTeamApplicants().remove(this);
         this.teamMatching = null;
-    }
-
-
-    public boolean checkCapabilities(List<String> requiredSkillLevel) {
-        if (requiredSkillLevel.contains(this.skillLevel.getLevel()) == false) {
-            return false;
-        }
-        return true;
-    }
-
-    public ToApplicantDto makeDto() {
-        ToApplicantDto dto = new ToApplicantDto();
-        dto.setApplicantId(this.applicantId);
-        dto.setApplicantNickname(this.applicantNickname);
-        dto.setApplyStatus(this.applyStatus);
-        dto.setTeamName(this.teamName);
-        dto.setTeamApplicantTableId(this.teamApplicantTableId);
-        dto.setTeamMatchingId(this.teamMatching.getTeamMatchingId());
-        dto.setSkillLevel(this.skillLevel);
-        return dto;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TeamApplicant that = (TeamApplicant) o;
-        return teamApplicantTableId == that.teamApplicantTableId;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(teamApplicantTableId);
     }
 
     @Override

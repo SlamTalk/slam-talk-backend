@@ -10,6 +10,5 @@ import java.util.List;
 public class ToTeamMatchingListDto {
 
     List<ToTeamFormDTO> teamMatchingList;
-
     String nextCursor;
 }

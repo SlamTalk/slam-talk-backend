@@ -139,7 +139,7 @@ public class TeamMatchingService {
 
         List<ToTeamFormDTO> refinedDto = listedTeamMatchings.stream().map(dto -> entityToDtoMapper.fromUnrefinedTeamMatchingToDto(dto)).collect(Collectors.toList());
         List<ToTeamFormDTO> result = refinedDto.stream().map(dto -> {
-                    List<ToApplicantDto> refined = queryRepository.findApplicantListByTeamMatchingId(dto.getTeamMatchingId());
+                    List<ToApplicantDTO> refined = queryRepository.findApplicantListByTeamMatchingId(dto.getTeamMatchingId());
                     dto.setTeamApplicants(refined);
                     return dto;
                 }
@@ -166,7 +166,7 @@ public class TeamMatchingService {
      * Note :
      * 적합성 여부를 판단하는 로직을 주석 처리 함.
      */
-    public Long applyTeamMatching(Long teamMatchingId, FromApplicantDto fromApplicantDto, Long id) {
+    public Long applyTeamMatching(Long teamMatchingId, FromApplicantDTO fromApplicantDto, Long id) {
         long userId = id;
 
         TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));

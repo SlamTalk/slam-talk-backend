@@ -93,7 +93,7 @@ public class TeamMatchingController {
             tags = {"팀 매칭 / 신청자 목록"}
     )
     @PostMapping("/{teamMatchingId}/apply")
-    public ApiResponse<Long> applyTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @RequestBody FromApplicantDto fromApplicantDto,
+    public ApiResponse<Long> applyTeamMatching(@PathVariable("teamMatchingId") Long teamMatchingId, @RequestBody FromApplicantDTO fromApplicantDto,
                                                @AuthenticationPrincipal Long userId) {
         return ApiResponse.ok(teamMatchingService.applyTeamMatching(teamMatchingId, fromApplicantDto, userId));
     }

@@ -11,7 +11,7 @@ import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.TeamSearchCondition;
-import sync.slamtalk.team.dto.ToApplicantDto;
+import sync.slamtalk.team.dto.ToApplicantDTO;
 import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
 
 import java.time.LocalDate;
@@ -150,10 +150,10 @@ public class QueryRepository {
     }
 
 
-    public List<ToApplicantDto> findApplicantListByTeamMatchingId(long teamMatchingId) {
+    public List<ToApplicantDTO> findApplicantListByTeamMatchingId(long teamMatchingId) {
         return queryFactory
                 .select(
-                        bean(ToApplicantDto.class,
+                        bean(ToApplicantDTO.class,
                                 teamApplicant.teamApplicantTableId,
                                 teamApplicant.applicantId,
                                 teamApplicant.applicantNickname,
