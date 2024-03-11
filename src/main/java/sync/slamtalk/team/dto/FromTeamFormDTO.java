@@ -7,11 +7,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter

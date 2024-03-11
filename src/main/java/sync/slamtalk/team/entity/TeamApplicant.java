@@ -47,15 +47,14 @@ public class TeamApplicant extends BaseEntity {
     }
 
 
-
     public boolean checkCapabilities(List<String> requiredSkillLevel) {
-        if(requiredSkillLevel.contains(this.skillLevel.getLevel()) == false){
+        if (requiredSkillLevel.contains(this.skillLevel.getLevel()) == false) {
             return false;
         }
         return true;
     }
 
-    public ToApplicantDto makeDto(){
+    public ToApplicantDto makeDto() {
         ToApplicantDto dto = new ToApplicantDto();
         dto.setApplicantId(this.applicantId);
         dto.setApplicantNickname(this.applicantNickname);
@@ -97,7 +96,7 @@ public class TeamApplicant extends BaseEntity {
         this.applyStatus = applyStatus;
     }
 
-    public boolean isCorrespondTo(Long userId){
+    public boolean isCorrespondTo(Long userId) {
         return this.applicantId.equals(userId);
     }
 }

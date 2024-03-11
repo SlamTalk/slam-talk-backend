@@ -1,8 +1,6 @@
 package sync.slamtalk.team.dto;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.time.LocalDateTime;

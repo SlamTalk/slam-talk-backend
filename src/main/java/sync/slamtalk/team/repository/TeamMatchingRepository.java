@@ -18,7 +18,7 @@ public interface TeamMatchingRepository extends JpaRepository<TeamMatching, Long
     // 팀 매칭 목록 조회를 위한 메소드 입니다. EntityGraph를 이용하여 즉시로딩으로 신청자 목록을 가져옵니다.(N + 1 문제 해결)
     @EntityGraph(value = "TeamMatching.forEagerApplicants")
     @Query("select t from TeamMatching t where t.createdAt < :cursor and t.isDeleted != true order by t.createdAt desc")
-    List<TeamMatching> findAllByCreatedAtBefore(@Param("cursor")LocalDateTime cursor, PageRequest request);
+    List<TeamMatching> findAllByCreatedAtBefore(@Param("cursor") LocalDateTime cursor, PageRequest request);
 
     /* 레벨 시스템 : 모집상태가 완료된 사용자의 개수를 반환하는 메서드 */
     @Query("select count(*) " +
