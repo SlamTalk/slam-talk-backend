@@ -1,21 +1,18 @@
 package sync.slamtalk.mate.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import sync.slamtalk.mate.entity.MatePost;
-import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
-import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.mate.entity.SkillLevelList;
+import lombok.*;
+import org.hibernate.validator.constraints.Length;
+import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 
 @Getter
 @NoArgsConstructor
@@ -27,34 +24,39 @@ public class MatePostReq {
 
     private String content;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate scheduledDate;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
 
     @NotBlank
     private String locationDetail;
 
-    @NotNull
+    @NonNull
     @Enumerated(EnumType.STRING)
     private RecruitedSkillLevelType skillLevel;
 
-    private Integer maxParticipantsCenters;
+    @NonNull
+    private int maxParticipantsCenters;
 
-    private Integer maxParticipantsGuards;
+    @NonNull
+    private int maxParticipantsGuards;
 
-    private Integer maxParticipantsForwards;
+    @NonNull
+    private int maxParticipantsForwards;
 
-    private Integer maxParticipantsOthers;
+    @NonNull
+    private int maxParticipantsOthers;
 
 
+    @JsonIgnore
     public MatePost toEntity() {
         EntityToDtoMapper entityToDtoMapper = new EntityToDtoMapper();
         SkillLevelList tempSkillList = entityToDtoMapper.fromRecruitSkillLevel(skillLevel);
@@ -79,6 +81,7 @@ public class MatePostReq {
                 .maxParticipantsOthers(maxParticipantsOthers)
                 .currentParticipantsOthers(0)
                 .recruitmentStatus(RecruitmentStatusType.RECRUITING)
+                .participants(new ArrayList<>())
                 .build();
         resultMatePost.configureSkillLevel(tempSkillList);
         return resultMatePost;

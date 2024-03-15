@@ -1,12 +1,22 @@
 package sync.slamtalk.mate.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
+@Setter
 public class PositionListDto {
-    private String position;
-    private int maxPosition;
-    private int currentPosition;
+    @NonNull
+    String position;
+    @NonNull
+    int maxPosition;
+    @NonNull
+    int currentPosition;
+
+    public PositionListDto(String position, int maxPosition, int currentPosition) {
+        this.position = position;
+        this.maxPosition = maxPosition;
+        this.currentPosition = currentPosition;
+    }
 }
