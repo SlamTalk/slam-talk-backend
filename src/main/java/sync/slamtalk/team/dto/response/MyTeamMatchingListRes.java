@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * 나의 팀매칭 리스트 상세보기 reponse dto
- * */
+ */
 @Getter
 @AllArgsConstructor
 public class MyTeamMatchingListRes {

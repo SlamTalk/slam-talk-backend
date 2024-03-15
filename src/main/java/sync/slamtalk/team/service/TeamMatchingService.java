@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
@@ -19,11 +18,10 @@ import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static sync.slamtalk.mate.error.MateErrorResponseCode.*;
 import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
@@ -40,6 +38,12 @@ public class TeamMatchingService {
     private final QueryRepository queryRepository;
     private final EntityToDtoMapper entityToDtoMapper;
 
+    private static final Comparator<ToTeamFormDTO> TEAM_FORM_DTO_COMPARATOR = (o1, o2) -> {
+        if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+            return o1.getStartTime().compareTo(o2.getStartTime());
+        }
+        return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+    };
 
     /**
      * Objective : 팀 매칭 글을 등록하는 메소드 입니다.
@@ -47,13 +51,11 @@ public class TeamMatchingService {
      * 1. 접속한 유저 객체를 꺼내온다.(없을 경우 BaseException을 발생시킨다.)
      * 2. FromTeamFormDTO를 TeamMatching 객체로 변환하여 저장한다.
      */
-    public long registerTeamMatching(FromTeamFormDTO dto, long userId){
+    public long registerTeamMatching(FromTeamFormDTO dto, long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
         log.debug("[TeamMatchingService] user : {}", user.getTeamMatchings());
-        TeamMatching teamMatchingEntity = new TeamMatching();
-        teamMatchingEntity.createTeamMatching(dto, user);
-        TeamMatching resultTeamMatchingEntity = teamMatchingRepository.save(teamMatchingEntity);
-        return resultTeamMatchingEntity.getTeamMatchingId();
+        TeamMatching resultTeamMatchingEntity = teamMatchingRepository.save(TeamMatching.of(dto, user));
+        return resultTeamMatchingEntity.getId();
     }
 
     /**
@@ -63,12 +65,11 @@ public class TeamMatchingService {
      * 2. 조회된 글이 삭제되었을 경우 BaseException을 발생시킨다.
      * 3. 조회된 글을 ToTeamFormDTO로 변환하여 반환한다.
      * Note :
-     *
      */
     @Transactional(readOnly = true)
-    public ToTeamFormDTO getTeamMatching(long teamMatchingId){
+    public ToTeamFormDTO getTeamMatching(long teamMatchingId) {
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
-        if(teamMatchingEntity.getIsDeleted()){
+        if (teamMatchingEntity.getIsDeleted()) {
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
         }
         ToTeamFormDTO dto = new ToTeamFormDTO();
@@ -84,17 +85,18 @@ public class TeamMatchingService {
      * 3. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 4. 글을 수정한다.
      */
-    public ApiResponse updateTeamMatching(Long teamMatchingId, FromTeamFormDTO fromTeamFormDTO, Long userId){
+    public void updateTeamMatching(Long teamMatchingId, FromTeamFormDTO fromTeamFormDTO, Long userId) {
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
-        if(teamMatchingEntity.getIsDeleted()){
+
+        if (teamMatchingEntity.getIsDeleted()) {
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
         }
-        if(teamMatchingEntity.getWriter().getId().equals(userId) == false){
+
+        if (!teamMatchingEntity.getWriter().getId().equals(userId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
         teamMatchingEntity.updateTeamMatching(fromTeamFormDTO);
-        return ApiResponse.ok();
     }
 
     /**
@@ -105,17 +107,18 @@ public class TeamMatchingService {
      * 3. 글 작성자와 접속자가 같은지 확인한다.(다를 경우 BaseException을 발생시킨다.)
      * 4. 글을 삭제한다.
      */
-    public ApiResponse deleteTeamMatching(long teamMatchingId, Long userId){
+    public void deleteTeamMatching(long teamMatchingId, Long userId) {
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
-        if(teamMatchingEntity.getIsDeleted()){
+
+        if (teamMatchingEntity.getIsDeleted()) {
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
         }
-        if(teamMatchingEntity.isCorrespondTo(userId) == false){
+
+        if (!teamMatchingEntity.isCorrespondTo(userId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
-        }else{
-            teamMatchingEntity.delete();
         }
-        return ApiResponse.ok();
+
+        teamMatchingEntity.delete();
     }
 
     /**
@@ -134,23 +137,18 @@ public class TeamMatchingService {
      * ToTeamFormDTO 타입의 리스트를 반환합니다.
      */
     @Transactional(readOnly = true)
-    public ToTeamMatchingListDto getTeamMatchingList(TeamSearchCondition condition){
+    public ToTeamMatchingListDto getTeamMatchingList(TeamSearchCondition condition) {
 
-        List<UnrefinedTeamMatchingDto> listedTeamMatchings = queryRepository.findTeamMatchingList(condition);
+        List<ToTeamFormDTO> result = queryRepository.findTeamMatchingList(condition)
+                .stream()
+                .map(entityToDtoMapper::fromUnrefinedTeamMatchingToDto)
+                .toList();
 
-        List<ToTeamFormDTO> refinedDto = listedTeamMatchings.stream().map(dto -> entityToDtoMapper.fromUnrefinedTeamMatchingToDto(dto)).collect(Collectors.toList());
-        List<ToTeamFormDTO> result = refinedDto.stream().map(dto -> {
-                    List<ToApplicantDto> refined = queryRepository.findApplicantListByTeamMatchingId(dto.getTeamMatchingId());
-                    dto.setTeamApplicants(refined);
-                    return dto;
-                }
-        ).toList();
-        ToTeamMatchingListDto response = new ToTeamMatchingListDto();
-        response.setTeamMatchingList(result);
-        if(result.isEmpty() == false) {
-            response.setNextCursor(result.get(result.size() - 1).getCreatedAt().toString());
-        }
-        return response;
+        result.forEach(dto -> dto.setTeamApplicants(queryRepository.findApplicantListByTeamMatchingId(dto.getTeamMatchingId())));
+
+        String nextCursor = result.isEmpty() ? null : result.get(result.size() - 1).getCreatedAt().toString();
+
+        return ToTeamMatchingListDto.of(result, nextCursor);
     }
 
     /**
@@ -167,49 +165,40 @@ public class TeamMatchingService {
      * Note :
      * 적합성 여부를 판단하는 로직을 주석 처리 함.
      */
-    public Long applyTeamMatching(Long teamMatchingId, FromApplicantDto fromApplicantDto, Long id){
+    public Long applyTeamMatching(Long teamMatchingId, FromApplicantDTO fromApplicantDto, Long id) {
         long userId = id;
 
-        TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()-> new BaseException(TEAM_POST_NOT_FOUND));
+        TeamMatching entity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
 
-        if(entity.isCorrespondTo(userId)){
+        if (entity.isCorrespondTo(userId)) {
             throw new BaseException(PROHIBITED_TO_APPLY_TO_YOUR_POST);
         }
 
-        Long teamApplicantTableId = 0L;
-        TeamApplicant existedApplicant = entity.getTeamApplicants().stream().filter(applicant -> applicant.getApplicantId().equals(userId)).findFirst().orElse(null);
-        if(existedApplicant != null){
-            throw new BaseException(ALREADY_APPLIED_TO_THIS_POST);
-        }
+        entity.getTeamApplicants().stream()
+                .filter(applicant -> applicant.getApplicantId().equals(userId))
+                .findAny()
+                .ifPresent(applicant -> {
+                    throw new BaseException(ALREADY_APPLIED_TO_THIS_POST);
+                });
 
-        if(entity.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-
-            User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
-            String userNickname = user.getNickname();
-
-//            if(entityToDtoMapper.toSkillLevelTypeList(entity.getSkillLevel()).contains(fromApplicantDto.getSkillLevel().getLevel()) == false){
-//                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-//            }
-
-            TeamApplicant applicant = TeamApplicant.builder()
-                    .applicantId(userId)
-                    .applicantNickname(userNickname)
-                    .applyStatus(ApplyStatusType.WAITING)
-                    .teamName(fromApplicantDto.getTeamName())
-                    .skillLevel(fromApplicantDto.getSkillLevel())
-                    .build();
-
-            applicant.connectTeamMatching(entity);
-            TeamApplicant createdApplicant = teamApplicantRepository.save(applicant);
-            teamApplicantTableId = createdApplicant.getTeamApplicantTableId();
-
-        }else{
+        if (entity.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(TEAM_POST_IS_NOT_RECRUITING);
         }
 
-        return teamApplicantTableId;
-    }
+        TeamApplicant applicant = TeamApplicant.builder()
+                .applicantId(userId)
+                .applicantNickname(user.getNickname())
+                .applyStatus(ApplyStatusType.WAITING)
+                .teamName(fromApplicantDto.getTeamName())
+                .skillLevel(fromApplicantDto.getSkillLevel())
+                .build();
 
+        applicant.connectTeamMatching(entity);
+        TeamApplicant createdApplicant = teamApplicantRepository.save(applicant);
+
+        return createdApplicant.getTeamApplicantTableId();
+    }
 
 
     /**
@@ -224,23 +213,25 @@ public class TeamMatchingService {
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
      * 그리고 신청자의 신청 상태가 WAITING 이어야 합니다.
      */
-    public void rejectApplicant(long teamMatchingId, long teamApplicantId, long hostId){
-        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
+    public void rejectApplicant(long teamMatchingId, long teamApplicantId, long hostId) {
+        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
 
-        if(teamPost.isCorrespondTo(hostId) == false){ // 접근자가 게시글 작성자가 아닐 때
+
+        if (!teamPost.isCorrespondTo(hostId)) { // 접근자가 게시글 작성자가 아닐 때
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
-            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
-                applicant.updateApplyStatus(ApplyStatusType.REJECTED);
-            }else{
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-            }
-        }else{
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(() -> new BaseException(APPLICANT_NOT_FOUND));
+
+        if (applicant.getApplyStatus() != ApplyStatusType.WAITING) {
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+        }
+
+        applicant.updateApplyStatus(ApplyStatusType.REJECTED);
     }
 
     /**
@@ -256,25 +247,24 @@ public class TeamMatchingService {
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
      * 그리고 신청자의 신청 상태가 WAITING 이어야 합니다.
      */
-    public void cancelApplicant(long teamMatchingId, long teamApplicantId, long writerId){
-        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
+    public void cancelApplicant(long teamMatchingId, long teamApplicantId, long writerId) {
+        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(() -> new BaseException(APPLICANT_NOT_FOUND));
 
-        TeamApplicant applicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
-
-        if(applicant.isCorrespondTo(writerId) == false){
+        if (!applicant.isCorrespondTo(writerId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(applicant.getApplyStatus() == ApplyStatusType.WAITING){
-                applicant.disconnectTeamMatching();
-                teamApplicantRepository.delete(applicant);
-            }else{
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-            }
-        }else{
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        if (applicant.getApplyStatus() != ApplyStatusType.WAITING) {
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+        }
+
+        applicant.disconnectTeamMatching();
+        teamApplicantRepository.delete(applicant);
     }
 
     /**
@@ -291,27 +281,32 @@ public class TeamMatchingService {
      * Note :
      * 이 메소드를 수행하려면 해당 글의 모집 상태가 RECRUITING이어야 합니다.
      */
-    public void acceptApplicant(long teamMatchingId,long teamApplicantId, long writerId){
-        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
-        TeamApplicant teamApplicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(()->new BaseException(APPLICANT_NOT_FOUND));
-        User applicantUser = userRepository.findById(teamApplicant.getApplicantId()).orElseThrow(()->new BaseException(NOT_FOUND_USER));
-        if(teamPost.isCorrespondTo(writerId) == false){
+    public void acceptApplicant(long teamMatchingId, long teamApplicantId, long writerId) {
+        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+        TeamApplicant teamApplicant = teamApplicantRepository.findById(teamApplicantId).orElseThrow(() -> new BaseException(APPLICANT_NOT_FOUND));
+        User applicantUser = userRepository.findById(teamApplicant.getApplicantId()).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+
+        if (!teamPost.isCorrespondTo(writerId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(teamApplicant.getApplyStatus() == ApplyStatusType.WAITING) {
-                if (teamPost.getOpponent() != null) {
-                    throw new BaseException(ALEADY_DECLARED_OPPONENT);
-                }
-                teamPost.declareOpponent(applicantUser);
-                teamApplicant.updateApplyStatus(ApplyStatusType.ACCEPTED);
-            }else{
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-            }
-        }else{
+        // 모집 상태가 모집 중인지 확인
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        // 이미 상대팀이 선언되어 있는 경우
+        if (teamApplicant.getApplyStatus() != ApplyStatusType.WAITING) {
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+        }
+
+        // 상대팀이 선언되어 있지 않은 경우
+        if (teamPost.getOpponent() != null) {
+            throw new BaseException(ALEADY_DECLARED_OPPONENT);
+        }
+
+        teamPost.declareOpponent(applicantUser);
+        teamApplicant.updateApplyStatus(ApplyStatusType.ACCEPTED);
     }
 
     /**
@@ -324,67 +319,68 @@ public class TeamMatchingService {
      * 4. 모집 상태를 완료로 변경한다.
      * 5. 모집 상태가 모집 중이 아닐 경우 BaseException을 발생시킨다.
      */
-    public void completeTeamMatching(long teamMatchingId, long writerId){
-        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(()->new BaseException(TEAM_POST_NOT_FOUND));
-        if(teamPost.isCorrespondTo(writerId) == false){
+    public void completeTeamMatching(long teamMatchingId, long writerId) {
+        TeamMatching teamPost = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
+
+        if (!teamPost.isCorrespondTo(writerId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
-        if(teamPost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            if(teamPost.getOpponent() == null){
-                throw new BaseException(OPPONENT_NOT_DECLARED);
-            }
-            List<TeamApplicant> applicantList = teamPost.getTeamApplicants();
-            if(applicantList.size() > 0){
-                for(TeamApplicant teamApplicant : applicantList) {
-                    if(teamApplicant.getApplyStatus() == ApplyStatusType.REJECTED || teamApplicant.getApplyStatus() == ApplyStatusType.WAITING){
-                        teamApplicant.delete();
-                    }
-                }
-            }else{
-                throw new BaseException(NOT_ALLOWED_REQUEST);
-            }
-            teamPost.setRecruitmentStatus(RecruitmentStatusType.COMPLETED);
-        }else{
+
+        if (teamPost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        if (teamPost.getOpponent() == null) {
+            throw new BaseException(OPPONENT_NOT_DECLARED);
+        }
+
+
+        List<TeamApplicant> applicantList = teamPost.getTeamApplicants();
+
+        if (applicantList.isEmpty()) {
+            throw new BaseException(NOT_ALLOWED_REQUEST);
+        }
+
+        applicantList.stream()
+                .filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.REJECTED || applicant.getApplyStatus() == ApplyStatusType.WAITING)
+                .forEach(TeamApplicant::delete);
+
+        teamPost.setRecruitmentStatus(RecruitmentStatusType.COMPLETED);
     }
 
     /**
      * 내가 속한 모든 팀매칭 리스트 보기
+     *
      * @param userId 유저아이디
      * @return MyTeamMatchingListRes 나의 팀매칭 리스트
-     * */
+     */
     public MyTeamMatchingListRes getMyTeamMatchingList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(NOT_FOUND_USER));
+        User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
         List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(userId);
 
-        List<ToTeamFormDTO> authoredPost = new ArrayList<>(allByWriter.stream()
+        List<ToTeamFormDTO> authoredPost = allByWriter.stream()
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
-                .toList());
+                .toList();
 
-        List<ToTeamFormDTO> participatedPost = new ArrayList<>(allByApplications.stream()
+        List<ToTeamFormDTO> participatedPost = allByApplications.stream()
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
-                .map(toTeamFormDTO -> {
-                    toTeamFormDTO.setTeamApplicants(
-                            toTeamFormDTO.getTeamApplicants().stream()
-                                    .filter(toApplicantDto -> toApplicantDto.getApplicantId().equals(userId))
-                                    .toList()
-                    );
-                    return toTeamFormDTO;
-                })
-                .toList());
+                .toList();
+
+        participatedPost.forEach(toTeamFormDTO -> toTeamFormDTO.setTeamApplicants(
+                getTeamApplicants(userId, toTeamFormDTO)
+        ));
 
         for (List<ToTeamFormDTO> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
-            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
-                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
-                    return o1.getStartTime().compareTo(o2.getStartTime());
-                }
-                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
-            });
+            Collections.sort(toTeamFormDTOS, TEAM_FORM_DTO_COMPARATOR);
         }
 
         return new MyTeamMatchingListRes(authoredPost, participatedPost);
+    }
+
+    private static List<ToApplicantDTO> getTeamApplicants(Long userId, ToTeamFormDTO toTeamFormDTO) {
+        return toTeamFormDTO.getTeamApplicants().stream()
+                .filter(toApplicantDto -> toApplicantDto.getApplicantId().equals(userId))
+                .toList();
     }
 }

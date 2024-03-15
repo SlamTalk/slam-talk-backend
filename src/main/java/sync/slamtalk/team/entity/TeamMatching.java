@@ -7,7 +7,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.FromTeamFormDTO;
-import sync.slamtalk.team.dto.ToApplicantDto;
+import sync.slamtalk.team.dto.ToApplicantDTO;
 import sync.slamtalk.team.dto.ToTeamFormDTO;
 import sync.slamtalk.user.entity.User;
 
@@ -15,10 +15,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
+import static sync.slamtalk.team.error.TeamErrorResponseCode.OVER_LIMITED_NUMBERS;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
@@ -31,9 +29,13 @@ import static sync.slamtalk.team.error.TeamErrorResponseCode.*;
         attributeNodes = @NamedAttributeNode("teamApplicants")
 )
 public class TeamMatching extends BaseEntity implements Post {
+
+    private static final int MAX_APPLICANTS = 5;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long teamMatchingId;
+    @Column(name = "team_matching_id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id")
@@ -85,64 +87,22 @@ public class TeamMatching extends BaseEntity implements Post {
     @OneToMany(mappedBy = "teamMatching", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<TeamApplicant> teamApplicants = new ArrayList<>();
 
-//    public void connectUser(long writerId){ // * writerId를 User 객체로 대체할 것!
-//        this.writerId = writerId;
-//    }
-
-    private static final int MAX_APPLICANTS = 5;
-
-    public void declareOpponent(User opponent){
+    public void declareOpponent(User opponent) {
         this.opponent = opponent;
         this.opponent.getOpponentTeamMatchings().add(this);
     }
 
-    public void cancelOpponent(){
-        this.opponent.getOpponentTeamMatchings().remove(this);
-        this.opponent = null;
-    }
-
-    public void splitAndStoreLocation(String locationDetail){
+    private void splitAndStoreLocation(String locationDetail) {
         String[] splited = locationDetail.split(" ", 2);
         this.location = splited[0];
         this.locationDetail = splited.length > 1 ? splited[1] : "";
     }
 
-    public String returnConcatenatedLocation(){
+    public String returnConcatenatedLocation() {
         return this.location + " " + this.locationDetail;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TeamMatching that = (TeamMatching) o;
-        return teamMatchingId.equals(that.teamMatchingId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(teamMatchingId);
-    }
-
-    @Override
-    public String toString() {
-        return "teammatching{" +
-                "teamMatchingId=" + teamMatchingId +
-                ", writerId=" + writer.getId() +
-                ", teamName='" + teamName + '\'' +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", location='" + location + '\'' +
-                ", locationDetail='" + locationDetail + '\'' +
-                ", numberOfMembers=" + numberOfMembers +
-                ", skillLevel=" + skillLevel +
-                ", scheduledDate=" + scheduledDate +
-                ", startTime=" + startTime +
-                ", endTime=" + endTime +
-                '}';
-    }
-
-    public void updateTeamMatching(FromTeamFormDTO fromTeamFormDTO){
+    public void updateTeamMatching(FromTeamFormDTO fromTeamFormDTO) {
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
@@ -156,7 +116,26 @@ public class TeamMatching extends BaseEntity implements Post {
         this.splitAndStoreLocation(fromTeamFormDTO.getLocationDetail());
     }
 
-    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user){
+    public static TeamMatching of(FromTeamFormDTO dto, User user) {
+        TeamMatching teamMatching = new TeamMatching();
+        teamMatching.title = dto.getTitle();
+        teamMatching.content = dto.getContent();
+        teamMatching.skillLevel = dto.getSkillLevel();
+        SkillLevelList skillList = new EntityToDtoMapper().fromRecruitSkillLevel(dto.getSkillLevel());
+        teamMatching.configureSkillLevel(skillList);
+        teamMatching.startTime = dto.getStartTime();
+        teamMatching.endTime = dto.getEndTime();
+        teamMatching.scheduledDate = dto.getScheduledDate();
+        teamMatching.teamName = dto.getTeamName();
+        teamMatching.numberOfMembers = dto.getNumberOfMembers();
+        teamMatching.recruitmentStatus = RecruitmentStatusType.RECRUITING;
+        teamMatching.splitAndStoreLocation(dto.getLocationDetail());
+        teamMatching.connectParentUser(user);
+        return teamMatching;
+    }
+
+
+    public void createTeamMatching(FromTeamFormDTO fromTeamFormDTO, User user) {
         this.title = fromTeamFormDTO.getTitle();
         this.content = fromTeamFormDTO.getContent();
         this.skillLevel = fromTeamFormDTO.getSkillLevel();
@@ -173,12 +152,12 @@ public class TeamMatching extends BaseEntity implements Post {
     }
 
     /*
-    * TeamMatching 객체를 ToTeamFormDTO로 변환하여 반환하는 메소드 입니다.
-    * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
+     * TeamMatching 객체를 ToTeamFormDTO로 변환하여 반환하는 메소드 입니다.
+     * TeamMatching 객체의 teamApplicants 리스트를 ToApplicantDto로 변환하여 순환참조를 방지합니다.
      */
-    public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto){
+    public ToTeamFormDTO toTeamFormDto(ToTeamFormDTO dto) {
         EntityToDtoMapper mapper = new EntityToDtoMapper();
-        dto.setTeamMatchingId(this.teamMatchingId);
+        dto.setTeamMatchingId(this.id);
         dto.setTitle(this.title);
         dto.setContent(this.content);
         dto.setWriterId(this.writer.getId());
@@ -205,43 +184,51 @@ public class TeamMatching extends BaseEntity implements Post {
         super.delete();
     }
 
-    public void configureSkillLevel(SkillLevelList list){
+    public void configureSkillLevel(SkillLevelList list) {
         this.skillLevelBeginner = false;
         this.skillLevelLow = false;
         this.skillLevelMiddle = false;
         this.skillLevelHigh = false;
 
-        if(list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
-        if(list.isSkillLevelLow()) this.skillLevelLow = true;
-        if(list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
-        if(list.isSkillLevelHigh()) this.skillLevelHigh = true;
+        if (list.isSkillLevelBeginner()) this.skillLevelBeginner = true;
+        if (list.isSkillLevelLow()) this.skillLevelLow = true;
+        if (list.isSkillLevelMiddle()) this.skillLevelMiddle = true;
+        if (list.isSkillLevelHigh()) this.skillLevelHigh = true;
     }
 
     // 글의 작성자 ID와 현재 로그인한 사용자 ID가 일치하는지 확인
-    public boolean isCorrespondTo(long loginId){
+    public boolean isCorrespondTo(long loginId) {
         return this.writer.getId().equals(loginId);
     }
-    public void connectApplicant(TeamApplicant teamApplicant){
-        if(teamApplicants.stream().filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING).count() > MAX_APPLICANTS){
+
+    public void connectApplicant(TeamApplicant teamApplicant) {
+        if (countApplicants() > MAX_APPLICANTS) {
             throw new BaseException(OVER_LIMITED_NUMBERS);
         }
         this.teamApplicants.add(teamApplicant);
     }
-    public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatus){
-        //todo : 같은 모집 상태로 변경 시 예외 처리
 
-        this.recruitmentStatus = recruitmentStatus;
+    private long countApplicants() {
+        return this.teamApplicants.stream()
+                .filter(applicant -> applicant.getApplyStatus() == ApplyStatusType.WAITING)
+                .count();
     }
 
-    public void connectParentUser(User user){ // * writerId를 User 객체로 대체할 것!
+    public void connectParentUser(User user) { // * writerId를 User 객체로 대체할 것!
         this.writer = user;
         this.writer.getTeamMatchings().add(this);
     }
 
     // * 리스트 컬렉션에 저장된 TeamApplicant 객체를 ToApplicantDto로 변환하여 리스트로 반환하는 기능을 수행합니다.
-    public List<ToApplicantDto> makeApplicantDto(){
-        List<TeamApplicant> teamApplicants = getTeamApplicants();
-        List<ToApplicantDto> dto = teamApplicants.stream().filter(teamApplicant -> teamApplicant.getIsDeleted() == false).map(TeamApplicant::makeDto).collect(Collectors.toList());
-        return dto;
+    public List<ToApplicantDTO> makeApplicantDto() {
+        return getTeamApplicants()
+                .stream()
+                .filter(teamApplicant -> !teamApplicant.getIsDeleted())
+                .map(ToApplicantDTO::from)
+                .toList();
+    }
+
+    public void setRecruitmentStatus(RecruitmentStatusType recruitmentStatusType) {
+        this.recruitmentStatus = recruitmentStatusType;
     }
 }

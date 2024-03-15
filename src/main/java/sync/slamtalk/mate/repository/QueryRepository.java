@@ -11,7 +11,7 @@ import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.TeamSearchCondition;
-import sync.slamtalk.team.dto.ToApplicantDto;
+import sync.slamtalk.team.dto.ToApplicantDTO;
 import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
 
 import java.time.LocalDate;
@@ -29,14 +29,9 @@ import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
 @Repository
 public class QueryRepository {
 
-    private EntityManager em;
     private JPAQueryFactory queryFactory;
-    private EntityToDtoMapper entityToDtoMapper;
-
     public QueryRepository(EntityManager em) {
-        this.em = em;
         this.queryFactory = new JPAQueryFactory(em);
-        this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
     public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
@@ -45,7 +40,7 @@ public class QueryRepository {
                         matePost.writer.id.as("writerId"),
                         matePost.writer.nickname.as("writerNickname"),
                         matePost.writer.imageUrl.as("imageUrl"),
-                        matePost.matePostId,
+                        matePost.id,
                         matePost.title,
                         matePost.content,
                         matePost.scheduledDate,
@@ -83,8 +78,8 @@ public class QueryRepository {
         return queryFactory
                 .select(
                         bean(ParticipantDto.class,
-                                participant.participantTableId.as("participantTableId"),
-                                participant.matePost.matePostId.as("matePostId"),
+                                participant.id.as("participantTableId"),
+                                participant.matePost.id.as("matePostId"),
                                 participant.participantId.as("participantId"),
                                 participant.participantNickname.as("participantNickname"),
                                 participant.applyStatus,
@@ -104,7 +99,7 @@ public class QueryRepository {
     public List<UnrefinedTeamMatchingDto> findTeamMatchingList(TeamSearchCondition condition) {
         return queryFactory
                 .select(bean(UnrefinedTeamMatchingDto.class,
-                teamMatching.teamMatchingId,
+                teamMatching.id,
                 teamMatching.teamName,
                 teamMatching.writer.id.as("writerId"),
                 teamMatching.writer.nickname.as("writerNickname"),
@@ -150,14 +145,14 @@ public class QueryRepository {
     }
 
 
-    public List<ToApplicantDto> findApplicantListByTeamMatchingId(long teamMatchingId) {
+    public List<ToApplicantDTO> findApplicantListByTeamMatchingId(long teamMatchingId) {
         return queryFactory
                 .select(
-                        bean(ToApplicantDto.class,
+                        bean(ToApplicantDTO.class,
                                 teamApplicant.teamApplicantTableId,
                                 teamApplicant.applicantId,
                                 teamApplicant.applicantNickname,
-                                teamApplicant.teamMatching.teamMatchingId.as("teamMatchingId"),
+                                teamApplicant.teamMatching.id.as("teamMatchingId"),
                                 teamApplicant.applyStatus,
                                 teamApplicant.teamName,
                                 teamApplicant.skillLevel
@@ -174,7 +169,7 @@ public class QueryRepository {
 
     private BooleanExpression eqMatePostId(Long matePostId) {
         if(matePostId != null){
-            return participant.matePost.matePostId.eq(matePostId);
+            return participant.matePost.id.eq(matePostId);
         } else {
             return null;
         }
@@ -182,7 +177,7 @@ public class QueryRepository {
 
     private BooleanExpression eqTeamMatchingId(Long teamMatchingId) {
         if(teamMatchingId != null){
-            return teamApplicant.teamMatching.teamMatchingId.eq(teamMatchingId);
+            return teamApplicant.teamMatching.id.eq(teamMatchingId);
         } else {
             return null;
         }

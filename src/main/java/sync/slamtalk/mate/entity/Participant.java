@@ -2,7 +2,9 @@ package sync.slamtalk.mate.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import sync.slamtalk.common.BaseEntity;
 import sync.slamtalk.mate.dto.PositionListDto;
 
@@ -13,21 +15,22 @@ import java.util.Objects;
 @Entity
 @Getter
 @AllArgsConstructor
-@Table(name = "participant")
+@NoArgsConstructor
 public class Participant extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "participant_table_id")
-    private Long participantTableId; // 참여자 테이블 아이디
+    private Long id; // 참여자 테이블 아이디
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mate_post_id")
     private MatePost matePost; // 참여자가 참여한 글
 
-    @Column(nullable = false, name="participant_id")
+    @Column(nullable = false, name = "participant_id")
     private Long participantId;
+
     @Column(nullable = false)
     private String participantNickname;
 
@@ -39,9 +42,6 @@ public class Participant extends BaseEntity {
 
     private SkillLevelType skillLevel; // 스킬 레벨  HIGH, MIDDLE, LOW, BEGINNER
 
-    public Participant() {
-    }
-
     public Participant(long participantId, String participantNickname, PositionType position, SkillLevelType skillLevel, MatePost post) {
 
         this.participantId = participantId;
@@ -52,31 +52,26 @@ public class Participant extends BaseEntity {
         this.connectParent(post);
     }
 
-    public ApplyStatusType updateApplyStatus(ApplyStatusType applyStatus) {
-        this.applyStatus = applyStatus;
-        return this.applyStatus;
+    public void updateApplyStatus(ApplyStatusType applyStatus) {
+        this.applyStatus = Objects.requireNonNull(applyStatus);
     }
 
-    public boolean softDeleteParticipant() {
+    public void softDeleteParticipant() {
         this.delete();
-        return true;
     }
 
-    public boolean connectParent(MatePost matePost) {
+    public void connectParent(MatePost matePost) {
         this.matePost = matePost;
         matePost.getParticipants().add(this);
-        return true;
-
     }
 
-    public boolean isCorrespondTo(Long userId){
+    public boolean isCorrespondTo(Long userId) {
         return this.participantId.equals(userId);
     }
 
-    public boolean disconnectParent() {
+    public void disconnectParent() {
         this.matePost.getParticipants().remove(this);
         this.matePost = null;
-        return true;
     }
 
     public boolean checkCapabilities(List<PositionListDto> requiredPosition, List<String> requiredSkillLevel) {
@@ -96,25 +91,12 @@ public class Participant extends BaseEntity {
     @Override
     public String toString() { // 양방향 연관 관계로 인한 순환 참조 고려한 toString
         return "Participant{" +
-                "participantTableId=" + participantTableId +
+                "participantTableId=" + id +
                 ", participantId='" + participantId + '\'' +
                 ", participantNickname='" + participantNickname + '\'' +
                 ", applyStatus=" + applyStatus +
                 ", position=" + position +
                 ", skillLevel=" + skillLevel +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Participant that = (Participant) o;
-        return Objects.equals(participantId, that.participantId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(participantId);
     }
 }

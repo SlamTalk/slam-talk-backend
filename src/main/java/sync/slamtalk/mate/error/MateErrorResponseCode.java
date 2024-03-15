@@ -27,7 +27,7 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
 
     private final int code;
     private final int status;
-    private String message;
+    private final String message;
 
     @Override
     public int getStatus() {
@@ -44,7 +44,4 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
         return this.message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

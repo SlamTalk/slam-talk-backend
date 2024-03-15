@@ -1,8 +1,6 @@
 package sync.slamtalk.mate.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.Data;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
@@ -34,13 +32,10 @@ public class MatePostToDto {
     private LocalTime endTime;
     private String title;
     private String content;
-
-    @Enumerated(EnumType.STRING)
     private RecruitmentStatusType recruitmentStatus;
     private String locationDetail;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdAt;
-
     private List<PositionListDto> positionList = new ArrayList<>();
     private RecruitedSkillLevelType skillLevel;
     private List<String> skillLevelList = new ArrayList<>();

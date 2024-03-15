@@ -1,12 +1,16 @@
 package sync.slamtalk.mate.dto.response;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NonNull;
+import lombok.NoArgsConstructor;
 import sync.slamtalk.mate.entity.ApplyStatusType;
 import sync.slamtalk.mate.entity.Participant;
 import sync.slamtalk.mate.entity.PositionType;
 import sync.slamtalk.mate.entity.SkillLevelType;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ParticipantDto {
 
     private Long participantTableId;
@@ -19,18 +23,13 @@ public class ParticipantDto {
 
     private ApplyStatusType applyStatus;
 
-    @NonNull
     private PositionType position;
 
-    @NonNull
     private SkillLevelType skillLevel;
 
-    public ParticipantDto() {
-    }
-
     public ParticipantDto(Participant participant) {
-        this.participantTableId = participant.getParticipantTableId();
-        this.matePostId = participant.getMatePost().getMatePostId();
+        this.participantTableId = participant.getId();
+        this.matePostId = participant.getMatePost().getId();
         this.participantId = participant.getParticipantId();
         this.participantNickname = participant.getParticipantNickname();
         this.applyStatus = participant.getApplyStatus();
