@@ -12,7 +12,7 @@
 
 > 개발 기간: 24/01/11 ~ 24/2/22(프로젝트 발표, 구름 수료) 이후 유지보수 중<br>
 >
-> [동기와 비동기 팀 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991) | [프론트 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=a0f8672e41df49ce86c681506b707aeb&pm=s) | [백엔드 노션]() <br> [Swagger](http://43.200.131.233:8080/swagger-ui/index.html) | [API 문서](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=f3bf16cf100e45f69a3e0bb075a342b0&pm=s) | [ERD](https://www.erdcloud.com/d/GyK7pkbTanPFqno4F)
+> [동기와 비동기 팀 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991) | [프론트 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=a0f8672e41df49ce86c681506b707aeb&pm=s) | [백엔드 노션](https://platinum-roof-8a7.notion.site/687767f0b9904f8f8fe8a73ffc83d159?pvs=4) <br> [Swagger](http://43.200.131.233:8080/swagger-ui/index.html) | [API 문서](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=f3bf16cf100e45f69a3e0bb075a342b0&pm=s) | [ERD](https://www.erdcloud.com/d/GyK7pkbTanPFqno4F)
 >
 > [기획서 & 기능 명세서](https://www.notion.so/ec211098ba794bff83e6a41a74a3d58c)
 
