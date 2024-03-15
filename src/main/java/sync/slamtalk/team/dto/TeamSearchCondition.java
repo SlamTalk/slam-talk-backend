@@ -1,13 +1,12 @@
 package sync.slamtalk.team.dto;
 
-import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
 import sync.slamtalk.mate.entity.SkillLevelType;
 
 import java.time.LocalDateTime;
 
-@Data
+
+@Getter
 public class TeamSearchCondition {
     private SkillLevelType skillLevel;
     private String location;
@@ -17,5 +16,5 @@ public class TeamSearchCondition {
     // 검색어 (모집 글 제목을 기준으로 필터링 할 용도)
     private String searchWord;
 
-    private boolean includingExpired = false; // 만료된 팀 매칭도 포함할지 여부. 기본값은 false(포함하지 않음)
+    private boolean includingExpired; // 만료된 팀 매칭도 포함할지 여부.
 }
