@@ -29,14 +29,9 @@ import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
 @Repository
 public class QueryRepository {
 
-    private EntityManager em;
     private JPAQueryFactory queryFactory;
-    private EntityToDtoMapper entityToDtoMapper;
-
     public QueryRepository(EntityManager em) {
-        this.em = em;
         this.queryFactory = new JPAQueryFactory(em);
-        this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
     public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
@@ -45,7 +40,7 @@ public class QueryRepository {
                         matePost.writer.id.as("writerId"),
                         matePost.writer.nickname.as("writerNickname"),
                         matePost.writer.imageUrl.as("imageUrl"),
-                        matePost.matePostId,
+                        matePost.id,
                         matePost.title,
                         matePost.content,
                         matePost.scheduledDate,
@@ -83,8 +78,8 @@ public class QueryRepository {
         return queryFactory
                 .select(
                         bean(ParticipantDto.class,
-                                participant.participantTableId.as("participantTableId"),
-                                participant.matePost.matePostId.as("matePostId"),
+                                participant.id.as("participantTableId"),
+                                participant.matePost.id.as("matePostId"),
                                 participant.participantId.as("participantId"),
                                 participant.participantNickname.as("participantNickname"),
                                 participant.applyStatus,
@@ -174,7 +169,7 @@ public class QueryRepository {
 
     private BooleanExpression eqMatePostId(Long matePostId) {
         if(matePostId != null){
-            return participant.matePost.matePostId.eq(matePostId);
+            return participant.matePost.id.eq(matePostId);
         } else {
             return null;
         }
