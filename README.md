@@ -6,13 +6,13 @@
 
 <p align="middle">농구를 할 장소와 함께 할 친구를 찾을 수 있는 플랫폼</p>
 
-<p align="middle"><a href="https://slam-talk.vercel.app">사이트 바로가기 ⛹️‍♀️⛹️‍♂️</a></p>
+<p align="middle"><a href="https://www.slam-talk.site">사이트 바로가기 ⛹️‍♀️⛹️‍♂️</a></p>
 
 ## 프로젝트 개요
 
 > 개발 기간: 24/01/11 ~ 24/2/22(프로젝트 발표, 구름 수료) 이후 유지보수 중<br>
 >
-> [동기와 비동기 팀 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991) | [프론트 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=a0f8672e41df49ce86c681506b707aeb&pm=s) | [백엔드 노션]() <br> [Swagger](http://43.200.131.233:8080/swagger-ui/index.html) | [API 문서](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=f3bf16cf100e45f69a3e0bb075a342b0&pm=s) | [ERD](https://www.erdcloud.com/d/GyK7pkbTanPFqno4F)
+> [동기와 비동기 팀 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991) | [프론트 노션](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=a0f8672e41df49ce86c681506b707aeb&pm=s) | [백엔드 노션](https://platinum-roof-8a7.notion.site/687767f0b9904f8f8fe8a73ffc83d159?pvs=4) <br> [Swagger](http://43.200.131.233:8080/swagger-ui/index.html) | [API 문서](https://www.notion.so/7460cade2e63406481e110249fc6f991?p=f3bf16cf100e45f69a3e0bb075a342b0&pm=s) | [ERD](https://www.erdcloud.com/d/GyK7pkbTanPFqno4F)
 >
 > [기획서 & 기능 명세서](https://www.notion.so/ec211098ba794bff83e6a41a74a3d58c)
 
@@ -325,7 +325,7 @@ https://github.com/SlamTalk/slam-talk-frontend/assets/100774811/381169d3-c77c-40
 > 문제 발생과 해결 방법
 
 
-### 소셜로그인 시 닉네임 중복 해결
+### 소셜로그인 시 닉네임 중복 해결 - 이봉승
 
 - 소셜로그인 시 닉네임 중복 해결하기
     
@@ -342,7 +342,7 @@ https://github.com/SlamTalk/slam-talk-frontend/assets/100774811/381169d3-c77c-40
     
     - 중복이 되었을 경우 “익명” + Random숫자(최대 11자)를 생성해서 익명닉네임을 부여하는 방법으로 유저에게 최대한 기존 소셜 닉네임을 사용할 수 있도록 편의성을 제공해주었습니다.
 
-### 엑세스 토큰 및 리프레시 토큰 저장 방식
+### 엑세스 토큰 및 리프레시 토큰 저장 방식 - 이봉승
 
 보안문제점 : 클라이언트에서 항상 필요로 하는 엑세스 토큰, 액세스 토큰을 재발급하기위한 리프레쉬 토큰을 어떻게 저장할지가 가장 어려웠습니다.
 
@@ -359,7 +359,7 @@ https://github.com/SlamTalk/slam-talk-frontend/assets/100774811/381169d3-c77c-40
         헤더로 주면 클라이언트 스크립트로 추출해서 저장되는데 ← XSS(**Cross-Site Scripting)** 공격 가능해서 쿠키를 선택하게 되었다. 쿠키 선택시에는 CSRF 공격이 가능해서 SameSite설정을 해야한다.
         
 
-### 채팅
+### 채팅 - 홍예지
 
 - 채팅방 생성 시 중복 검사
     

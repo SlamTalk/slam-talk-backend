@@ -370,7 +370,7 @@ public class UserService {
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
                                 (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
-                .map(entityToDtoMapper::FromMatePostToMatePostDto)
+                .map(entityToDtoMapper::fromMatePostToMatePostDto)
                 .toList();
 
         List<MatePostToDto> participatedPost = allByApplications.stream()
@@ -384,7 +384,7 @@ public class UserService {
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
                                 (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
-                .map(entityToDtoMapper::FromMatePostToMatePostDto)
+                .map(entityToDtoMapper::fromMatePostToMatePostDto)
                 .map(matePostToDto -> {
                     matePostToDto.setParticipants(
                             matePostToDto.getParticipants().stream()

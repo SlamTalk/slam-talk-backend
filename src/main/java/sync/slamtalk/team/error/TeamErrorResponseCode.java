@@ -26,7 +26,7 @@ public enum TeamErrorResponseCode implements ResponseCodeDetails {
 
     private final int code;
     private final int status;
-    private String message;
+    private final String message;
 
     @Override
     public int getStatus() {
@@ -43,7 +43,4 @@ public enum TeamErrorResponseCode implements ResponseCodeDetails {
         return this.message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

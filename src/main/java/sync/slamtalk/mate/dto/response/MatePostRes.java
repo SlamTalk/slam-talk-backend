@@ -1,7 +1,6 @@
 package sync.slamtalk.mate.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
-import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,8 +20,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MatePostRes {
-    @JsonIgnore
-    private EntityToDtoMapper entityToDtoMapper;
     private long matePostId;
     private long writerId;
     private String writerNickname;
