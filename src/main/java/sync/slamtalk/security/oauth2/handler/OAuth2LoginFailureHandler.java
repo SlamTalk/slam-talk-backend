@@ -21,7 +21,7 @@ public class OAuth2LoginFailureHandler implements AuthenticationFailureHandler {
     ) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
 //        response.sendRedirect("http://localhost:3000/social-login?loginSuccess=false");
-        response.sendRedirect("https://slam-talk.vercel.app/social-login?loginSuccess=false");
+        response.sendRedirect("https://www.slam-talk.site/social-login?loginSuccess=false");
         log.debug("소셜 로그인에 실패했습니다. 에러 메시지 : {}", exception.getMessage());
 
     }
