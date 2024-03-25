@@ -10,9 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import sync.slamtalk.common.ApiResponse;
+import sync.slamtalk.mate.dto.response.MatePostListDto;
 import sync.slamtalk.mate.dto.MateSearchCondition;
 import sync.slamtalk.mate.dto.request.MatePostReq;
-import sync.slamtalk.mate.dto.response.MatePostListDto;
 import sync.slamtalk.mate.dto.response.MatePostRes;
 import sync.slamtalk.mate.dto.response.MyMateListRes;
 import sync.slamtalk.mate.dto.response.ParticipantDto;
@@ -35,8 +35,9 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PostMapping("/register")
-    public ResponseEntity<Void> registerMatePost(@Valid @RequestBody MatePostReq matePostReq, @AuthenticationPrincipal Long userId) {
-        long matePostId = matePostService.registerMatePost(matePostReq, userId);
+    public ResponseEntity registerMatePost(@Valid @RequestBody MatePostReq matePostReq, @AuthenticationPrincipal Long id){
+
+        long matePostId = matePostService.registerMatePost(matePostReq, id);
         HttpHeaders headers = new HttpHeaders();
         headers.setLocation(URI.create("/api/mate/read/" + matePostId));
         return new ResponseEntity<>(headers, HttpStatus.MOVED_PERMANENTLY);
@@ -48,8 +49,9 @@ public class MatePostController {
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/read/{matePostId}")
-    public ApiResponse<MatePostRes> getMatePost(@PathVariable("matePostId") long matePostId) {
-        return ApiResponse.ok(matePostService.getMatePost(matePostId));
+    public ApiResponse<MatePostRes> getMatePost(@PathVariable("matePostId") long matePostId){
+        MatePostRes dto = matePostService.getMatePost(matePostId);
+        return ApiResponse.ok(dto);
     }
 
     @Operation(
@@ -58,10 +60,14 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}")
-    public ApiResponse<Void> updateMatePost(@PathVariable("matePostId") long matePostId, @Valid @RequestBody MatePostReq matePostReq,
-                                            @AuthenticationPrincipal Long userId) {
+    public ApiResponse updateMatePost(@PathVariable("matePostId") long matePostId, @Valid @RequestBody MatePostReq matePostReq,
+                                                   @AuthenticationPrincipal Long id){
+        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
+        long userId = id;
+
         // * MatePost를 저장한다.
         matePostService.updateMatePost(matePostId, matePostReq, userId);
+
         return ApiResponse.ok();
     }
 
@@ -71,7 +77,10 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @DeleteMapping("/{matePostId}")
-    public ApiResponse<Void> deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long userId) {
+    public ApiResponse deleteMatePost(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+        // * 토큰을 이용하여 유저 아이디를 포함한 유저 정보를 가져온다.
+        long userId = id;
+
         // * 일치한다면 해당 글을 soft delete 한다.
         matePostService.deleteMatePost(matePostId, userId);
         return ApiResponse.ok();
@@ -79,18 +88,19 @@ public class MatePostController {
 
     @Operation(
             summary = "메이트 찾기 글 목록 조회",
-            description = """
-                    메이트 찾기 글 목록을 조회하는 api 입니다. cursor(모집글 등록일)를 이용하여 최근 등록일 순으로 커서 페이징을 구현합니다. 제공되는 기본 페이지 수는 10 입니다. 
-                    cursor가 없을 경우 현재 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. 
-                    cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. 
-                    cursor는 yyyy-MM-dd HH:mm:SSS 형식으로 요청해야 합니다. 
-                    cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.
-                    """,
+            description = "메이트 찾기 글 목록을 조회하는 api 입니다. cursor(모집글 등록일)를 이용하여 최근 등록일 순으로 커서 페이징을 구현합니다. 제공되는 기본 페이지 수는 10 입니다. \n" +
+                    "cursor가 없을 경우 현재 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
+                    "cursor가 있을 경우 해당 시간을 기준으로 최근 등록일 순으로 10개의 글을 반환합니다. \n" +
+                    "cursor는 yyyy-MM-dd HH:mm:SSS 형식으로 요청해야 합니다. \n" +
+                    "cursor는 반환되는 글 중 가장 마지막 글의 등록일을 기준으로 합니다.",
             tags = {"메이트 찾기", "게스트"}
     )
     @GetMapping("/list")
-    public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition) {
-        return ApiResponse.ok(matePostService.getMatePostsByCursor(condition));
+    public ApiResponse<MatePostListDto> getMatePostList(MateSearchCondition condition){
+
+        MatePostListDto resultDto = matePostService.getMatePostsByCurser(condition);
+
+        return ApiResponse.ok(resultDto);
     }
 
     @Operation(
@@ -99,8 +109,9 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @PatchMapping("/{matePostId}/complete")
-    public ApiResponse<List<ParticipantDto>> completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long userId) {
-        return ApiResponse.ok(matePostService.completeRecruitment(matePostId, userId));
+    public ApiResponse completeRecruitment(@PathVariable("matePostId") long matePostId, @AuthenticationPrincipal Long id){
+        List<ParticipantDto> listDto = matePostService.completeRecruitment(matePostId, id);
+        return ApiResponse.ok(listDto);
     }
 
     @Operation(
@@ -109,7 +120,8 @@ public class MatePostController {
             tags = {"메이트 찾기"}
     )
     @GetMapping("/my-list")
-    public ApiResponse<MyMateListRes> getMyMateList(@AuthenticationPrincipal Long userId) {
-        return ApiResponse.ok(matePostService.getMyMateList(userId));
+    public ApiResponse<MyMateListRes> getMyMateList(@AuthenticationPrincipal Long userId){
+        MyMateListRes myMateListRes = matePostService.getMyMateList(userId);
+        return ApiResponse.ok(myMateListRes);
     }
 }

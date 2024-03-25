@@ -4,16 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
+import org.hibernate.validator.constraints.Length;
 import sync.slamtalk.mate.entity.RecruitedSkillLevelType;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-@ToString
 @Getter
 @Setter
 public class FromTeamFormDTO {
@@ -23,28 +23,37 @@ public class FromTeamFormDTO {
     @NotBlank(message = "제목을 입력해주세요.")
     private String title;
 
-    @NotBlank(message = "내용을 입력해주세요.")
+    @NonNull
     private String content;
 
     @NotBlank(message = "상세 위치를 입력해주세요.")
     private String locationDetail;
 
-    @NotNull
+    @NonNull
     private String numberOfMembers;
 
-    @NotNull
+    @NonNull
     @Enumerated(EnumType.STRING)
     private RecruitedSkillLevelType skillLevel;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate scheduledDate;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
 
-    @NotNull
+    @NonNull
     @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
+
+
+    public String toString() {
+        return "FromTeamFormDTO(teamName=" + this.getTeamName() + ", title=" + this.getTitle() +
+                ", content=" + this.getContent() + ", locationDetail=" + this.getLocationDetail() +
+                ", numberOfMembers=" + this.getNumberOfMembers() + ", skillLevel=" + this.getSkillLevel() +
+                ", scheduledDate=" + this.getScheduledDate() + ", startTime=" + this.getStartTime() + ", endTime=" + this.getEndTime() + ")";
+    }
+
 }
