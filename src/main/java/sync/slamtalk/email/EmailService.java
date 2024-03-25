@@ -80,7 +80,7 @@ public class EmailService {
         try {
             String code = UUID.randomUUID().toString().substring(0, 6); //랜덤 인증번호 uuid를 이용!
             sendMail(code, email);
-            redisService.setDataExpire(code, email, 60 * 5L); // {key,value} 5분동안 저장.
+            redisService.setDataExpire(code, email, 60 * 60 * 24L); // {key,value} 24시간 동안 저장.
         } catch (Exception e) {
             log.error("redis 서버에서 오류 발생 : = {}", e.toString());
             throw new BaseException(EmailErrorResponseCode.DATABASE_ERROR);
