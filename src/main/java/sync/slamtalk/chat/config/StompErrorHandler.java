@@ -20,21 +20,15 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
     @Override
     public Message<byte[]> handleClientMessageProcessingError(Message<byte[]> clientMessage, Throwable ex) {
 
-
-        // JWT 가 메세지에 포함된 경우
-        if (ex.getCause().getMessage().equals("JWT")) {
-            return handleJwtException(clientMessage, ex);
-        }
-        // Auth 가 메세지에 포함된 경우
-        if (ex.getCause().getMessage().equals("Auth")) {
-            return handleUnauthorizedException(clientMessage, ex);
-        }
-        // NFR 이 메세지에 포함된 경우
-        if (ex.getCause().getMessage().equals("NFR")) {
-            return handleNotFoundException(clientMessage, ex);
-        }
-        // 기본 에러 메세지 처리
-        return super.handleClientMessageProcessingError(clientMessage, ex);
+        return switch (ex.getCause().getMessage()){
+            // JWT 가 메세지에 포함된 경우
+            case "JWT" -> handleJwtException(clientMessage, ex);
+            // Auth 가 메세지에 포함된 경우
+            case "Auth" -> handleUnauthorizedException(clientMessage, ex);
+            // NFR 이 메세지에 포함된 경우
+            case "NFR" -> handleNotFoundException(clientMessage, ex);
+            default -> super.handleClientMessageProcessingError(clientMessage, ex);
+        };
     }
 
     /**
@@ -64,7 +58,7 @@ public class StompErrorHandler extends StompSubProtocolErrorHandler {
      * 메세지 작성
      */
     private Message<byte[]> prepareErrorMessage(RoomCode roomCode) {
-        String code = String.valueOf(roomCode.getMessage());
+        String code = roomCode.getMessage();
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.ERROR);
         // STOMP message 설정
         accessor.setMessage(String.valueOf(roomCode.getCode()));

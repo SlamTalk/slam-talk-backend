@@ -8,7 +8,7 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
+import sync.slamtalk.chat.dto.request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.RoomType;
@@ -86,7 +86,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
 
 
                 // basketball chat 이 아닌 경우 userchatRoom 에 이미 추가 되어 있어야 함
-                if (!chatRoom.getRoomType().equals(RoomType.BASKETBALL)) {
+                if (chatRoom.getRoomType()!=RoomType.BASKETBALL) {
                     log.debug("이미 참여하고 있는 농구장");
                     stompHandler.isExistUserChatRoom(headerAccessor);
                 }

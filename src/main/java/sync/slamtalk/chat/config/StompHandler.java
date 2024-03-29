@@ -25,6 +25,7 @@ public class StompHandler {
     private final ChatServiceImpl chatService;
     private final JwtTokenProvider tokenProvider;
     private final UserChatRoomRepository userChatRoomRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * 토큰에서 아이디 추출
@@ -39,13 +40,12 @@ public class StompHandler {
      * 채팅 유저 아이디 추출
      */
     public String extractUserId(String json) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNode = mapper.readTree(json);
-            if (rootNode.has("senderId")) {
-                return rootNode.get("senderId").toString();
+        try{
+            JsonNode jsonNode = objectMapper.readTree(json);
+            if(jsonNode.has("senderId")) {
+                return jsonNode.get("senderId").toString();
             }
-        } catch (Exception e) {
+        }catch (Exception e){
             throw new RuntimeException(e.getMessage());
         }
         return null;
@@ -60,10 +60,10 @@ public class StompHandler {
         Long roomId = extractRoomId(Objects.requireNonNull(destination));
         Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(roomId);
         // ChatRoom 이 존재하지 않는다면
-        if (existChatRoom.isEmpty()) {
+        chatService.isExistChatRoom(roomId).orElseThrow(()->{
             log.debug("=== isExistChatRoom === ChatRoom 존재하지않음");
             throw new RuntimeException("NFR");
-        }
+        });
     }
 
 
