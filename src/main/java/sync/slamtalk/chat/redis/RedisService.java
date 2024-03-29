@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
-import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
+import sync.slamtalk.chat.dto.request.ChatMessageDTO;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
