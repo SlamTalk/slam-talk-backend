@@ -7,7 +7,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
+import sync.slamtalk.chat.dto.request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
@@ -18,7 +18,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class StompChatController {
-
     private final ChatServiceImpl chatService;
     private final UserChatRoomRepository userChatRoomRepository;
 
@@ -36,19 +35,19 @@ public class StompChatController {
 
 
         Long userId = message.getSenderId();
-        String StringRoomId = message.getRoomId();
-        long roomId = Long.parseLong(StringRoomId);
+        String stringRoomId = message.getRoomId();
+        long roomId = Long.parseLong(stringRoomId);
 
         // 퇴장
         if (message.getContent() != null) {
             if (message.getContent().equals("EXIT")) {
                 Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, roomId);
 
-                log.debug("현재 유저가 가지고 있는 방의 상태 : {}", optionalUserChatRoom.get().getChat().getIsDeleted());
                 if (optionalUserChatRoom.isEmpty()) {
                     log.debug("해당 유저는 해당 채팅방에 참여하고 있지 않음");
                 }
                 if (optionalUserChatRoom.isPresent()) {
+                    log.debug("현재 유저가 가지고 있는 방의 상태 : {}", optionalUserChatRoom.get().getChat().getIsDeleted());
                     log.debug("{}번 유저가 {}번째 채팅방에서 나가기를 시도", userId, optionalUserChatRoom.get().getChat().getId());
                     UserChatRoom userChatRoom = optionalUserChatRoom.get();
                     userChatRoom.delete(); // softDelete
@@ -66,10 +65,8 @@ public class StompChatController {
             if (visited.equals(Boolean.TRUE)) {
                 return message.getSenderNickname() + " 님이 입장하셨습니다.";
             }
-            // 이미 방문을 했다면
-        } else if (visitedFirst.isEmpty()) {
-            return "";
         }
+
         // 방문한적이 있다면 빈문자열로 리턴
         return "";
     }
@@ -82,6 +79,8 @@ public class StompChatController {
     @MessageMapping("/chat/message/{roomId}")
     @SendTo("/sub/chat/room/{roomId}")
     public ChatMessageDTO message(ChatMessageDTO message) {
+        // TODO
+        // chatService.saveMessage(message);
         return message;
     }
 
