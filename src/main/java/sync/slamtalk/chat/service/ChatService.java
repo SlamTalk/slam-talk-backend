@@ -1,8 +1,8 @@
 package sync.slamtalk.chat.service;
 
-import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
-import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
-import sync.slamtalk.chat.dto.Response.ChatRoomDTO;
+import sync.slamtalk.chat.dto.request.ChatCreateDTO;
+import sync.slamtalk.chat.dto.request.ChatMessageDTO;
+import sync.slamtalk.chat.dto.response.ChatRoomDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.UserChatRoom;

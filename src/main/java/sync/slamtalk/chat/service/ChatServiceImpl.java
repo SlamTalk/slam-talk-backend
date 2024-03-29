@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
-import sync.slamtalk.chat.dto.Request.ChatCreateDTO;
-import sync.slamtalk.chat.dto.Request.ChatMessageDTO;
-import sync.slamtalk.chat.dto.Response.ChatRoomDTO;
+import sync.slamtalk.chat.dto.request.ChatCreateDTO;
+import sync.slamtalk.chat.dto.request.ChatMessageDTO;
+import sync.slamtalk.chat.dto.response.ChatRoomDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.RoomType;
@@ -89,7 +89,7 @@ public class ChatServiceImpl implements ChatService {
 
         // TM,MM 은 id 로 검사
         if (roomType.equals(RoomType.TOGETHER)) {
-            Long togetherId = chatCreateDTO.getTogether_id();
+            Long togetherId = chatCreateDTO.getTogetherId();
             Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByTogetherId(togetherId);
 
             // 채팅방에 해당하는 팀매칭 아이디 채팅방이 존재한다면 기존에 채팅방 정보 반환
@@ -100,7 +100,7 @@ public class ChatServiceImpl implements ChatService {
         }
 
         if (roomType.equals(RoomType.MATCHING)) {
-            Long teamMatchingId = chatCreateDTO.getTeamMatching_id();
+            Long teamMatchingId = chatCreateDTO.getTeamMatchingId();
             Optional<ChatRoom> optionalChatRoom = chatRoomRepository.findByTeamMatchingId(teamMatchingId);
 
             // 채팅방에 존재한다면 새로 생성 x
@@ -114,8 +114,8 @@ public class ChatServiceImpl implements ChatService {
         // 채팅방 생성
         ChatRoom chatRoom = ChatRoom.builder()
                 .roomType(roomType)
-                .togetherId(chatCreateDTO.getTogether_id())
-                .teamMatchingId(chatCreateDTO.getTeamMatching_id())
+                .togetherId(chatCreateDTO.getTogetherId())
+                .teamMatchingId(chatCreateDTO.getTeamMatchingId())
                 .name(chatCreateDTO.getName())
                 .build();
 
@@ -143,8 +143,8 @@ public class ChatServiceImpl implements ChatService {
                     .readIndex(0L)
                     .chat(saved)
                     .name(chatCreateDTO.getName())
-                    .togetherId(chatCreateDTO.getTogether_id())
-                    .teamMatchingId(chatCreateDTO.getTeamMatching_id())
+                    .togetherId(chatCreateDTO.getTogetherId())
+                    .teamMatchingId(chatCreateDTO.getTeamMatchingId())
                     .build();
 
             if (roomType.equals(RoomType.DIRECT) || roomType.equals(RoomType.MATCHING)) {
@@ -169,12 +169,12 @@ public class ChatServiceImpl implements ChatService {
         ChatRoom chatRoom = ChatRoom.builder()
                 .name(chatCreateDTO.getName())
                 .roomType(RoomType.BASKETBALL)
-                .basketBallId(chatCreateDTO.getBasket_ball_id())
+                .basketBallId(chatCreateDTO.getBasketBallId())
                 .build();
         ChatRoom saved = chatRoomRepository.save(chatRoom);
 
         // 농구장에 채팅방 연결
-        Optional<BasketballCourt> optionalBasketballCourt = basketballCourtRepository.findById(chatCreateDTO.getBasket_ball_id());
+        Optional<BasketballCourt> optionalBasketballCourt = basketballCourtRepository.findById(chatCreateDTO.getBasketBallId());
         optionalBasketballCourt.ifPresent(saved::setBasketballCourt);
 
         return saved.getId();
@@ -496,7 +496,7 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
         }
-        return optionalList.orElse(null);
+        return optionalList.orElse(Collections.emptyList());
     }
 
 
