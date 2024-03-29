@@ -1,4 +1,4 @@
-package sync.slamtalk.chat.dto.Response;
+package sync.slamtalk.chat.dto.response;
 
 import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;

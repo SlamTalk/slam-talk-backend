@@ -1,4 +1,4 @@
-package sync.slamtalk.chat.dto.Response;
+package sync.slamtalk.chat.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

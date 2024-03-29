@@ -1,4 +1,4 @@
-package sync.slamtalk.chat.dto.Request;
+package sync.slamtalk.chat.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
