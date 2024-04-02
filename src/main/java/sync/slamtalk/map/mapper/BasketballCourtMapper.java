@@ -54,15 +54,6 @@ public class BasketballCourtMapper {
             return null;
         }
 
-        List<String> convenienceList = basketballCourt.getConvenience() != null
-                ? Arrays.asList(basketballCourt.getConvenience().split(","))
-                : Collections.emptyList();
-
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-
         return new BasketballCourtResponseDTO(
                 basketballCourt.getId(),
                 basketballCourt.getCourtName(),
@@ -73,13 +64,13 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                nightLightingValue,
-                openingHoursValue,
-                feeValue,
-                parkingAvailableValue,
+                getPropertiesValue(basketballCourt.getNightLighting()),
+                getPropertiesValue(basketballCourt.getOpeningHours()),
+                getPropertiesValue(basketballCourt.getFee()),
+                getPropertiesValue(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
-                convenienceList,
+                getConvenienceList(basketballCourt.getConvenience()),
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
                 basketballCourt.getInformerId()
@@ -91,15 +82,6 @@ public class BasketballCourtMapper {
             return null;
         }
 
-        List<String> convenienceList = basketballCourt.getConvenience() != null
-                ? Arrays.asList(basketballCourt.getConvenience().split(","))
-                : Collections.emptyList();
-
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-
         return new BasketballCourtFullResponseDTO(
                 basketballCourt.getId(),
                 basketballCourt.getCourtName(),
@@ -110,13 +92,13 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                nightLightingValue,
-                openingHoursValue,
-                feeValue,
-                parkingAvailableValue,
+                getPropertiesValue(basketballCourt.getNightLighting()),
+                getPropertiesValue(basketballCourt.getOpeningHours()),
+                getPropertiesValue(basketballCourt.getFee()),
+                getPropertiesValue(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
-                convenienceList,
+                getConvenienceList(basketballCourt.getConvenience()),
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
                 basketballCourt.getInformerId(),
@@ -131,15 +113,6 @@ public class BasketballCourtMapper {
             return null;
         }
 
-        List<String> convenienceList = basketballCourt.getConvenience() != null
-                ? Arrays.asList(basketballCourt.getConvenience().split(","))
-                : Collections.emptyList();
-
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
-
         return new BasketballCourtReportResponseDTO(
                 basketballCourt.getId(),
                 basketballCourt.getCourtName(),
@@ -150,13 +123,13 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                nightLightingValue,
-                openingHoursValue,
-                feeValue,
-                parkingAvailableValue,
+                getPropertiesValue(basketballCourt.getNightLighting()),
+                getPropertiesValue(basketballCourt.getOpeningHours()),
+                getPropertiesValue(basketballCourt.getFee()),
+                getPropertiesValue(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
-                convenienceList,
+                getConvenienceList(basketballCourt.getConvenience()),
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
                 basketballCourt.getInformerId(),
@@ -196,5 +169,15 @@ public class BasketballCourtMapper {
                 .informerId(userId)
                 .build();
 
+    }
+
+    // 편의 시설 초깃값 설정
+    private List<String> getConvenienceList(String convenience) {
+        return convenience != null ? Arrays.asList(convenience.split(",")) : Collections.emptyList();
+    }
+
+    // 빈 값일 때, 초깃값 설정
+    private String getPropertiesValue(Enum<?> propertiesValue) {
+        return propertiesValue != null ? propertiesValue.name() : INITIAL_VALUE;
     }
 }
