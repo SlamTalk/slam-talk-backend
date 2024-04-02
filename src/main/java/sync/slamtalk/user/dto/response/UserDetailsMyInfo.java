@@ -35,7 +35,7 @@ public class UserDetailsMyInfo {
     /**
      * 나의 프로필 조회 시 필요한 정보를 반환하는 생성자
      *
-     * @param user db에서 조회한 user 객체
+     * @param user                           db에서 조회한 user 객체
      * @param mateCompleteParticipationCount 메이트 참여완료 횟수
      * @return UserDetailsInfoResponseDto 개인정보 포함된 정보
      */
@@ -44,14 +44,15 @@ public class UserDetailsMyInfo {
             long levelScore,
             long mateCompleteParticipationCount,
             long teamCompleteParticipationCount
-    ){ return UserDetailsMyInfo.builder()
+    ) {
+        return UserDetailsMyInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .selfIntroduction(user.getSelfIntroduction())
-                .basketballSkillLevel( user.getBasketballSkillLevel() == null? null: user.getBasketballSkillLevel().getLevel())
-                .basketballPosition(user.getBasketballPosition() == null ?null:user.getBasketballPosition().getPosition())
-                .level(levelScore/UserLevelScore.LEVEL_THRESHOLD)
+                .basketballSkillLevel(user.getBasketballSkillLevel() == null ? null : user.getBasketballSkillLevel().getLevel())
+                .basketballPosition(user.getBasketballPosition() == null ? null : user.getBasketballPosition().getPosition())
+                .level(levelScore / UserLevelScore.LEVEL_THRESHOLD)
                 .levelScore(levelScore)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(teamCompleteParticipationCount)

@@ -10,7 +10,7 @@ import sync.slamtalk.user.entity.UserRole;
 
 /**
  * 회원가입 시 받을 dto
- * */
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -38,16 +38,16 @@ public class UserSignUpReq {
      * userSignUpDto 를 User로 변환
      *
      * @return user 유저 entity
-     * */
-     public User toEntity(){
-         return User.builder()
-                 .email(this.getEmail())
-                 .password(this.getPassword())
-                 .nickname(this.getNickname())
-                 .imageUrl(DEFAULT_IMAGE_URL)
-                 .role(UserRole.USER)
-                 .socialType(SocialType.LOCAL)
-                 .firstLoginCheck(true)
-                 .build();
-     }
+     */
+    public User toEntity() {
+        return User.builder()
+                .email(this.getEmail())
+                .password(this.getPassword())
+                .nickname(this.getNickname())
+                .imageUrl(DEFAULT_IMAGE_URL)
+                .role(UserRole.USER)
+                .socialType(SocialType.LOCAL)
+                .firstLoginCheck(true)
+                .build();
+    }
 }

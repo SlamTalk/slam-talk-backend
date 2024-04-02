@@ -104,7 +104,7 @@ public class UserService {
      * 사용자의 레벨 점수를 계산하여 Result record로 반환하는 메서드입니다.
      *
      * @param userId 사용자의 ID
-     * @param user 사용자 객체
+     * @param user   사용자 객체
      * @return 계산된 레벨 점수를 포함한 Result record
      */
     private Result getResult(Long userId, User user) {
@@ -287,9 +287,10 @@ public class UserService {
 
     /**
      * 현재날짜 이후의 모든 스케줄 반환하는 메서드
+     *
      * @param userId : 유저 아이디
      * @return UserSchedule : 유저 스케줄
-     * */
+     */
     public UserSchedule userMyScheduleList(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
@@ -302,9 +303,10 @@ public class UserService {
     /**
      * 팀매칭 관련해서 내가 쓴 글/ 내가 참여한 글 중
      * 상태가 COMPLETED 이고 현재날짜 이후의 데이터만 스케줄리스트로 전달하는 메서드
+     *
      * @param user : 유저정보
      * @return List<ToTeamFormDTO> : 팀 스케줄 리스트
-     * */
+     */
     private List<ToTeamFormDTO> getMyTeamMatchingScheduleList(User user) {
         List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(user.getId());
@@ -313,7 +315,7 @@ public class UserService {
                 .filter(teamMatching ->
                         teamMatching.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
                                 (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
+                                        (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .toList();
@@ -327,7 +329,7 @@ public class UserService {
                                                         !teamApplicant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
                                 (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
+                                        (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .map(toTeamFormDTO -> {
@@ -357,9 +359,10 @@ public class UserService {
     /**
      * 메이트 매칭 관련해서 내가 쓴 글/ 내가 참여한 글 중
      * 상태가 COMPLETED 이고 현재날짜 이후의 데이터만 스케줄리스트로 전달하는 메서드
+     *
      * @param user : 유저정보
      * @return List<MatePostToDto> : 메이트 스케줄 리스트
-     * */
+     */
     private List<MatePostToDto> getMyMateScheduleList(User user) {
         List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(user.getId());
@@ -368,7 +371,7 @@ public class UserService {
                 .filter(matePost ->
                         matePost.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
+                                        (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .toList();
@@ -382,7 +385,7 @@ public class UserService {
                                                         !participant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
+                                        (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .map(matePostToDto -> {

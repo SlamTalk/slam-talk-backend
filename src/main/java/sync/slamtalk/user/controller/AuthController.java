@@ -32,11 +32,11 @@ public class AuthController {
 
     /**
      * 로그인 api
-     * @param  userLoginReqDto
-     * @param response
      *
-     * @return  jwtTokenResponseDto
-     * */
+     * @param userLoginReqDto
+     * @param response
+     * @return jwtTokenResponseDto
+     */
     @PostMapping("/login")
     @Operation(
             summary = "자체 로그인 기능",
@@ -56,10 +56,10 @@ public class AuthController {
 
     /**
      * 회원 가입 api
-     * @param  userSignUpReqDto
      *
-     * @return  회원가입 성공
-     * */
+     * @param userSignUpReqDto
+     * @return 회원가입 성공
+     */
     @PostMapping("/sign-up")
     @Operation(
             summary = "자체 회원가입 기능",
@@ -75,10 +75,10 @@ public class AuthController {
 
     /**
      * 회원 가입 api
-     * @param  userSignUpReqDto
      *
-     * @return  회원가입 성공
-     * */
+     * @param userSignUpReqDto
+     * @return 회원가입 성공
+     */
     @PostMapping("/test/sign-up")
     @Operation(
             summary = "자체 회원가입 기능",
@@ -94,11 +94,11 @@ public class AuthController {
 
     /**
      * 리프래쉬 토큰 재발급 api
+     *
      * @param request
      * @param response
-     *
-     * @return  JwtTokenResponseDto
-     * */
+     * @return JwtTokenResponseDto
+     */
     @PostMapping("/tokens/refresh")
     @Operation(
             summary = "엑세스 및 리프레쉬 토큰 재발급",
@@ -108,7 +108,7 @@ public class AuthController {
     public ApiResponse<String> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
-    ){
+    ) {
         authService.refreshToken(request, response);
         return ApiResponse.ok();
     }
@@ -121,7 +121,7 @@ public class AuthController {
     )
     public ApiResponse<String> userChangePassword(
             @Valid @RequestBody UserChangePasswordReq userChangePasswordReq
-    ){
+    ) {
         authService.userChangePassword(userChangePasswordReq);
         return ApiResponse.ok();
     }
@@ -132,7 +132,7 @@ public class AuthController {
             description = "7일이내로 회원탈퇴과정이 진행되고, 회원탈퇴 클릭 시 재회원가입, 로그인이 불가능하다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> cancelUser(@AuthenticationPrincipal Long userId){
+    public ApiResponse<String> cancelUser(@AuthenticationPrincipal Long userId) {
         authService.cancelUser(userId);
         return ApiResponse.ok();
     }

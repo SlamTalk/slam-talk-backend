@@ -12,7 +12,8 @@ import java.time.LocalDate;
 @Table(name = "attendance")
 @NoArgsConstructor
 public class UserAttendance extends BaseEntity {
-    @Id  @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
@@ -20,7 +21,7 @@ public class UserAttendance extends BaseEntity {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    @Column(name = "att_date",nullable = false)
+    @Column(name = "att_date", nullable = false)
     private LocalDate attDate;
 
     public UserAttendance(User user, LocalDate attDate) {
@@ -29,7 +30,7 @@ public class UserAttendance extends BaseEntity {
     }
 
     /* 연관 관계 편의 메서드 */
-    public void addUser(User user){
+    public void addUser(User user) {
         this.user = user;
         user.getUserAttendances().add(this);
     }

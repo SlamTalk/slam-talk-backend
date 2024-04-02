@@ -30,7 +30,7 @@ import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER
 
 /**
  * 이 컨트롤러는 유저의 인증과 관련된 기능을 다루는 클래스입니다.
- * */
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -58,7 +58,7 @@ public class AuthService {
      * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
      *
      * @param userLoginReqDto 유저로그인 dto
-     * @param response HttpServletResponse를 받음
+     * @param response        HttpServletResponse를 받음
      * @return JwtTokenDto
      */
     @Transactional
@@ -79,7 +79,7 @@ public class AuthService {
             user.updateRefreshToken(jwtTokenDto.getRefreshToken());
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
-            if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
+            if (Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
 
         } catch (Exception e) {
             throw new BaseException(UserErrorResponseCode.BAD_CREDENTIALS);
@@ -90,7 +90,7 @@ public class AuthService {
      * 회원가입 검증 및 회원가입 로직
      *
      * @param userSignUpReqDto UserSignUpRequestDto
-     * @param response HttpServletResponse
+     * @param response         HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
@@ -101,7 +101,7 @@ public class AuthService {
 
         // 이메일 인증된 사용자인지 판별 하는 로직
         String isAuth = redisService.getData(userSignUpReqDto.getEmail());
-        if(isAuth == null || !isAuth.equals("OK")){
+        if (isAuth == null || !isAuth.equals("OK")) {
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
@@ -127,7 +127,7 @@ public class AuthService {
      * 로컬 개발용 회원가입 검증 및 회원가입 로직
      *
      * @param userSignUpReqDto UserSignUpRequestDto
-     * @param response HttpServletResponse
+     * @param response         HttpServletResponse
      * @return JwtTokenResponseDto
      */
     @Transactional
@@ -144,7 +144,7 @@ public class AuthService {
     }
 
     private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
-        if(userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()){
+        if (userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()) {
             throw new BaseException(ALREADY_CANCEL_USER);
         }
     }
@@ -166,7 +166,7 @@ public class AuthService {
 
         log.debug("[엑세스 토큰 재발급] refreshToken = {}", refreshToken);
         // 리프래쉬 토큰 만료 검사
-        if(!tokenProvider.validateToken(refreshToken)){
+        if (!tokenProvider.validateToken(refreshToken)) {
             log.debug("[엑세스 토큰 재발급] 토큰 만료가 됨 1");
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
@@ -189,10 +189,10 @@ public class AuthService {
      * UsernamePasswordAuthenticationToken를 이용해서 email과 password를 통해
      * SecurityContextHolder에서 Authentication을 추출하는 메서드
      *
-     * @param  email 이메일
-     * @param  password 패스워드
+     * @param email    이메일
+     * @param password 패스워드
      * @return Authentication
-     * */
+     */
     private Authentication getAuthentication(
             String email,
             String password
@@ -211,7 +211,7 @@ public class AuthService {
      * 회원가입 시 중복 닉네임이 존재하는지 검사하는 메서드
      *
      * @param nickname 유저 닉네임
-     * */
+     */
     private void checkNicknameExistence(String nickname) {
         String lowercaseNickname = nickname.toLowerCase();
         if (userRepository.findByNickname(lowercaseNickname).isPresent()) {
@@ -222,7 +222,7 @@ public class AuthService {
 
     /**
      * 회원가입 시 중복 이메일이 존재하는지 검사하는 메서드
-     * */
+     */
     private void checkEmailExistence(UserSignUpReq userSignUpReq) {
         if (userRepository.findByEmailAndSocialType(userSignUpReq.getEmail(), SocialType.LOCAL).isPresent()) {
             log.debug("이미 존재하는 유저 이메일입니다.");
@@ -232,9 +232,10 @@ public class AuthService {
 
     /**
      * 쿠키에 리프레쉬 토큰을 저장하는 메서드
-     * @param response HttpServletResponse
+     *
+     * @param response     HttpServletResponse
      * @param refreshToken refreshToken
-     * */
+     */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
             String refreshToken
@@ -250,8 +251,9 @@ public class AuthService {
 
     /**
      * 회원 탈퇴
+     *
      * @param userId : 탈퇴하고자 하는 USER
-     * */
+     */
     @Transactional
     public void cancelUser(
             Long userId
@@ -279,19 +281,20 @@ public class AuthService {
 
     /**
      * 비밀번호 변경 메서드
+     *
      * @param userChangePasswordReq : 변경하고자하는 이메일 및 비밀번호를 담은 dto
-     * */
+     */
     @Transactional
     public void userChangePassword(UserChangePasswordReq userChangePasswordReq) {
 
         // 레디스 서버에서 인증했는지 확인하기
         String isAuth = redisService.getData(userChangePasswordReq.getEmail());
-        if(isAuth == null || !isAuth.equals("OK")){
+        if (isAuth == null || !isAuth.equals("OK")) {
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
 
         User user = userRepository.findByEmail(userChangePasswordReq.getEmail())
-                        .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
         user.updatePasswordAndEnCoding(passwordEncoder, userChangePasswordReq.getPassword());
         redisService.deleteData(userChangePasswordReq.getEmail());
     }
