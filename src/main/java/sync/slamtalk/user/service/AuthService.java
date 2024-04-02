@@ -42,7 +42,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
-    private final RevokeService revokeService;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
