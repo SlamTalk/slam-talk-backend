@@ -1,10 +1,12 @@
 package sync.slamtalk.user.error;
 
+import lombok.RequiredArgsConstructor;
 import sync.slamtalk.common.ResponseCodeDetails;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
+@RequiredArgsConstructor
 public enum UserErrorResponseCode implements ResponseCodeDetails {
     INVALID_TOKEN(SC_UNAUTHORIZED, 4001, "Token Invalid"),
     EMAIL_ALREADY_EXISTS(SC_BAD_REQUEST, 4003, "이미 존재하는 유저 이메일입니다."),
@@ -16,19 +18,9 @@ public enum UserErrorResponseCode implements ResponseCodeDetails {
     UNVERIFIED_EMAIL(SC_BAD_REQUEST, 4009, "이메일 인증을 하지 않았습니다"),
     ALREADY_CANCEL_USER(SC_BAD_REQUEST, 4010, "회원탈퇴 후 7일 동안 재가입이 불가능합니다");
 
-    UserErrorResponseCode(int code, int status, String message) {
-        this.code = code;
-        this.status = status;
-        this.message = message;
-    }
-
     private final int code;
     private final int status;
-    private String message;
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
+    private final String message;
 
     @Override
     public int getCode() {
