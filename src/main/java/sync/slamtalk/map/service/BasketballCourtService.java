@@ -2,7 +2,6 @@ package sync.slamtalk.map.service;
 
 import java.util.List;
 
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.common.BaseException;
@@ -26,7 +25,7 @@ public class BasketballCourtService {
     public List<BasketballCourtSummaryDto> getAllCourtSummaryInfo() {
         return basketballCourtRepository.findByAdminStatus(AdminStatus.ACCEPT).stream() //수락 상태의 정보만 조회
                 .map(basketballCourtMapper::toDto) // dto 변환
-                .collect(Collectors.toList());
+                .toList();
     }
 
     //특정 농구장 전체 정보
@@ -40,7 +39,7 @@ public class BasketballCourtService {
     public List<BasketballCourtReportSummaryDTO> getUserReportedCourtSummaryInfo(Long userId) {
         return basketballCourtRepository.findByInformerIdAndAdminStatus(userId, AdminStatus.STAND).stream()
                 .map(basketballCourtMapper::toStatusDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 검토중인 농구장 전체 정보

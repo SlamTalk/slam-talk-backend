@@ -1,7 +1,6 @@
 package sync.slamtalk.map.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
@@ -22,6 +21,6 @@ public class AdminBasketballCourtService {
         List<BasketballCourt> courts = basketballCourtRepository.findByAdminStatus(AdminStatus.STAND); // 대기 상태인 정보만 조회
         return courts.stream()
                 .map(basketballCourtMapper::toFullDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

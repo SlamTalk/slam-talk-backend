@@ -50,8 +50,6 @@
                                                MultipartFile file,
                                                Long userId) {
 
-            System.out.println("service");
-
             // 농구장 정보 조회
             BasketballCourt court = basketballCourtRepository.findById(courtId)
                     .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));

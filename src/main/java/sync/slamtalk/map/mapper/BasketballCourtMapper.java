@@ -19,6 +19,7 @@ import sync.slamtalk.map.entity.ParkingAvailable;
 
 @Component
 public class BasketballCourtMapper {
+    private static final String INITIAL_VALUE = "정보없음";
 
     // entity -> dto 변환
     public BasketballCourtSummaryDto toDto(BasketballCourt basketballCourt) {
@@ -57,10 +58,10 @@ public class BasketballCourtMapper {
                 ? Arrays.asList(basketballCourt.getConvenience().split(","))
                 : Collections.emptyList();
 
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLighting_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFee_type() : "정보 없음"; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHours_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
+        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
+        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtResponseDTO(
                 basketballCourt.getId(),
@@ -94,10 +95,10 @@ public class BasketballCourtMapper {
                 ? Arrays.asList(basketballCourt.getConvenience().split(","))
                 : Collections.emptyList();
 
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLighting_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFee_type() : "정보 없음"; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHours_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
+        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
+        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtFullResponseDTO(
                 basketballCourt.getId(),
@@ -134,10 +135,10 @@ public class BasketballCourtMapper {
                 ? Arrays.asList(basketballCourt.getConvenience().split(","))
                 : Collections.emptyList();
 
-        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLighting_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFee_type() : "정보 없음"; // Fee 값이 null일 경우를 위한 기본값
-        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHours_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
-        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
+        String nightLightingValue = basketballCourt.getNightLighting() != null ? basketballCourt.getNightLighting().getLightingType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String feeValue = basketballCourt.getFee() != null ? basketballCourt.getFee().getFeeType() : INITIAL_VALUE; // Fee 값이 null일 경우를 위한 기본값
+        String openingHoursValue = basketballCourt.getOpeningHours() != null ? basketballCourt.getOpeningHours().getOpeningHoursType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
+        String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailableType() : INITIAL_VALUE; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtReportResponseDTO(
                 basketballCourt.getId(),

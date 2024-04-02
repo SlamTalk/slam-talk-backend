@@ -9,7 +9,7 @@ public enum Fee {
     FREE("무료"),
     NON_FREE("유료");
 
-    private final String fee_type;
+    private final String feeType;
 
     public static Fee fromString(String value) {
         return "NON_FREE".equals(value) ?  NON_FREE : FREE;

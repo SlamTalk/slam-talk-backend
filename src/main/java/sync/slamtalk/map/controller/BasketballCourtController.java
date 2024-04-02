@@ -120,8 +120,6 @@ public class BasketballCourtController {
             @RequestPart(name = "image", required = false) MultipartFile file,
             @AuthenticationPrincipal Long userId) {
 
-        System.out.println("controller");
-
         BasketballCourt court = reportBasketballCourtService.editReportCourt(courtId, basketballCourtRequestDTO, file,
                 userId);
         return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 수정하였습니다.");
