@@ -31,7 +31,7 @@ public class BasketballCourtService {
 
     //특정 농구장 전체 정보
     public BasketballCourtFullResponseDTO getCourtFullInfoById(Long courtId) {
-        return basketballCourtRepository.findByCourtIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
+        return basketballCourtRepository.findByIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
                 .map(basketballCourtMapper::toFullChatDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
@@ -45,7 +45,7 @@ public class BasketballCourtService {
 
     // 검토중인 농구장 전체 정보
     public BasketballCourtReportResponseDTO getUserReportedCourtFullInfo(Long courtId, Long userId) {
-        return basketballCourtRepository.findByCourtIdAndInformerIdAndAdminStatus(courtId, userId, AdminStatus.STAND)
+        return basketballCourtRepository.findByIdAndInformerIdAndAdminStatus(courtId, userId, AdminStatus.STAND)
                 .map(basketballCourtMapper::toFullStatusDto)
                 .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }

@@ -26,7 +26,7 @@ public class BasketballCourtMapper {
             return null;
         }
         return new BasketballCourtSummaryDto(
-                basketballCourt.getCourtId(),
+                basketballCourt.getId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
@@ -39,7 +39,7 @@ public class BasketballCourtMapper {
             return null;
         }
         return new BasketballCourtReportSummaryDTO(
-                basketballCourt.getCourtId(),
+                basketballCourt.getId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
@@ -63,7 +63,7 @@ public class BasketballCourtMapper {
         String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtResponseDTO(
-                basketballCourt.getCourtId(),
+                basketballCourt.getId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
@@ -100,7 +100,7 @@ public class BasketballCourtMapper {
         String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtFullResponseDTO(
-                basketballCourt.getCourtId(),
+                basketballCourt.getId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
@@ -140,7 +140,7 @@ public class BasketballCourtMapper {
         String parkingAvailableValue = basketballCourt.getParkingAvailable() != null ? basketballCourt.getParkingAvailable().getParkingAvailable_type() : "정보 없음"; // NightLighting 값이 null일 경우를 위한 기본값
 
         return new BasketballCourtReportResponseDTO(
-                basketballCourt.getCourtId(),
+                basketballCourt.getId(),
                 basketballCourt.getCourtName(),
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),

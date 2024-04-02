@@ -29,7 +29,7 @@ public class BasketballCourt extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "court_id", nullable = false)
-    private Long courtId; // 농구장 ID
+    private Long id; // 농구장 ID
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_id")
