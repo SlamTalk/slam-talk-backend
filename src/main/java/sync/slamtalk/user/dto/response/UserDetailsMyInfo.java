@@ -6,7 +6,6 @@ import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserRole;
 import sync.slamtalk.user.utils.UserLevelScore;
 
-@NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Builder
@@ -27,10 +26,10 @@ public class UserDetailsMyInfo {
     /* 정보 수집 부분 */
     private String basketballSkillLevel;
     private String basketballPosition;
-    private Long level = 0L;
-    private Long levelScore = 0L;
-    private Long mateCompleteParticipationCount = 0L;
-    private Long teamMatchingCompleteParticipationCount = 0L;
+    private Long level;
+    private Long levelScore;
+    private Long mateCompleteParticipationCount;
+    private Long teamMatchingCompleteParticipationCount;
 
     /**
      * 나의 프로필 조회 시 필요한 정보를 반환하는 생성자
