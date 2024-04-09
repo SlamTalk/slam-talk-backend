@@ -48,9 +48,9 @@ public class QueryRepository {
                         matePost.matePostId,
                         matePost.title,
                         matePost.content,
-                        matePost.scheduledDate,
-                        matePost.startTime,
-                        matePost.endTime,
+                        matePost.schedule.date.as("scheduledDate"),
+                        matePost.schedule.start.as("startTime"),
+                        matePost.schedule.date.as("endTime"),
                         matePost.location,
                         matePost.locationDetail,
                         matePost.skillLevel,
@@ -258,10 +258,10 @@ public class QueryRepository {
     private BooleanExpression beforeScheduledTime(String entityType, boolean includingExpired) {
         if(includingExpired == false){
             if(entityType.equals("matePost")){
-                BooleanExpression isBeforeScheduledDate = matePost.scheduledDate.after(LocalDate.now());
+                BooleanExpression isBeforeScheduledDate = matePost.schedule.date.after(LocalDate.now());
 
-                BooleanExpression isTodayAndBeforeScheduledTime = matePost.scheduledDate.eq(LocalDate.now())
-                        .and(matePost.startTime.after(LocalTime.now()));
+                BooleanExpression isTodayAndBeforeScheduledTime = matePost.schedule.date.eq(LocalDate.now())
+                        .and(matePost.schedule.start.after(LocalTime.now()));
 
                 return isBeforeScheduledDate.or(isTodayAndBeforeScheduledTime);
             }else if(entityType.equals("teamMatching")){
