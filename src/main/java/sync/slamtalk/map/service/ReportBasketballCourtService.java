@@ -32,6 +32,17 @@
         private final UserRepository userRepository;
         private final ChatRoomRepository chatRoomRepository;
 
+        /**
+         * 사용자에게 농구장을 제보 받는 기능을 수행합니다.
+         * <p>
+         *     사용자에게 농구장 정보를 제보 받아 데이터베이스에 대기 상태로 저장합니다.
+         * </p>
+         *
+         * @param basketballCourtRequestDTO 사용자가 제보한 농구장 정보
+         * @param file 사용자가 제보한 농구장 사진, 없는 경우 null
+         * @param userId 제보한 사용자 ID
+         * @return 데이터베이스에 저장된 농구장 Entity
+         */
         @Transactional
         public BasketballCourt reportCourt(BasketballCourtRequestDTO basketballCourtRequestDTO, MultipartFile file,
                                            Long userId) {
@@ -45,6 +56,18 @@
             return basketballCourtRepository.save(court);
         }
 
+        /**
+         * 제보된 농구장 정보를 수정하는 기능을 수행합니다.
+         * <p>
+         *     제보자 인증을 거쳐 제보자가 제보한 농구장 정보를 업데이트합니다.
+         * </p>
+         * @param courtId 사용자에 의해 제보된 대기 상태의 농구장 ID
+         * @param basketballCourtRequestDTO 수정될 농구장 정보
+         * @param file 새로운 농구장 사진, 없는 경우 기존 이미지
+         * @param userId 제보자의 사용자 ID
+         * @return 업데이트된 농구장 Entity
+         * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 사용자가 수정 권한이 없는 경우 예외 발생
+         */
         @Transactional
         public BasketballCourt editReportCourt(Long courtId, BasketballCourtRequestDTO basketballCourtRequestDTO,
                                                MultipartFile file,
@@ -74,6 +97,16 @@
         }
 
 
+        /**
+         * 관리자가 대기 상태의 농구장 정보를 승인하는 기능을 수행합니다.
+         * <p>
+         *     관리자가 대기 상태의 농구장 정보를 추가하거나 수정하고 승인하는 기능을 수행합니다.
+         * </p>
+         * @param courtId 승인할 농구장 ID
+         * @param basketballCourtAdminRequestDTO 추가하거나 수정할 농구장 정보
+         * @return 승인된 농구장 Entity
+         * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
+         */
         @Transactional
         public BasketballCourt updateCourt(Long courtId, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
             BasketballCourt court = basketballCourtRepository.findById(courtId)
@@ -91,7 +124,15 @@
             return basketballCourtRepository.save(court);
         }
 
-        // 중복된 업데이트 로직을 처리하는 메소드
+        /**
+         * 사용자에게 정보를 제공받아 농구장 정보를 업데이트하는 기능을 수행합니다.
+         *<p>
+         *     모든 필드는 선택적이며, 제공된 경우에만 업데이트됩니다.
+         *</p>
+         * @param court 업데이트할 농구장 Entity
+         * @param requestDTO 사용자 제보 기반 업데이트할 농구장 정보
+         * @param photoUrl 업데이트할 농구장 사진, 없는 경우 기존 이미지
+         */
         private void updateCourtDetails(BasketballCourt court, BasketballCourtRequestDTO requestDTO, String photoUrl) {
             if (requestDTO.getCourtType() != null) {
                 court.updateCourtType(requestDTO.getCourtType());
@@ -138,6 +179,12 @@
             }
         }
 
+        /**
+         * 관리자 정보를 기반으로 상세 정보를 업데이트합니다.
+         * @param court 업데이트할 농구장 Entity
+         * @param basketballCourtAdminRequestDTO 관리자 정보 기반 업데이트할 농구장 정보
+         * @param photoUrl 업데이트할 농구장 사진, 없는 경우 기존 이미지
+         */
         private void updateCourtAdminDetails(BasketballCourt court, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO, String photoUrl) {
             if (basketballCourtAdminRequestDTO.getCourtType() != null) {
                 court.updateCourtType(basketballCourtAdminRequestDTO.getCourtType());
