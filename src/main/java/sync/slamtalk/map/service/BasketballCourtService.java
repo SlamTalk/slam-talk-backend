@@ -39,7 +39,7 @@ public class BasketballCourtService {
      *
      * @return {@link BasketballCourtSummaryDto}  승인된 농구장의 간략 정보를 담은 리스트
      */
-    public List<BasketballCourtSummaryDto> getAllCourtSummaryInfo() {
+    public List<BasketballCourtSummaryDto> getAllApprovedBasketballCourtSummaries() {
         return basketballCourtRepository.findByAdminStatus(AdminStatus.ACCEPT).stream() //수락 상태의 정보만 조회
                 .map(basketballCourtMapper::toDto) // dto 변환
                 .toList();
@@ -52,7 +52,7 @@ public class BasketballCourtService {
      * @return {@link BasketballCourtFullResponseDTO} 해당 ID의 농구장 전체 정보
      * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
      */
-    public BasketballCourtFullResponseDTO getCourtFullInfoById(Long courtId) {
+    public BasketballCourtFullResponseDTO getApprovedBasketballCourtDetailsById(Long courtId) {
         return basketballCourtRepository.findByIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
                 .map(basketballCourtMapper::toFullChatDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
@@ -64,7 +64,7 @@ public class BasketballCourtService {
      * @param userId 제보자의 userId
      * @return {@link BasketballCourtReportSummaryDTO} 검토 중인 농구장의 간략 정보 리스트
      */
-    public List<BasketballCourtReportSummaryDTO> getUserReportedCourtSummaryInfo(Long userId) {
+    public List<BasketballCourtReportSummaryDTO> getUserReportedBasketballCourtSummariesByUserId(Long userId) {
         return basketballCourtRepository.findByInformerIdAndAdminStatus(userId, AdminStatus.STAND).stream()
                 .map(basketballCourtMapper::toStatusDto)
                 .toList();
@@ -78,7 +78,7 @@ public class BasketballCourtService {
      * @return {@link BasketballCourtReportResponseDTO} 해당 농구장 ID의 전체 정보
      * @throws BaseException 농구장 ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
      */
-    public BasketballCourtReportResponseDTO getUserReportedCourtFullInfo(Long courtId, Long userId) {
+    public BasketballCourtReportResponseDTO getUserReportedBasketballCourtDetailsByIdAndUserId(Long courtId, Long userId) {
         return basketballCourtRepository.findByIdAndInformerIdAndAdminStatus(courtId, userId, AdminStatus.STAND)
                 .map(basketballCourtMapper::toFullStatusDto)
                 .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));

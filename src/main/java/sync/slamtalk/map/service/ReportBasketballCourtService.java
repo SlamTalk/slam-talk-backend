@@ -44,8 +44,8 @@
          * @return 데이터베이스에 저장된 농구장 Entity
          */
         @Transactional
-        public BasketballCourt reportCourt(BasketballCourtRequestDTO basketballCourtRequestDTO, MultipartFile file,
-                                           Long userId) {
+        public BasketballCourt createBasketballCourtReport(BasketballCourtRequestDTO basketballCourtRequestDTO, MultipartFile file,
+                                                           Long userId) {
 
             String photoUrl = "";
             if (file != null && !file.isEmpty()) {
@@ -69,9 +69,9 @@
          * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 사용자가 수정 권한이 없는 경우 예외 발생
          */
         @Transactional
-        public BasketballCourt editReportCourt(Long courtId, BasketballCourtRequestDTO basketballCourtRequestDTO,
-                                               MultipartFile file,
-                                               Long userId) {
+        public BasketballCourt updateSubmittedBasketballCourtReport(Long courtId, BasketballCourtRequestDTO basketballCourtRequestDTO,
+                                                                    MultipartFile file,
+                                                                    Long userId) {
 
             // 농구장 정보 조회
             BasketballCourt court = basketballCourtRepository.findById(courtId)
@@ -91,7 +91,7 @@
                 photoUrl = awsS3Repository.uploadFile(file);
             }
 
-            updateCourtDetails(court, basketballCourtRequestDTO, photoUrl);
+            applyUserUpdatesToBasketballCourt(court, basketballCourtRequestDTO, photoUrl);
 
             return basketballCourtRepository.save(court);
         }
@@ -108,11 +108,11 @@
          * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
          */
         @Transactional
-        public BasketballCourt updateCourt(Long courtId, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
+        public BasketballCourt approveBasketballCourtInfoUpdate(Long courtId, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
             BasketballCourt court = basketballCourtRepository.findById(courtId)
                     .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
 
-            updateCourtAdminDetails(court, basketballCourtAdminRequestDTO, court.getPhotoUrl());
+            administrateBasketballCourtUpdates(court, basketballCourtAdminRequestDTO, court.getPhotoUrl());
 
             // AdminStatus 변경
             court.updateAdminStatus(AdminStatus.ACCEPT);
@@ -133,7 +133,7 @@
          * @param requestDTO 사용자 제보 기반 업데이트할 농구장 정보
          * @param photoUrl 업데이트할 농구장 사진, 없는 경우 기존 이미지
          */
-        private void updateCourtDetails(BasketballCourt court, BasketballCourtRequestDTO requestDTO, String photoUrl) {
+        private void applyUserUpdatesToBasketballCourt(BasketballCourt court, BasketballCourtRequestDTO requestDTO, String photoUrl) {
             if (requestDTO.getCourtType() != null) {
                 court.updateCourtType(requestDTO.getCourtType());
             }
@@ -185,7 +185,7 @@
          * @param basketballCourtAdminRequestDTO 관리자 정보 기반 업데이트할 농구장 정보
          * @param photoUrl 업데이트할 농구장 사진, 없는 경우 기존 이미지
          */
-        private void updateCourtAdminDetails(BasketballCourt court, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO, String photoUrl) {
+        private void administrateBasketballCourtUpdates(BasketballCourt court, BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO, String photoUrl) {
             if (basketballCourtAdminRequestDTO.getCourtType() != null) {
                 court.updateCourtType(basketballCourtAdminRequestDTO.getCourtType());
             }

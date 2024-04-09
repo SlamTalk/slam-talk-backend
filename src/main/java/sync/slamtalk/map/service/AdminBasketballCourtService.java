@@ -27,7 +27,7 @@ public class AdminBasketballCourtService {
      *
      * @return {@link BasketballCourtResponseDTO} 대기 상태의 농구장 정보 리스트
      */
-    public List<BasketballCourtResponseDTO> getAllCourtsWithStatusStand() {
+    public List<BasketballCourtResponseDTO> getStandingBasketballCourtReports() {
         List<BasketballCourt> courts = basketballCourtRepository.findByAdminStatus(AdminStatus.STAND);
         return courts.stream()
                 .map(basketballCourtMapper::toFullDto)
