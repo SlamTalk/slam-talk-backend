@@ -4,7 +4,7 @@ name: CI/CD
 # main, develop 브랜치에 push가 되었을 때 Workflow를 Trigger 실행
 on:
   push:
-      branches: ["main", "develop"]
+      branches: ["main"]
 
 
 # 권한 설정하기
