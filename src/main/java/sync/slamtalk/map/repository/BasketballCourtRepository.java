@@ -3,11 +3,9 @@ package sync.slamtalk.map.repository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import sync.slamtalk.map.entity.AdminStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
 
-@Repository
 public interface BasketballCourtRepository extends JpaRepository<BasketballCourt, Long> {
 
     /**
@@ -16,8 +14,6 @@ public interface BasketballCourtRepository extends JpaRepository<BasketballCourt
      * @return 상태에 따른 농구장 목록
      */
     List<BasketballCourt> findByAdminStatus(AdminStatus adminStatus);
-
-    //
 
     /**
      * AdminStatus에 따른 특정 농구장을 조회합니다.

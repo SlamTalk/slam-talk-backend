@@ -44,8 +44,6 @@ public class AdminBasketballCourtController {
         return (ApiResponse.ok(basketballCourtStandDto, "대기중인 농구장 목록을 성공적으로 가져왔습니다."));
     }
 
-    // 제보 받은 농구장 특정 필드 값 입력 및 수락 업데이트
-
     /**
      * 대기 상태인 특정 농구장의 정보를 업데이트하고 승인 상태로 변경합니다.
      * @param courtId 농구장 ID

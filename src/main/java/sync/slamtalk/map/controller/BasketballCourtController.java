@@ -67,8 +67,6 @@ public class BasketballCourtController {
 
     }
 
-    // 농구장 제보
-
     /**
      * 사용자가 제보한 농구장 정보를 저장합니다.
      * @param basketballCourtRequestDTO 사용자가 제보한 농구장 정보
