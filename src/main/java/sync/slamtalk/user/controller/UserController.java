@@ -1,6 +1,7 @@
 package sync.slamtalk.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import sync.slamtalk.user.service.UserService;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Tag(name = "유저 상세정보 조회")
 public class UserController {
     private final UserService userService;
 
@@ -35,8 +37,7 @@ public class UserController {
     @GetMapping("/user/my-info")
     @Operation(
             summary = "유저 본인 상세 정보 조회 api",
-            description = "유저 본인의 상세정보 확인가능합니다.",
-            tags = {"유저 상세정보 조회"}
+            description = "유저 본인의 상세정보 확인가능합니다."
     )
     public ApiResponse<UserDetailsMyInfo> userDetailsMyInfo(
             @AuthenticationPrincipal Long userId
@@ -55,8 +56,7 @@ public class UserController {
     @GetMapping("/user/other-info/{userId}")
     @Operation(
             summary = "다른 유저 상세 정보 조회 api",
-            description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다",
-            tags = {"유저 상세정보 조회"}
+            description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다"
     )
     public ApiResponse<UserDetailsOtherInfo> userDetailsOtherInfo(
             @PathVariable("userId") Long userId
@@ -76,8 +76,7 @@ public class UserController {
     @Operation(
             summary = "닉네임 변경 api",
             description = "해당 유저의 닉네임(중복 가능) 닉네임 변경이 가능합니다.\n " +
-                    "닉네임은 특수문자를 제외한 2~13자리여야 합니다",
-            tags = {"유저 상세정보 조회"}
+                    "닉네임은 특수문자를 제외한 2~13자리여야 합니다"
     )
     public ApiResponse<Void> userUpdateNickname(
             @Valid @RequestBody UserUpdateNicknameReq userUpdateNicknameReq,
@@ -97,8 +96,7 @@ public class UserController {
     @PatchMapping("/user/update/info")
     @Operation(
             summary = "최초 로그인 시 정보수집 요청 api",
-            description = "해당 유저의 포지션, 실력을 업데이트 가능합니다.",
-            tags = {"유저 상세정보 조회"}
+            description = "해당 유저의 포지션, 실력을 업데이트 가능합니다."
     )
     public ApiResponse<Void> userUpdatePositionAndSkillLevel(
             @Valid @RequestBody UserUpdatePositionAndSkillReq userUpdatePositionAndSkillReq,
@@ -118,8 +116,7 @@ public class UserController {
     @PostMapping("/user/attend")
     @Operation(
             summary = "출석 체크 api",
-            description = "하루 한번 출석체크 하는 api,",
-            tags = {"유저 상세정보 조회"}
+            description = "하루 한번 출석체크 하는 api,"
     )
     public ApiResponse<Void> userAttendance(@AuthenticationPrincipal Long userId) {
         log.debug("[유저 출석체크] 동작");
@@ -138,8 +135,7 @@ public class UserController {
     @Operation(
             summary = "마이페이지 수정 api",
             description = "마이페이지 수정할 때 닉네임, 프로필, 한마디, 포지션, 농구실력 을 수정 가능합니다. " +
-                    "null 값으로 비워 둘 경우 업데이트가 되지않습니다!",
-            tags = {"유저 상세정보 조회"}
+                    "null 값으로 비워 둘 경우 업데이트가 되지않습니다!"
     )
     public ApiResponse<Void> updateUserDetailInfo(
             @AuthenticationPrincipal Long userId,
@@ -158,8 +154,7 @@ public class UserController {
     @GetMapping("/user/scheduleList")
     @Operation(
             summary = "임박한 약속 리스트 api",
-            description = "현재날짜 이후의 상태가 COMPLETED 약속 리스트를 팀매칭, 상대팀매칭 별로 구분해서 전달합니다.",
-            tags = {"유저 상세정보 조회"}
+            description = "현재날짜 이후의 상태가 COMPLETED 약속 리스트를 팀매칭, 상대팀매칭 별로 구분해서 전달합니다."
     )
     public ApiResponse<UserSchedule> userMyScheduleList(
             @AuthenticationPrincipal Long userId
