@@ -14,7 +14,7 @@ import sync.slamtalk.common.BaseEntity;
 public class Messages extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="message_id",nullable = false)
+    @Column(name = "message_id", nullable = false)
     private Long id; // 식별 아이디
 
     // 작성자
@@ -30,9 +30,9 @@ public class Messages extends BaseEntity {
     private String content;
 
     // 메세지(작성시간)
-    @Column(name = "creation_time",nullable = false)
+    @Column(name = "creation_time", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private String creation_time;
+    private String creationTime;
 
     // 채팅방
     @ManyToOne(fetch = FetchType.LAZY)

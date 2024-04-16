@@ -1,4 +1,4 @@
-package sync.slamtalk.chat.dto.Response;
+package sync.slamtalk.chat.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,19 +33,19 @@ public class ChatRoomDTO implements Serializable {
         this.lastMessage = lastMessage;
     }
 
-    public void updateName(String name){
+    public void updateName(String name) {
         this.name = name;
     }
 
-    public void updateImgUrl(String imgUrl){
+    public void updateImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
     }
 
-    public void updatecourtId(Long courtId){
+    public void updatecourtId(Long courtId) {
         this.courtId = courtId;
     }
 
-    public void updatePartnerId(String pid){
+    public void updatePartnerId(String pid) {
         this.partnerId = pid;
     }
 }

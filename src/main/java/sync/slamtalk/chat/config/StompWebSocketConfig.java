@@ -25,7 +25,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/slamtalk")
                 .setAllowedOrigins("*");
-                //.withSockJS(); // 사용시 /websocket 붙여서 테스트
+        //.withSockJS(); // 사용시 /websocket 붙여서 테스트
         registry.setErrorHandler(stompErrorHandler);
     }
 
@@ -48,6 +48,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     // WebSocket ErrorHandler -> WebSocket
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registry) {
-        registry.addDecoratorFactory(webSocketHandler-> new CustomWebSocketHandler(webSocketHandler));
+        registry.addDecoratorFactory(webSocketHandler -> new WebsocketDisconnectHandlerDecorator(webSocketHandler));
     }
 }
