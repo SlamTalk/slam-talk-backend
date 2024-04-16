@@ -64,8 +64,7 @@ public class UserService {
     public UserDetailsMyInfo userDetailsMyInfo(
             Long userId
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         Result result = getResult(userId, user);
 
@@ -79,6 +78,17 @@ public class UserService {
     }
 
     /**
+     * 유저 아이디를 이용해서 UserRepository에서 User를 반환하는 메서드
+     *
+     * @param userId
+     * @return User
+     */
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+    }
+
+    /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
      *
      * @param userId 찾고자하는 userId
@@ -86,8 +96,7 @@ public class UserService {
     public UserDetailsOtherInfo userDetailsOtherInfo(
             Long userId
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         Result result = getResult(userId, user);
 
@@ -217,8 +226,7 @@ public class UserService {
      */
     @Transactional
     public void userAttendance(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         // 만약 이미 출석을 했다면 400 에러 반환
         if (userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now())) {
@@ -242,8 +250,7 @@ public class UserService {
             MultipartFile file,
             UpdateUserDetailInfoReq updateUserDetailInfoReq
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
         log.debug("[유저 마이페이지 수정] 닉네임 = {} ", updateUserDetailInfoReq.getNickname());
         log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
         log.debug("[유저 마이페이지 수정] 자기소개 = {} ", updateUserDetailInfoReq.getSelfIntroduction());
@@ -292,8 +299,7 @@ public class UserService {
      * @return UserSchedule : 유저 스케줄
      */
     public UserSchedule userMyScheduleList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         List<ToTeamFormDTO> myTeamMatchingScheduleList = getMyTeamMatchingScheduleList(user);
         List<MatePostToDto> mateList = getMyMateScheduleList(user);
