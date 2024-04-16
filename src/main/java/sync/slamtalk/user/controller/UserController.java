@@ -79,7 +79,7 @@ public class UserController {
                     "닉네임은 특수문자를 제외한 2~13자리여야 합니다",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsMyInfo> userUpdateNickname(
+    public ApiResponse<Void> userUpdateNickname(
             @Valid @RequestBody UserUpdateNicknameReq userUpdateNicknameReq,
             @AuthenticationPrincipal Long userId
     ) {
@@ -100,7 +100,7 @@ public class UserController {
             description = "해당 유저의 포지션, 실력을 업데이트 가능합니다.",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<UserDetailsMyInfo> userUpdatePositionAndSkillLevel(
+    public ApiResponse<Void> userUpdatePositionAndSkillLevel(
             @Valid @RequestBody UserUpdatePositionAndSkillReq userUpdatePositionAndSkillReq,
             @AuthenticationPrincipal Long userId
     ) {
@@ -121,7 +121,7 @@ public class UserController {
             description = "하루 한번 출석체크 하는 api,",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<String> userAttendance(@AuthenticationPrincipal Long userId) {
+    public ApiResponse<Void> userAttendance(@AuthenticationPrincipal Long userId) {
         log.debug("[유저 출석체크] 동작");
         userService.userAttendance(userId);
         return ApiResponse.ok();
@@ -141,7 +141,7 @@ public class UserController {
                     "null 값으로 비워 둘 경우 업데이트가 되지않습니다!",
             tags = {"유저 상세정보 조회"}
     )
-    public ApiResponse<String> updateUserDetailInfo(
+    public ApiResponse<Void> updateUserDetailInfo(
             @AuthenticationPrincipal Long userId,
             @RequestPart(name = "file", required = false) MultipartFile file,
             @Valid @RequestPart(name = "data", required = false) UpdateUserDetailInfoReq updateUserDetailInfoReq

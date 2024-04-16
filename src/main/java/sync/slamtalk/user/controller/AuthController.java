@@ -43,7 +43,7 @@ public class AuthController {
             description = "자체 로그인 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> authorize(
+    public ApiResponse<Void> authorize(
             @Valid @RequestBody UserLoginReq userLoginReqDto,
             HttpServletResponse response
     ) {
@@ -66,7 +66,7 @@ public class AuthController {
             description = "자체 회원가입 기능입니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> signUp(
+    public ApiResponse<Void> signUp(
             @Valid @RequestBody UserSignUpReq userSignUpReqDto,
             HttpServletResponse response) {
         authService.signUp(userSignUpReqDto, response);
@@ -85,7 +85,7 @@ public class AuthController {
             description = "자체 회원가입 기능입니다.",
             tags = {"백엔드 전용 api"}
     )
-    public ApiResponse<String> testSignUp(
+    public ApiResponse<Void> testSignUp(
             @RequestBody UserSignUpReq userSignUpReqDto,
             HttpServletResponse response) {
         authService.testSignUp(userSignUpReqDto, response);
@@ -105,7 +105,7 @@ public class AuthController {
             description = "리프레쉬 토큰은 httpOnly secure 쿠키로 보내주고 엑세스 토큰은 헤더와 파라미터에 넣어 보내줍니다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> refreshToken(
+    public ApiResponse<Void> refreshToken(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
@@ -119,7 +119,7 @@ public class AuthController {
             description = "이메일인증을 한 유저의 비밀번호는 특정 비밀번호로 변경이 가능하다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> userChangePassword(
+    public ApiResponse<Void> userChangePassword(
             @Valid @RequestBody UserChangePasswordReq userChangePasswordReq
     ) {
         authService.userChangePassword(userChangePasswordReq);
@@ -132,7 +132,7 @@ public class AuthController {
             description = "7일이내로 회원탈퇴과정이 진행되고, 회원탈퇴 클릭 시 재회원가입, 로그인이 불가능하다.",
             tags = {"로그인/회원가입"}
     )
-    public ApiResponse<String> cancelUser(@AuthenticationPrincipal Long userId) {
+    public ApiResponse<Void> cancelUser(@AuthenticationPrincipal Long userId) {
         authService.cancelUser(userId);
         return ApiResponse.ok();
     }
