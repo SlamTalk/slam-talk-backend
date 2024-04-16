@@ -52,7 +52,7 @@ public class UserController {
      *
      * @return UserDetailsInfoResponseDto 객체가 반환(개인정보 있는 버전, 없는 버전)
      * */
-    @GetMapping("/user/{userId}/other-info")
+    @GetMapping("/user/other-info/{userId}")
     @Operation(
             summary = "다른 유저 상세 정보 조회 api",
             description = "다른 유저의 상세 정보를 조회할 때 유저 정보 반환 api 입니다",
@@ -134,7 +134,7 @@ public class UserController {
      * @param file 파일 크기 1MB
      * @param updateUserDetailInfoReq 유저 프로필 업데이트 DTO
      * */
-    @PatchMapping("/user/update")
+    @PostMapping("/user/update")
     @Operation(
             summary = "마이페이지 수정 api",
             description = "마이페이지 수정할 때 닉네임, 프로필, 한마디, 포지션, 농구실력 을 수정 가능합니다. " +

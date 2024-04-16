@@ -4,7 +4,7 @@ name: CI/CD
 # main, develop 브랜치에 push가 되었을 때 Workflow를 Trigger 실행
 on:
   push:
-      branches: ["main", "develop"]
+      branches: ["main"]
 
 
 # 권한 설정하기
@@ -67,6 +67,24 @@ jobs:
         push: true
         tags: ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}
 
+    # github 배포 ip 받아오기
+    - name: Get Github Actions IP
+      id: ip
+      uses: haythem/public-ip@v1.2
+
+    # iam 계정 접속하기
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+    # 보안그룹에서 해당 ip 열어두기
+    - name: Add Github Actions IP to Security group
+      run: |
+          aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
     ## deploy to production
     - name: Deploy to server
       uses: appleboy/ssh-action@master
@@ -80,8 +98,12 @@ jobs:
               sudo docker pull ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPO}}
               docker-compose up -d
               docker image prune -f
-
-
+    
+    # 보안 그룹에서 github Actions ip 삭제하기
+    - name: Remove Github Actions IP From Security Group
+      run: |
+          aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
+  
   ## time
   current-time:
     needs: CI-CD

@@ -407,7 +407,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId, int count) {
+    public List<ChatMessageDTO>getPreviousChatMessages(Long userId, Long chatRoomId,int count) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
 
@@ -430,10 +430,13 @@ public class ChatServiceImpl implements ChatService {
             }
 
 
+
             log.debug("userChatroom 존재함");
             UserChatRoom userChatRoom = existUserChatRoom.get();
             Long readIndex = userChatRoom.getReadIndex();
             log.debug("=== readIndex : {}", readIndex);
+              
+             
 
             // 20개씩 내역 페이징
             Pageable pageable = PageRequest.of(0, 20); // 첫 페이지, 최대 20개

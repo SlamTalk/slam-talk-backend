@@ -16,10 +16,10 @@ public class BasketballCourtRequestDTO {
     private String indoorOutdoor;
     private String courtSize;
     private Integer hoopCount;
-    private Boolean nightLighting;
-    private Boolean openingHours;
-    private Boolean fee;
-    private Boolean parkingAvailable;
+    private String nightLighting;
+    private String openingHours;
+    private String fee;
+    private String parkingAvailable;
     private String phoneNum;
     private String website;
     private String convenience;

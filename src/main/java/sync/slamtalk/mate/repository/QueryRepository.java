@@ -1,5 +1,6 @@
 package sync.slamtalk.mate.repository;
 
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -127,11 +128,25 @@ public class QueryRepository {
                         ltCreatedAt("teamMatching", condition.getCursorTime()),
                         beforeScheduledTime("teamMatching", condition.isIncludingExpired()),
                         eqNumberOfVersus(condition.getNov()),
+                        containsTitle(condition.getSearchWord()),
                         teamMatching.isDeleted.eq(false)
                 )
                 .orderBy(teamMatching.createdAt.desc())
                 .limit(10)
                 .fetch();
+    }
+
+    private Predicate containsTitle(String searchWord) {
+        if(searchWord != null){
+            return teamMatching.title.contains(searchWord)
+                    .or(teamMatching.content.contains(searchWord))
+                    .or(teamMatching.location.contains(searchWord))
+                    .or(teamMatching.locationDetail.contains(searchWord))
+                    .or(teamMatching.writer.nickname.contains(searchWord))
+                    .or(teamMatching.teamName.contains(searchWord));
+        } else {
+            return null;
+        }
     }
 
 

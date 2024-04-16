@@ -225,7 +225,7 @@ public class JwtTokenProvider implements InitializingBean {
      * */
     @Transactional
     public Optional<JwtTokenDto> generateNewAccessToken(String refreshToken){
-        log.debug("엑세스 토큰 재발급");
+        log.debug("[엑세스 토큰 재발급] 엑세스 토큰 재발급");
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElse(null);
 
@@ -235,12 +235,13 @@ public class JwtTokenProvider implements InitializingBean {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(","));
 
-            log.debug("authorities = {}", authorities);
+            log.debug("[엑세스 토큰 재발급] authorities = {}", authorities);
 
             String accessToken = createAccessToken(user, authorities);
 
             return Optional.of(new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken));
         }
+        log.debug("[엑세스 토큰 재발급] Option empty");
         return Optional.empty();
     }
 
