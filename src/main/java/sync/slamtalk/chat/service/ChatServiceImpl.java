@@ -360,6 +360,10 @@ public class ChatServiceImpl implements ChatService {
         // 특정 방 메세지 중 현재 messageId 보다 큰 Id값을 가진 메세지들 가져오기
         List<Messages> newMessages = messagesRepository.findByChatRoomIdAndIdGreaterThan(chatRoomId, messageId);
 
+        // ReadIndex 상관없이 가장 최신 메세지부터 30개씩 과거 메세지를 가져오기
+        // Pageable pageable = PageRequest.of(0,30);
+        // List<Messages> newMessages = messagesRepository.findByChatRoomIdAndMessageIdOrderByMessageIdDesc(chatRoomId, pageable);
+
 
         // messageRepository 에서 가져온 메세지로 dto 생성하기
         for (Messages m : newMessages) {
