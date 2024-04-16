@@ -33,16 +33,16 @@ public enum ChatErrorResponseCode implements ResponseCodeDetails {
 
     @Override
     public int getStatus() {
-        return 0;
+        return this.status;
     }
 
     @Override
     public int getCode() {
-        return 0;
+        return this.code;
     }
 
     @Override
     public String getMessage() {
-        return null;
+        return this.message;
     }
 }

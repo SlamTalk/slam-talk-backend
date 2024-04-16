@@ -95,8 +95,8 @@ public class ChatController {
             description = "이 기능은 과거 마지막으로 읽은 메세지 전의 메세지를 보내주는 기능입니다.",
             tags = {"채팅"}
     )
-    public ApiResponse<List<ChatMessageDTO>> getChatPastHistory(@Param("roomId") Long roomId, @AuthenticationPrincipal Long userId, @Param("count") int count) {
-        return ApiResponse.ok(chatService.getPreviousChatMessages(userId, roomId, count));
+    public ApiResponse<List<ChatMessageDTO>> getChatPastHistory(@Param("roomId") Long roomId, @AuthenticationPrincipal Long userId, @Param("lastMessageId") Long lastMessageId) {
+        return ApiResponse.ok(chatService.getPreviousChatMessages(userId, roomId, lastMessageId));
     }
 
 
