@@ -2,14 +2,12 @@ package sync.slamtalk.user.dto.request;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import sync.slamtalk.user.entity.UserBasketballPositionType;
 import sync.slamtalk.user.entity.UserBasketballSkillLevelType;
 
 @Getter
 @AllArgsConstructor
-@Builder
 public class UpdateUserDetailInfoReq {
     /* 마이페이지 기능 */
     @Pattern(
