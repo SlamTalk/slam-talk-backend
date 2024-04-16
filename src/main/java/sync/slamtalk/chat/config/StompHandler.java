@@ -58,7 +58,6 @@ public class StompHandler {
     public void isExistChatRoom(StompHeaderAccessor accessor) {
         String destination = accessor.getDestination();
         Long roomId = extractRoomId(Objects.requireNonNull(destination));
-        Optional<ChatRoom> existChatRoom = chatService.isExistChatRoom(roomId);
         // ChatRoom 이 존재하지 않는다면
         chatService.isExistChatRoom(roomId).orElseThrow(()->{
             log.debug("=== isExistChatRoom === ChatRoom 존재하지않음");
