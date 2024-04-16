@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.entity.*;
-import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.team.dto.TeamSearchCondition;
 import sync.slamtalk.team.dto.ToApplicantDto;
 import sync.slamtalk.team.dto.UnrefinedTeamMatchingDto;
@@ -28,15 +27,10 @@ import static sync.slamtalk.team.entity.QTeamMatching.teamMatching;
 @Slf4j
 @Repository
 public class QueryRepository {
-
-    private EntityManager em;
     private JPAQueryFactory queryFactory;
-    private EntityToDtoMapper entityToDtoMapper;
 
     public QueryRepository(EntityManager em) {
-        this.em = em;
         this.queryFactory = new JPAQueryFactory(em);
-        this.entityToDtoMapper = new EntityToDtoMapper();
     }
 
     public List<UnrefinedMatePostDto> findMatePostList(MateSearchCondition condition) {
@@ -72,11 +66,24 @@ public class QueryRepository {
                         eqSkillLevel("matePost", condition.getSkillLevel()),
                         ltCreatedAt("matePost", condition.getCursorTime()),
                         beforeScheduledTime("matePost", condition.isIncludingExpired()),
+                        containsSearchWordIntMatePost(condition.getSearchWord()),
                         matePost.isDeleted.eq(false)
                 )
                 .orderBy(matePost.createdAt.desc())
                 .limit(10)
                 .fetch();
+    }
+
+    private Predicate containsSearchWordIntMatePost(String searchWord) {
+        if(searchWord != null){
+            return matePost.title.contains(searchWord)
+                    .or(matePost.content.contains(searchWord))
+                    .or(matePost.location.contains(searchWord))
+                    .or(matePost.locationDetail.contains(searchWord))
+                    .or(matePost.writer.nickname.contains(searchWord));
+        } else {
+            return null;
+        }
     }
 
     public List<ParticipantDto> findParticipantByMatePostId(long matePostId) {
@@ -128,7 +135,7 @@ public class QueryRepository {
                         ltCreatedAt("teamMatching", condition.getCursorTime()),
                         beforeScheduledTime("teamMatching", condition.isIncludingExpired()),
                         eqNumberOfVersus(condition.getNov()),
-                        containsTitle(condition.getSearchWord()),
+                        containsSearchWord(condition.getSearchWord()),
                         teamMatching.isDeleted.eq(false)
                 )
                 .orderBy(teamMatching.createdAt.desc())
@@ -136,7 +143,7 @@ public class QueryRepository {
                 .fetch();
     }
 
-    private Predicate containsTitle(String searchWord) {
+    private Predicate containsSearchWord(String searchWord) {
         if(searchWord != null){
             return teamMatching.title.contains(searchWord)
                     .or(teamMatching.content.contains(searchWord))
@@ -148,7 +155,6 @@ public class QueryRepository {
             return null;
         }
     }
-
 
     public List<ToApplicantDto> findApplicantListByTeamMatchingId(long teamMatchingId) {
         return queryFactory
