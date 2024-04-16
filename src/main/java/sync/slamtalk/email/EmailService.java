@@ -21,6 +21,7 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
     private final RedisService redisService; //redis 관련
     private final TemplateEngine templateEngine;
+    private static final String REGISTER_EMAIL_CERTIFICATE_TEMPLATE = "register-email-verification-template";
 
     /**
      * 이메일 메세지 생성하는 메서드
@@ -40,7 +41,7 @@ public class EmailService {
 
             Context context = new Context();
             context.setVariable("code", code);
-            String text = templateEngine.process("email-template", context);
+            String text = templateEngine.process(REGISTER_EMAIL_CERTIFICATE_TEMPLATE, context);
 
             message.setText(text, "UTF-8", "html");
             message.setFrom("slamtalk@naver.com"); // 보내는사람.
