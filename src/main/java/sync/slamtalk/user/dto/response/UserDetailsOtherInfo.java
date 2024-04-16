@@ -7,7 +7,7 @@ import sync.slamtalk.user.utils.UserLevelScore;
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class UserDetailsOtherInfo {
     /* 공개되어도 상관없는 부분 */
     private Long id;
@@ -20,10 +20,10 @@ public class UserDetailsOtherInfo {
     /* 정보 수집 부분 */
     private String basketballSkillLevel;
     private String basketballPosition;
-    private Long level = 0L;
-    private Long levelScore = 0L;
-    private Long mateCompleteParticipationCount = 0L;
-    private Long teamMatchingCompleteParticipationCount = 0L;
+    private Long level;
+    private Long levelScore;
+    private Long mateCompleteParticipationCount;
+    private Long teamMatchingCompleteParticipationCount;
 
     /**
      * 상대방 프로필 조회 시 필요한 정보를 반환하는 생성자

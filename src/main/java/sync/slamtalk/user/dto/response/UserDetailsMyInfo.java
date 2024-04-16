@@ -8,7 +8,7 @@ import sync.slamtalk.user.utils.UserLevelScore;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Builder
+@Builder(access = AccessLevel.PRIVATE)
 public class UserDetailsMyInfo {
     /* 개인 정보 관련 */
     private String email;
