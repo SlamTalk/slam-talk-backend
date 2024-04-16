@@ -104,6 +104,10 @@ class UserServiceTest {
 
         // then
         assertThat(userDetailsMyInfo.getId()).isEqualTo(user.getId());
+        assertThat(userDetailsMyInfo.getLevelScore()).isEqualTo(10L);
+        assertThat(userDetailsMyInfo.getMateCompleteParticipationCount()).isZero();
+        assertThat(userDetailsMyInfo.getTeamMatchingCompleteParticipationCount()).isZero();
+        assertThat(userDetailsMyInfo.getLevel()).isEqualTo(1L);
     }
 
     @Test
@@ -121,6 +125,10 @@ class UserServiceTest {
 
         // then
         assertThat(userDetailsOtherInfo.getId()).isEqualTo(user.getId());
+        assertThat(userDetailsOtherInfo.getLevelScore()).isEqualTo(10L);
+        assertThat(userDetailsOtherInfo.getMateCompleteParticipationCount()).isZero();
+        assertThat(userDetailsOtherInfo.getTeamMatchingCompleteParticipationCount()).isZero();
+        assertThat(userDetailsOtherInfo.getLevel()).isEqualTo(1L);
     }
 
     @Test
