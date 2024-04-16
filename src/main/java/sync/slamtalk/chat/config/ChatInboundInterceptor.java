@@ -188,6 +188,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 // 메세지 보낸 유저의 아이디 추출
                 String uid = stompHandler.extractUserId(messageContent);
                 Long userid = Long.parseLong(uid);
+                log.debug("=== extract userId:{}",uid);
 
                 if (content != null) {
                     ChatMessageDTO chatMessageDTO = ChatMessageDTO.builder()
@@ -201,6 +202,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     log.debug("=== MESSAGE 저장 완료 ===");
                 }
             }
+            log.debug("=== 메세지 발송 완료 ===");
         }
 
 
