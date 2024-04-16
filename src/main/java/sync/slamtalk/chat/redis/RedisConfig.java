@@ -26,14 +26,14 @@ public class RedisConfig {
     /*Redis 서버와의 연결을 생성하고 관리하는 역할*/
     // RedisProperties 로 properties 에 저장한 host,port 를 연결
     @Bean
-    public RedisConnectionFactory redisConnectionFactory(){
-        return new LettuceConnectionFactory(redisProperties.getHost(),redisProperties.getPort());
+    public RedisConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
     }
 
     // serializer 설정으로 redis-cli 를 통해 직접 데이터를 조회할 수 있도록 설정
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(){
-        RedisTemplate<String ,Object> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
         // key 와 value Serializer 설정
         redisTemplate.setKeySerializer(new StringRedisSerializer());

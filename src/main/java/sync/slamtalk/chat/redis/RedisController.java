@@ -34,7 +34,7 @@ public class RedisController {
             description = "이 기능은 Redis 서버에 메시지를 저장하는 기능입니다.",
             tags = {"채팅"}
     )
-    public String save(){
+    public String save() {
         // test 코드여서 TODO 페이징과 연결해야함
 //        ChatMessageDTO dto1 = ChatMessageDTO.builder()
 //                .roomId("1")
@@ -86,10 +86,8 @@ public class RedisController {
 //            log.debug("messages: {}",messages.get(idx++));
 //        }
 //        return ApiResponse.ok(messages);
-        return  null;
+        return null;
     }
-
-
 
 
 }
