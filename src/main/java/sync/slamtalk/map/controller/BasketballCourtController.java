@@ -54,7 +54,7 @@ public class BasketballCourtController {
     )
     public ApiResponse<List<BasketballCourtSummaryDto>> getListApprovedBasketballCourtSummaries() {
         List<BasketballCourtSummaryDto> courtDetails = basketballCourtService.getAllApprovedBasketballCourtSummaries();
-        return (ApiResponse.ok(courtDetails, COURT_LIST_SUCCESS_MSG));
+        return ApiResponse.ok(courtDetails, COURT_LIST_SUCCESS_MSG);
     }
 
     /**

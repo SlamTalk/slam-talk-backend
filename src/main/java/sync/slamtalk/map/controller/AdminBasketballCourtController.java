@@ -44,7 +44,7 @@ public class AdminBasketballCourtController {
     )
     public ApiResponse<List<BasketballCourtResponseDTO>> getAllStandingBasketballCourts() {
         List<BasketballCourtResponseDTO> basketballCourtStandDto = adminBasketballCourtService.getStandingBasketballCourtReports();
-        return (ApiResponse.ok(basketballCourtStandDto, STANDING_COURT_LIST_SUCCESS_MSG));
+        return ApiResponse.ok(basketballCourtStandDto, STANDING_COURT_LIST_SUCCESS_MSG);
     }
 
     /**
