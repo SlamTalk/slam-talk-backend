@@ -30,6 +30,14 @@ import sync.slamtalk.map.service.ReportBasketballCourtService;
 @Slf4j
 @RequestMapping("/api/map")
 public class BasketballCourtController {
+
+    private static final String COURT_LIST_SUCCESS_MSG = "농구장 목록을 성공적으로 가져왔습니다.";
+    private static final String COURT_INFO_SUCCESS_MSG = "농구장 상세 정보를 성공적으로 가져왔습니다.";
+    private static final String SAVE_REPORTED_COURT_SUCCESS_MSG = "제보 받은 농구장 정보를 저장하였습니다.";
+    private static final String USER_REPORTED_STANDING_COURT_LIST_SUCCESS_MSG = "이용자가 제보한 검토중인 농구장 목록을 성공적으로 가져왔습니다.";
+    private static final String USER_REPORTED_STANDING_COURT_INFO_SUCCESS_MSG = "이용자가 제보한 검토중인 농구장 상세 정보를 성공적으로 가져왔습니다.";
+    private static final String UPDATE_USER_REPORTED_COURT_SUCCESS_MSG = "이용자가 제보한 농구장 정보를 수정하였습니다.";
+
     private final BasketballCourtService basketballCourtService;
     private final ReportBasketballCourtService reportBasketballCourtService;
     private final BasketballCourtMapper basketballCourtMapper;
@@ -46,7 +54,7 @@ public class BasketballCourtController {
     )
     public ApiResponse<List<BasketballCourtSummaryDto>> getListApprovedBasketballCourtSummaries() {
         List<BasketballCourtSummaryDto> courtDetails = basketballCourtService.getAllApprovedBasketballCourtSummaries();
-        return (ApiResponse.ok(courtDetails, "농구장 목록을 성공적으로 가져왔습니다."));
+        return (ApiResponse.ok(courtDetails, COURT_LIST_SUCCESS_MSG));
     }
 
     /**
@@ -63,7 +71,7 @@ public class BasketballCourtController {
     public ApiResponse<BasketballCourtFullResponseDTO> getDetailedBasketballCourtInfo(@PathVariable Long courtId) {
 
         BasketballCourtFullResponseDTO basketballCourtResponseDTO = basketballCourtService.getApprovedBasketballCourtDetailsById(courtId);
-        return ApiResponse.ok(basketballCourtResponseDTO, "농구장 상세 정보를 성공적으로 가져왔습니다.");
+        return ApiResponse.ok(basketballCourtResponseDTO,COURT_INFO_SUCCESS_MSG);
 
     }
 
@@ -86,7 +94,7 @@ public class BasketballCourtController {
             @AuthenticationPrincipal Long userId) {
 
         BasketballCourt court = reportBasketballCourtService.createBasketballCourtReport(basketballCourtRequestDTO, file, userId);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), SAVE_REPORTED_COURT_SUCCESS_MSG);
     }
 
     /**
@@ -104,7 +112,7 @@ public class BasketballCourtController {
 
         List<BasketballCourtReportSummaryDTO> basketballCourtSummaryDtoList = basketballCourtService.getUserReportedBasketballCourtSummariesByUserId(
                 userId);
-        return ApiResponse.ok(basketballCourtSummaryDtoList, "검토중인 농구장 목록을 성공적으로 가져왔습니다.");
+        return ApiResponse.ok(basketballCourtSummaryDtoList, USER_REPORTED_STANDING_COURT_LIST_SUCCESS_MSG);
     }
 
     /**
@@ -124,7 +132,7 @@ public class BasketballCourtController {
 
         BasketballCourtReportResponseDTO basketballCourt = basketballCourtService.getUserReportedBasketballCourtDetailsByIdAndUserId(
                 courtId, userId);
-        return ApiResponse.ok(basketballCourt, "검토중인 농구장 상세 정보를 성공적으로 가져왔습니다.");
+        return ApiResponse.ok(basketballCourt, USER_REPORTED_STANDING_COURT_INFO_SUCCESS_MSG);
     }
 
     /**
@@ -149,6 +157,6 @@ public class BasketballCourtController {
 
         BasketballCourt court = reportBasketballCourtService.updateSubmittedBasketballCourtReport(courtId, basketballCourtRequestDTO, file,
                 userId);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 수정하였습니다.");
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), UPDATE_USER_REPORTED_COURT_SUCCESS_MSG);
     }
 }

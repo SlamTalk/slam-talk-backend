@@ -25,6 +25,9 @@ import sync.slamtalk.map.service.ReportBasketballCourtService;
 @RequestMapping("/api/admin")
 public class AdminBasketballCourtController {
 
+    private static final String STANDING_COURT_LIST_SUCCESS_MSG = "대기중인 농구장 목록을 성공적으로 가져왔습니다.";
+    private static final String UPDATE_COURT_SUCCESS_MSG = "농구장 정보 업데이트 완료";
+
     private final AdminBasketballCourtService adminBasketballCourtService;
     private final ReportBasketballCourtService reportBasketballCourtService;
     private final BasketballCourtMapper basketballCourtMapper;
@@ -41,7 +44,7 @@ public class AdminBasketballCourtController {
     )
     public ApiResponse<List<BasketballCourtResponseDTO>> getAllStandingBasketballCourts() {
         List<BasketballCourtResponseDTO> basketballCourtStandDto = adminBasketballCourtService.getStandingBasketballCourtReports();
-        return (ApiResponse.ok(basketballCourtStandDto, "대기중인 농구장 목록을 성공적으로 가져왔습니다."));
+        return (ApiResponse.ok(basketballCourtStandDto, STANDING_COURT_LIST_SUCCESS_MSG));
     }
 
     /**
@@ -59,6 +62,6 @@ public class AdminBasketballCourtController {
     public ApiResponse<BasketballCourtResponseDTO> approveAndUpdateBasketballCourt(@PathVariable Long courtId,
                                                                                    @RequestBody BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
         BasketballCourt updatedCourt = reportBasketballCourtService.approveBasketballCourtInfoUpdate(courtId, basketballCourtAdminRequestDTO);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt), "농구장 정보 업데이트 완료");
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt),UPDATE_COURT_SUCCESS_MSG);
     }
 }
