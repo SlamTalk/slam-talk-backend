@@ -202,12 +202,4 @@ public class User extends BaseEntity implements UserDetails {
         return true;
     }
 
-    /**
-     * 테스트용 Id 세팅 하는 메서드
-     *
-     * @param id 테스트코드용 userId
-     */
-    public void testSetUserId(Long id) {
-        this.id = id;
-    }
 }

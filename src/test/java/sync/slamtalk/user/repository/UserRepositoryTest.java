@@ -24,7 +24,6 @@ class UserRepositoryTest {
     @BeforeEach
     void beforeTest(){
         user = new UserSignUpReq(email, password, nickname).toEntity();
-        user.testSetUserId(1L);
     }
 
     @Test
