@@ -44,7 +44,7 @@ public class ChatServiceImpl implements ChatService {
     /**
      * 채팅방을 생성한다.
      *
-     * @param chatCreateDTO
+     * @param chatCreateDTO : 채팅방 생성 요청 DTO
      * @return chatRoomId
      */
     @Override
@@ -398,20 +398,20 @@ public class ChatServiceImpl implements ChatService {
      *
      * @param userId     사용자 아이디
      * @param chatRoomId 채팅방 아이디
-     * @param count      가져올 메세지 갯수
+     * @param lastMessageId      기준 메세지 아이디
      * @return List(ChatMessageDTO)
      */
     @Override
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
-    public List<ChatMessageDTO>getPreviousChatMessages(Long userId, Long chatRoomId,int count) {
+    public List<ChatMessageDTO>getPreviousChatMessages(Long userId, Long chatRoomId,Long lastMessageId) {
 
         List<ChatMessageDTO> chatMessageDTOList = new ArrayList<>();
 
         // 추가로 가져올 메세지 갯수
-        int needCnt = 20 * count;
+        int needCnt = 30;
 
         // redis 먼저 조회
-        Optional<List<ChatMessageDTO>> optionalList = redisFirstDataBaseLater(userId, chatRoomId, needCnt);
+        Optional<List<ChatMessageDTO>> optionalList = redisFirstDataBaseLater(userId, chatRoomId, lastMessageId);
 
         // redis 로 불러온 내역이 없는 경우
         if (optionalList.isEmpty()) {
@@ -435,7 +435,7 @@ public class ChatServiceImpl implements ChatService {
              
 
             // 20개씩 내역 페이징
-            Pageable pageable = PageRequest.of(0, 20); // 첫 페이지, 최대 20개
+            Pageable pageable = PageRequest.of(0, 30); // 첫 페이지, 최대 30개
             List<Messages> byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, readIndex, pageable);
 
             // 메세지가 아예 없는 경우
@@ -470,8 +470,13 @@ public class ChatServiceImpl implements ChatService {
                 log.debug("db페이징 후 레디스에 내역 저장");
             }
         }
+
+
+        // TODO 중복되는 값 제거
+
         // redis 에서 가져온 내역이 있는 경우
         if (optionalList.isPresent()) {
+            log.debug("Redis에서 가져온 내역이 있음");
             List<ChatMessageDTO> chatMessageDtos = optionalList.get();
             String messageId = chatMessageDtos.get(chatMessageDtos.size() - 1).getMessageId();
             if (chatMessageDtos.size() < needCnt) {
@@ -626,15 +631,15 @@ public class ChatServiceImpl implements ChatService {
      *
      * @param userId     사용자 아이디
      * @param chatRoomId 채팅방 아이디
-     * @param count      조회할 메세지 갯수
+     * @param lastMessageId  기준 메세지 아이디
      * @return List(ChatMessageDTO)
      */
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     @Override
-    public Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId, Long chatRoomId, int count) {
+    public Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId, Long chatRoomId,Long lastMessageId) {
 
 
-        // user의 readIndex 를 가져와야함
+        // UserChatRoom 에 존재하는 지 먼저 검증
         Optional<UserChatRoom> optionalUserChatRoom = userChatRoomRepository.findByUserChatroom(userId, chatRoomId);
 
         // userChatRoom에서 방의 존재가 확인이 안되는 경우 empty 로 반환
@@ -642,13 +647,8 @@ public class ChatServiceImpl implements ChatService {
             throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
         }
 
-        UserChatRoom userChatRoom = optionalUserChatRoom.get();
-        // 특정 유저가 특정 채팅방에 가지고 있는 readIndex
-        Long readIndex = userChatRoom.getReadIndex();
-        log.debug("유저의 ReadIndex:{}", readIndex);
-
-        // redis에서 과거 내역 조회 20개씩
-        List<ChatMessageDTO> messages = redisService.getMessages(chatRoomId, readIndex);
+        // redis에서 과거 내역 조회 30개씩
+        List<ChatMessageDTO> messages = redisService.getMessages(chatRoomId, lastMessageId);
 
         // redis에서 가져온데이터가 없으면 empty return
         if (messages.isEmpty()) {

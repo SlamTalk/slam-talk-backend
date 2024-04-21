@@ -59,7 +59,7 @@ public class RedisService {
 
 
     // 메세지 가져오기
-    public List<ChatMessageDTO> getMessages(Long roomId, Long readIndex) {
+    public List<ChatMessageDTO> getMessages(Long roomId, Long lastMessageId) {
 
 
         List<ChatMessageDTO> chatList = new ArrayList<>();
@@ -67,6 +67,7 @@ public class RedisService {
         // 검색 key 생성
         // 특정 채팅방 메세지 모두 가져오기
         String messageKey = "chat_room:" + roomId + "*";
+
         // 디버그용
         //log.debug("=========> messageKey : {}",messageKey);
         Set<String> keys = stringRedisTemplate.keys(messageKey);
@@ -81,18 +82,17 @@ public class RedisService {
         }
 
 
-        log.debug("== readIndex : {}", readIndex);
+        log.debug("== lastMessageId : {}", lastMessageId);
 
         List<String> keyCollect = sortedKeys.stream()
                 .map(key -> key.split(":"))
-                // 분할된 배열에서 메시지 ID가 숫자 형태인지, 그리고 readIndex보다 작은지 확인
-                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Long.parseLong(parts[3]) <= readIndex)
+                // 분할된 배열에서 메시지 ID가 숫자 형태인지, 그리고 lastMessageId보다 작은지 확인
+                .filter(parts -> parts.length == 4 && parts[3].matches("\\d+") && Long.parseLong(parts[3]) <= lastMessageId)
                 // 원래 키 형태로 복원
                 .map(parts -> String.join(":", parts))
                 // 메시지 ID에 따라 내림차순 정렬
-                //.sorted((key1, key2) -> Integer.compare(Integer.parseInt(key2.split(":")[3]), Integer.parseInt(key1.split(":")[3])))
-                // 상위 20개만 선택
-                .limit(20)
+                // 상위 30개만 선택
+                .limit(30)
                 .collect(Collectors.toList());
 
         for (String key : keyCollect) {
