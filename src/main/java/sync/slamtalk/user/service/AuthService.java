@@ -53,7 +53,6 @@ public class AuthService {
     @Value("${jwt.domain}")
     private String domain;
 
-
     /**
      * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
      *
@@ -71,12 +70,7 @@ public class AuthService {
 
             User user = (User) authentication.getPrincipal();
 
-            // 3. 인증 정보를 기반으로 JWT 토큰 생성)
-            JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
-
-            response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
-            setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
-            user.updateRefreshToken(jwtTokenDto.getRefreshToken());
+            generateJwtAndSetResponseTokens(response, user);
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
             if (Boolean.TRUE.equals(user.getFirstLoginCheck())) user.disableFirstLogin();
@@ -120,7 +114,7 @@ public class AuthService {
         // 레디스 이메일 인증한 유저 삭제하기
         redisService.deleteData(userSignUpReqDto.getEmail());
 
-        login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
+        generateJwtAndSetResponseTokens(response, user);
     }
 
     /**
@@ -140,7 +134,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
+        generateJwtAndSetResponseTokens(response, user);
     }
 
     private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
@@ -183,6 +177,22 @@ public class AuthService {
 
         /* 엑세스 토큰 헤더에 저장*/
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+    }
+
+    /**
+     * JWT 토큰을 생성하고, 생성된 토큰을 응답 헤더와 쿠키에 추가하는 것,
+     * 그리고 사용자의 refresh 토큰을 업데이트하는 기능
+     *
+     * @param response 응답
+     * @param user 유저
+     * */
+    private void generateJwtAndSetResponseTokens(HttpServletResponse response, User user) {
+        // 3. 인증 정보를 기반으로 JWT 토큰 생성)
+        JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
+
+        response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+        setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
+        user.updateRefreshToken(jwtTokenDto.getRefreshToken());
     }
 
     /**
