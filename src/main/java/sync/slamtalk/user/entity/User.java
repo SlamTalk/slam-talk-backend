@@ -40,39 +40,39 @@ public class User extends BaseEntity implements UserDetails {
     private String nickname;
     @Column(nullable = false)
     private String email;
-    @Column(name = "image_url", nullable = false)
+    @Column(nullable = false)
     private String imageUrl;
-    @Column(name = "refresh_token")
+    @Column
     private String refreshToken;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserRole role;
 
-    @Column(name = "social_type", nullable = false)
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
-    @Column(name = "social_id")
+    @Column
     private String socialId;
 
     /* 마이페이지 기능 */
-    @Column(name = "self_introduction")
+    @Column
     private String selfIntroduction;
-    @Column(name = "region_name")
+    @Column
     private String regionName;
 
     /* 정보 수집 부분 */
-    @Column(name = "first_login_check", nullable = false)
+    @Column(nullable = false)
     private Boolean firstLoginCheck;
-    @Column(name = "basketball_skill_level")
+    @Column
     @Enumerated(EnumType.STRING)
     private UserBasketballSkillLevelType basketballSkillLevel;
-    @Column(name = "basketball_position")
+    @Column
     @Enumerated(EnumType.STRING)
     private UserBasketballPositionType basketballPosition;
 
     /* 알람 기능 */
-    @Column(name = "is_alarm_set")
+    @Column
     private String isAlarmSet;
 
     /* 연관 관계 매핑 */
