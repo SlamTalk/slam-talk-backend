@@ -45,7 +45,7 @@ public interface ChatService {
 
 
     // 과거 내역 요청
-    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId, int count);
+    List<ChatMessageDTO> getPreviousChatMessages(Long userId, Long chatRoomId, Long lastMessageId);
 
 
     // 사용자 채팅리스트 가져오기
@@ -65,6 +65,6 @@ public interface ChatService {
 
 
     // Redis 조회 후 DB 조회
-    Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId, Long chatRoomId, int count);
+    Optional<List<ChatMessageDTO>> redisFirstDataBaseLater(Long userId, Long chatRoomId, Long lastMessageId);
 
 }
