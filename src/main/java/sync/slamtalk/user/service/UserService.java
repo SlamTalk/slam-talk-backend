@@ -229,7 +229,7 @@ public class UserService {
         User user = getUser(userId);
 
         // 만약 이미 출석을 했다면 400 에러 반환
-        if (userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now())) {
+        if (Boolean.TRUE.equals(userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now()))) {
             throw new BaseException(UserErrorResponseCode.ATTENDANCE_ALREADY_EXISTS);
         }
 
