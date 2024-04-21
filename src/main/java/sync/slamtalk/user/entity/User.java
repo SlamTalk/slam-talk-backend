@@ -121,7 +121,7 @@ public class User extends BaseEntity implements UserDetails {
      *
      * @param imageUrl 이미지 URL
      */
-    public void updateProfileUrl(String imageUrl) {
+    public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 

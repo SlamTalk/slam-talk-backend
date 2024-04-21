@@ -267,7 +267,7 @@ public class UserService {
         if (file != null && !file.isEmpty()) {
             log.debug("[유저 마이페이지 수정] 파일 업데이트 시도!");
             String fileUrl = awsS3Service.uploadFile(file);
-            user.updateProfileUrl(fileUrl);
+            user.updateImageUrl(fileUrl);
         }
 
         // 자기 소개 한마디이 null이 아니라면 값 update 하기
