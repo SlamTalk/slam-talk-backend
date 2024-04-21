@@ -157,7 +157,6 @@ class UserServiceTest {
     void userAttendance() {
 
         //given
-        userAttendance.addUser(user);
         when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(userAttendanceRepository.save(any())).thenReturn(userAttendance);
 

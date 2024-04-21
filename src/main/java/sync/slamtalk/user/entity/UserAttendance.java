@@ -27,12 +27,6 @@ public class UserAttendance extends BaseEntity {
     public UserAttendance(User user, LocalDate attDate) {
         this.user = user;
         this.attDate = attDate;
+        user.getUserAttendances().add(this); // 연관 관계 매핑
     }
-
-    /* 연관 관계 편의 메서드 */
-    public void addUser(User user) {
-        this.user = user;
-        user.getUserAttendances().add(this);
-    }
-
 }

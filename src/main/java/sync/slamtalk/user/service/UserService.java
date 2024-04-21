@@ -233,8 +233,7 @@ public class UserService {
             throw new BaseException(UserErrorResponseCode.ATTENDANCE_ALREADY_EXISTS);
         }
 
-        UserAttendance saveAttendance = userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
-        saveAttendance.addUser(user);
+        userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
     }
 
     /**
