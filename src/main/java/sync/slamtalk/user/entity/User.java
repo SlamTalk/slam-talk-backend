@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
-import org.hibernate.annotations.Where;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -113,7 +112,7 @@ public class User extends BaseEntity implements UserDetails {
     /**
      * 최초 로그인 상태를 false로 설정하는 메서드
      */
-    public void updateFirstLoginCheck() {
+    public void disableFirstLogin() {
         this.firstLoginCheck = false;
     }
 

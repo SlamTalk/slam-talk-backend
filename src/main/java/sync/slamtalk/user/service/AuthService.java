@@ -79,7 +79,7 @@ public class AuthService {
             user.updateRefreshToken(jwtTokenDto.getRefreshToken());
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
-            if (Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
+            if (Boolean.TRUE.equals(user.getFirstLoginCheck())) user.disableFirstLogin();
 
         } catch (Exception e) {
             throw new BaseException(UserErrorResponseCode.BAD_CREDENTIALS);
