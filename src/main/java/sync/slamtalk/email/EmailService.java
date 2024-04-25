@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.common.BaseException;
 
@@ -18,6 +20,8 @@ import java.util.UUID;
 public class EmailService {
     private final JavaMailSender javaMailSender;
     private final RedisService redisService; //redis 관련
+    private final TemplateEngine templateEngine;
+    private static final String REGISTER_EMAIL_CERTIFICATE_TEMPLATE = "register-email-verification-template";
 
     /**
      * 이메일 메세지 생성하는 메서드
@@ -28,15 +32,24 @@ public class EmailService {
     private MimeMessage createMessage(
             String code,
             String email
-    ) throws Exception {
+    ) {
         MimeMessage message = javaMailSender.createMimeMessage();
 
-        message.addRecipients(Message.RecipientType.TO, email);
-        message.setSubject("SlamTalk 인증 번호입니다.");
-        message.setText("[이메일 인증코드]\n" + code);
-        message.setFrom("slamtalk@naver.com"); //보내는사람.
+        try {
+            message.addRecipients(Message.RecipientType.TO, email);
+            message.setSubject("SlamTalk 인증 번호입니다.", "UTF-8");
 
-        return message;
+            Context context = new Context();
+            context.setVariable("code", code);
+            String text = templateEngine.process(REGISTER_EMAIL_CERTIFICATE_TEMPLATE, context);
+
+            message.setText(text, "UTF-8", "html");
+            message.setFrom("slamtalk@naver.com"); // 보내는사람.
+            return message;
+        } catch (Exception e){
+            log.error("메일 전송 실패 : = {}", e.toString());
+            throw new BaseException(EmailErrorResponseCode.MAIL_FAIL);
+        }
     }
 
     /**
@@ -48,7 +61,7 @@ public class EmailService {
     public void sendMail(
             String code,
             String email
-    ) throws Exception {
+    ) {
         try {
             MimeMessage mimeMessage = createMessage(code, email);
             javaMailSender.send(mimeMessage);
@@ -68,7 +81,7 @@ public class EmailService {
         try {
             String code = UUID.randomUUID().toString().substring(0, 6); //랜덤 인증번호 uuid를 이용!
             sendMail(code, email);
-            redisService.setDataExpire(code, email, 60 * 5L); // {key,value} 5분동안 저장.
+            redisService.setDataExpire(code, email, 60 * 60 * 24L); // {key,value} 24시간 동안 저장.
         } catch (Exception e) {
             log.error("redis 서버에서 오류 발생 : = {}", e.toString());
             throw new BaseException(EmailErrorResponseCode.DATABASE_ERROR);
@@ -76,10 +89,11 @@ public class EmailService {
     }
 
     /**
-     *  이메일 검증하는 메서드
-     *  - 레디스에서 <key,value> 로 저장된 <code, email> 을 추적하여 이메일 검증을 완료한다
+     * 이메일 검증하는 메서드
+     * - 레디스에서 <key,value> 로 저장된 <code, email> 을 추적하여 이메일 검증을 완료한다
+     *
      * @param email : 검증하고자 하는 이메일
-     * @param code : 검증 코드
+     * @param code  : 검증 코드
      */
     public boolean verifyEmailCode(
             String email,
