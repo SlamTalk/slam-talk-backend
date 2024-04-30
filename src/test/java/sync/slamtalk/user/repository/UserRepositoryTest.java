@@ -23,7 +23,7 @@ class UserRepositoryTest {
     private User user;
     @BeforeEach
     void beforeTest(){
-        user = new UserSignUpReq(email, password, nickname).toEntity();
+        user = User.of(email, password, nickname);
     }
 
     @Test

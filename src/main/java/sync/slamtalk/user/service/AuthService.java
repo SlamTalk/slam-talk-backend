@@ -54,11 +54,11 @@ public class AuthService {
     private String domain;
 
     /**
-     * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
+     * 로그인 시 검증 및 JWT 발급 로직.
+     * 사용자의 이메일과 비밀번호를 검증한 후, 액세스 토큰과 리프래쉬 토큰을 발급합니다.
      *
-     * @param userLoginReqDto 유저로그인 dto
-     * @param response        HttpServletResponse를 받음
-     * @return JwtTokenDto
+     * @param userLoginReqDto 로그인 요청 데이터를 담은 DTO. 사용자의 이메일과 비밀번호 정보를 포함합니다.
+     * @param response        HttpServletResponse 인스턴스. JWT를 HTTP 응답 헤더에 설정하기 위해 사용됩니다.
      */
     @Transactional
     public void login(
@@ -81,11 +81,11 @@ public class AuthService {
     }
 
     /**
-     * 회원가입 검증 및 회원가입 로직
+     * 회원가입 처리를 위한 메서드입니다. 이메일 인증 확인, 유효성 검증, 그리고 데이터베이스에 신규 회원 정보를 저장하는 과정을 포함합니다.
+     * 사용자가 제공한 이메일, 비밀번호, 닉네임을 기반으로 회원가입을 진행합니다.
      *
-     * @param userSignUpReqDto UserSignUpRequestDto
-     * @param response         HttpServletResponse
-     * @return JwtTokenResponseDto
+     * @param userSignUpReqDto 회원가입 요청 정보를 담고 있는 DTO(UserSignUpRequestDto). 이메일, 비밀번호, 닉네임을 포함합니다.
+     * @param response         HttpServletResponse 객체로, 성공적으로 회원가입을 마친 사용자에게 JWT를 발급하고 응답 헤더에 추가하기 위해 사용됩니다.
      */
     @Transactional
     public void signUp(
@@ -106,8 +106,10 @@ public class AuthService {
         // 중복 닉네임 검증
         checkNicknameExistence(userSignUpReqDto.getNickname());
 
-        User user = userSignUpReqDto.toEntity();
-        user.passwordEncode(passwordEncoder);
+        String encodingPassword = passwordEncoder.encode(userSignUpReqDto.getPassword());
+        User user = User.of(userSignUpReqDto.getEmail(),
+                encodingPassword,
+                userSignUpReqDto.getNickname());
 
         userRepository.save(user);
 
@@ -122,15 +124,16 @@ public class AuthService {
      *
      * @param userSignUpReqDto UserSignUpRequestDto
      * @param response         HttpServletResponse
-     * @return JwtTokenResponseDto
      */
     @Transactional
     public void testSignUp(
             UserSignUpReq userSignUpReqDto,
             HttpServletResponse response
     ) {
-        User user = userSignUpReqDto.toEntity();
-        user.passwordEncode(passwordEncoder);
+        String encodingPassword = passwordEncoder.encode(userSignUpReqDto.getPassword());
+        User user = User.of(userSignUpReqDto.getEmail(),
+                encodingPassword,
+                userSignUpReqDto.getNickname());
 
         userRepository.save(user);
 
@@ -148,7 +151,6 @@ public class AuthService {
      *
      * @param request  HttpServletRequest
      * @param response HttpServletResponse
-     * @return JwtTokenResponseDto
      */
     @Transactional
     public void refreshToken(
@@ -184,8 +186,8 @@ public class AuthService {
      * 그리고 사용자의 refresh 토큰을 업데이트하는 기능
      *
      * @param response 응답
-     * @param user 유저
-     * */
+     * @param user     유저
+     */
     private void generateJwtAndSetResponseTokens(HttpServletResponse response, User user) {
         // 3. 인증 정보를 기반으로 JWT 토큰 생성)
         JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
@@ -290,22 +292,33 @@ public class AuthService {
     }
 
     /**
-     * 비밀번호 변경 메서드
+     * 사용자의 비밀번호를 변경하는 메서드입니다.
+     * <p>
+     * 이 메서드는 먼저 레디스 서버를 통해 사용자의 이메일 인증 여부를 확인합니다.
+     * 인증이 완료된 경우에만 비밀번호 변경 절차를 진행합니다.
+     * 변경하려는 비밀번호는 암호화 과정을 거치게 됩니다.
      *
-     * @param userChangePasswordReq : 변경하고자하는 이메일 및 비밀번호를 담은 dto
+     * @param userChangePasswordReq 변경하고자 하는 사용자의 이메일 및 새 비밀번호 정보가 담긴 DTO 객체입니다.
+     *                              이 객체를 통해 사용자 식별 및 비밀번호 업데이트에 필요한 데이터를 전달받습니다.
      */
     @Transactional
     public void userChangePassword(UserChangePasswordReq userChangePasswordReq) {
 
-        // 레디스 서버에서 인증했는지 확인하기
+        // Redis 서버를 통해 이메일 인증 여부를 확인합니다.
         String isAuth = redisService.getData(userChangePasswordReq.getEmail());
+        // 인증되지 않았거나 인증 데이터가 "OK"가 아닌 경우 예외를 발생시킵니다.
         if (isAuth == null || !isAuth.equals("OK")) {
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
 
+        // userRepository를 통해 해당 이메일을 가진 사용자를 찾습니다.
+        // 찾는 과정에서 사용자를 찾지 못하면 예외를 발생시킵니다.
         User user = userRepository.findByEmail(userChangePasswordReq.getEmail())
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        user.updatePasswordAndEnCoding(passwordEncoder, userChangePasswordReq.getPassword());
+        // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
+        user.updatePassword(passwordEncoder.encode(userChangePasswordReq.getPassword()));
+        // 비밀번호 변경이 완료된 후, 사용자의 이메일 인증 데이터를 레디스 서버에서 삭제합니다.
         redisService.deleteData(userChangePasswordReq.getEmail());
     }
+
 }
