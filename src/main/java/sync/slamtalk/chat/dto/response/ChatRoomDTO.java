@@ -1,5 +1,6 @@
 package sync.slamtalk.chat.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +28,7 @@ public class ChatRoomDTO implements Serializable {
     // 농구장 아이디
     private Long courtId;
     // 채팅방 마지막 메세지 날짜
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String lastMessageTime;
 
 
