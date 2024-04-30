@@ -26,6 +26,8 @@ public class ChatRoomDTO implements Serializable {
     private String lastMessage;
     // 농구장 아이디
     private Long courtId;
+    // 채팅방 마지막 메세지 날짜
+    private String lastMessageTime;
 
 
     // 채팅방 마지막 메세지 업데이트
@@ -47,5 +49,9 @@ public class ChatRoomDTO implements Serializable {
 
     public void updatePartnerId(String pid) {
         this.partnerId = pid;
+    }
+
+    public void setLastMessageTime(String lastMessageTime){
+        this.lastMessageTime = lastMessageTime;
     }
 }

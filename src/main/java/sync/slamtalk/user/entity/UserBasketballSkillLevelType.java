@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 사용자
- * */
+ */
 @Getter
 @RequiredArgsConstructor
 public enum UserBasketballSkillLevelType {

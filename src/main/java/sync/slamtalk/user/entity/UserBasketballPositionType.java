@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 /**
  * 유저 정보에 표시될 유저의 포지션
- * */
+ */
 @Getter
 @RequiredArgsConstructor
 public enum UserBasketballPositionType {

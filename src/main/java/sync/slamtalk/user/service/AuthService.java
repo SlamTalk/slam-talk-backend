@@ -30,7 +30,7 @@ import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER
 
 /**
  * 이 컨트롤러는 유저의 인증과 관련된 기능을 다루는 클래스입니다.
- * */
+ */
 @Slf4j
 @Service
 @Transactional(readOnly = true)
@@ -42,7 +42,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
-    private final RevokeService revokeService;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -54,13 +53,12 @@ public class AuthService {
     @Value("${jwt.domain}")
     private String domain;
 
-
     /**
-     * 로그인 시 검증 및 액세스 토큰 리프래쉬 토큰 발급 로직
+     * 로그인 시 검증 및 JWT 발급 로직.
+     * 사용자의 이메일과 비밀번호를 검증한 후, 액세스 토큰과 리프래쉬 토큰을 발급합니다.
      *
-     * @param userLoginReqDto 유저로그인 dto
-     * @param response HttpServletResponse를 받음
-     * @return JwtTokenDto
+     * @param userLoginReqDto 로그인 요청 데이터를 담은 DTO. 사용자의 이메일과 비밀번호 정보를 포함합니다.
+     * @param response        HttpServletResponse 인스턴스. JWT를 HTTP 응답 헤더에 설정하기 위해 사용됩니다.
      */
     @Transactional
     public void login(
@@ -72,15 +70,10 @@ public class AuthService {
 
             User user = (User) authentication.getPrincipal();
 
-            // 3. 인증 정보를 기반으로 JWT 토큰 생성)
-            JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
-
-            response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
-            setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
-            user.updateRefreshToken(jwtTokenDto.getRefreshToken());
+            generateJwtAndSetResponseTokens(response, user);
 
             // 최초 정보수집을 위해 jwtTokenResponseDto의 firstLoginCheck은 true 로 반환, 이후는 false 로 반환하기 위한 로직
-            if(Boolean.TRUE.equals(user.getFirstLoginCheck())) user.updateFirstLoginCheck();
+            if (Boolean.TRUE.equals(user.getFirstLoginCheck())) user.disableFirstLogin();
 
         } catch (Exception e) {
             throw new BaseException(UserErrorResponseCode.BAD_CREDENTIALS);
@@ -88,11 +81,11 @@ public class AuthService {
     }
 
     /**
-     * 회원가입 검증 및 회원가입 로직
+     * 회원가입 처리를 위한 메서드입니다. 이메일 인증 확인, 유효성 검증, 그리고 데이터베이스에 신규 회원 정보를 저장하는 과정을 포함합니다.
+     * 사용자가 제공한 이메일, 비밀번호, 닉네임을 기반으로 회원가입을 진행합니다.
      *
-     * @param userSignUpReqDto UserSignUpRequestDto
-     * @param response HttpServletResponse
-     * @return JwtTokenResponseDto
+     * @param userSignUpReqDto 회원가입 요청 정보를 담고 있는 DTO(UserSignUpRequestDto). 이메일, 비밀번호, 닉네임을 포함합니다.
+     * @param response         HttpServletResponse 객체로, 성공적으로 회원가입을 마친 사용자에게 JWT를 발급하고 응답 헤더에 추가하기 위해 사용됩니다.
      */
     @Transactional
     public void signUp(
@@ -102,7 +95,7 @@ public class AuthService {
 
         // 이메일 인증된 사용자인지 판별 하는 로직
         String isAuth = redisService.getData(userSignUpReqDto.getEmail());
-        if(isAuth == null || !isAuth.equals("OK")){
+        if (isAuth == null || !isAuth.equals("OK")) {
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
@@ -113,39 +106,42 @@ public class AuthService {
         // 중복 닉네임 검증
         checkNicknameExistence(userSignUpReqDto.getNickname());
 
-        User user = userSignUpReqDto.toEntity();
-        user.passwordEncode(passwordEncoder);
+        String encodingPassword = passwordEncoder.encode(userSignUpReqDto.getPassword());
+        User user = User.of(userSignUpReqDto.getEmail(),
+                encodingPassword,
+                userSignUpReqDto.getNickname());
 
         userRepository.save(user);
 
         // 레디스 이메일 인증한 유저 삭제하기
         redisService.deleteData(userSignUpReqDto.getEmail());
 
-        login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
+        generateJwtAndSetResponseTokens(response, user);
     }
 
     /**
      * 로컬 개발용 회원가입 검증 및 회원가입 로직
      *
      * @param userSignUpReqDto UserSignUpRequestDto
-     * @param response HttpServletResponse
-     * @return JwtTokenResponseDto
+     * @param response         HttpServletResponse
      */
     @Transactional
     public void testSignUp(
             UserSignUpReq userSignUpReqDto,
             HttpServletResponse response
     ) {
-        User user = userSignUpReqDto.toEntity();
-        user.passwordEncode(passwordEncoder);
+        String encodingPassword = passwordEncoder.encode(userSignUpReqDto.getPassword());
+        User user = User.of(userSignUpReqDto.getEmail(),
+                encodingPassword,
+                userSignUpReqDto.getNickname());
 
         userRepository.save(user);
 
-        login(new UserLoginReq(userSignUpReqDto.getEmail(), userSignUpReqDto.getPassword()), response);
+        generateJwtAndSetResponseTokens(response, user);
     }
 
     private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
-        if(userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()){
+        if (userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()) {
             throw new BaseException(ALREADY_CANCEL_USER);
         }
     }
@@ -155,7 +151,6 @@ public class AuthService {
      *
      * @param request  HttpServletRequest
      * @param response HttpServletResponse
-     * @return JwtTokenResponseDto
      */
     @Transactional
     public void refreshToken(
@@ -167,7 +162,7 @@ public class AuthService {
 
         log.debug("[엑세스 토큰 재발급] refreshToken = {}", refreshToken);
         // 리프래쉬 토큰 만료 검사
-        if(!tokenProvider.validateToken(refreshToken)){
+        if (!tokenProvider.validateToken(refreshToken)) {
             log.debug("[엑세스 토큰 재발급] 토큰 만료가 됨 1");
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
@@ -187,13 +182,29 @@ public class AuthService {
     }
 
     /**
+     * JWT 토큰을 생성하고, 생성된 토큰을 응답 헤더와 쿠키에 추가하는 것,
+     * 그리고 사용자의 refresh 토큰을 업데이트하는 기능
+     *
+     * @param response 응답
+     * @param user     유저
+     */
+    private void generateJwtAndSetResponseTokens(HttpServletResponse response, User user) {
+        // 3. 인증 정보를 기반으로 JWT 토큰 생성)
+        JwtTokenDto jwtTokenDto = tokenProvider.createToken(user);
+
+        response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+        setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
+        user.updateRefreshToken(jwtTokenDto.getRefreshToken());
+    }
+
+    /**
      * UsernamePasswordAuthenticationToken를 이용해서 email과 password를 통해
      * SecurityContextHolder에서 Authentication을 추출하는 메서드
      *
-     * @param  email 이메일
-     * @param  password 패스워드
+     * @param email    이메일
+     * @param password 패스워드
      * @return Authentication
-     * */
+     */
     private Authentication getAuthentication(
             String email,
             String password
@@ -212,7 +223,7 @@ public class AuthService {
      * 회원가입 시 중복 닉네임이 존재하는지 검사하는 메서드
      *
      * @param nickname 유저 닉네임
-     * */
+     */
     private void checkNicknameExistence(String nickname) {
         String lowercaseNickname = nickname.toLowerCase();
         if (userRepository.findByNickname(lowercaseNickname).isPresent()) {
@@ -223,7 +234,7 @@ public class AuthService {
 
     /**
      * 회원가입 시 중복 이메일이 존재하는지 검사하는 메서드
-     * */
+     */
     private void checkEmailExistence(UserSignUpReq userSignUpReq) {
         if (userRepository.findByEmailAndSocialType(userSignUpReq.getEmail(), SocialType.LOCAL).isPresent()) {
             log.debug("이미 존재하는 유저 이메일입니다.");
@@ -233,9 +244,10 @@ public class AuthService {
 
     /**
      * 쿠키에 리프레쉬 토큰을 저장하는 메서드
-     * @param response HttpServletResponse
+     *
+     * @param response     HttpServletResponse
      * @param refreshToken refreshToken
-     * */
+     */
     private void setRefreshTokenCookie(
             HttpServletResponse response,
             String refreshToken
@@ -251,8 +263,9 @@ public class AuthService {
 
     /**
      * 회원 탈퇴
+     *
      * @param userId : 탈퇴하고자 하는 USER
-     * */
+     */
     @Transactional
     public void cancelUser(
             Long userId
@@ -279,21 +292,33 @@ public class AuthService {
     }
 
     /**
-     * 비밀번호 변경 메서드
-     * @param userChangePasswordReq : 변경하고자하는 이메일 및 비밀번호를 담은 dto
-     * */
+     * 사용자의 비밀번호를 변경하는 메서드입니다.
+     * <p>
+     * 이 메서드는 먼저 레디스 서버를 통해 사용자의 이메일 인증 여부를 확인합니다.
+     * 인증이 완료된 경우에만 비밀번호 변경 절차를 진행합니다.
+     * 변경하려는 비밀번호는 암호화 과정을 거치게 됩니다.
+     *
+     * @param userChangePasswordReq 변경하고자 하는 사용자의 이메일 및 새 비밀번호 정보가 담긴 DTO 객체입니다.
+     *                              이 객체를 통해 사용자 식별 및 비밀번호 업데이트에 필요한 데이터를 전달받습니다.
+     */
     @Transactional
     public void userChangePassword(UserChangePasswordReq userChangePasswordReq) {
 
-        // 레디스 서버에서 인증했는지 확인하기
+        // Redis 서버를 통해 이메일 인증 여부를 확인합니다.
         String isAuth = redisService.getData(userChangePasswordReq.getEmail());
-        if(isAuth == null || !isAuth.equals("OK")){
+        // 인증되지 않았거나 인증 데이터가 "OK"가 아닌 경우 예외를 발생시킵니다.
+        if (isAuth == null || !isAuth.equals("OK")) {
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
         }
 
+        // userRepository를 통해 해당 이메일을 가진 사용자를 찾습니다.
+        // 찾는 과정에서 사용자를 찾지 못하면 예외를 발생시킵니다.
         User user = userRepository.findByEmail(userChangePasswordReq.getEmail())
-                        .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        user.updatePasswordAndEnCoding(passwordEncoder, userChangePasswordReq.getPassword());
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
+        user.updatePassword(passwordEncoder.encode(userChangePasswordReq.getPassword()));
+        // 비밀번호 변경이 완료된 후, 사용자의 이메일 인증 데이터를 레디스 서버에서 삭제합니다.
         redisService.deleteData(userChangePasswordReq.getEmail());
     }
+
 }

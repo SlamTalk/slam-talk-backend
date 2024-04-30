@@ -4,19 +4,14 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import sync.slamtalk.user.entity.SocialType;
-import sync.slamtalk.user.entity.User;
-import sync.slamtalk.user.entity.UserRole;
 
 /**
  * 회원가입 시 받을 dto
- * */
+ */
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserSignUpReq {
-
-    private final String DEFAULT_IMAGE_URL = "https://slamtalks3.s3.ap-northeast-2.amazonaws.com/userprofile-default_1706862413360.png";
 
     @Pattern(
             regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,6}$",
@@ -33,21 +28,4 @@ public class UserSignUpReq {
             message = "닉네임은 특수문자를 제외한 2~13자리여야 합니다."
     )
     private String nickname;
-
-    /**
-     * userSignUpDto 를 User로 변환
-     *
-     * @return user 유저 entity
-     * */
-     public User toEntity(){
-         return User.builder()
-                 .email(this.getEmail())
-                 .password(this.getPassword())
-                 .nickname(this.getNickname())
-                 .imageUrl(DEFAULT_IMAGE_URL)
-                 .role(UserRole.USER)
-                 .socialType(SocialType.LOCAL)
-                 .firstLoginCheck(true)
-                 .build();
-     }
 }
