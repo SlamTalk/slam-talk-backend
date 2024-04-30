@@ -1,8 +1,12 @@
 package sync.slamtalk.user.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /**
  * 레벨 시스템 상수를 저장하는 클래스 입니다.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserLevelScore {
     /* 레벨 시스템을 위한 상수 */
     public static final Long LEVEL_THRESHOLD = 10L;

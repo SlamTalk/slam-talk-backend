@@ -3,16 +3,16 @@ package sync.slamtalk.security.utils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 
 import java.util.Optional;
 
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CookieUtil {
-
-    private CookieUtil() {
-    }
 
     /**
      * 특정 이름을 가진 쿠키 검색하는 메서드
