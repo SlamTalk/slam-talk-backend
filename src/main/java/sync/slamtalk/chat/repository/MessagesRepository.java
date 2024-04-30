@@ -48,6 +48,6 @@ public interface MessagesRepository extends JpaRepository<Messages, Long> {
     /**
      * 특정 RoomId로 검색한 후 메세지 30개 가져오기
      */
-    @Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :chatRoomId ORDER BY m.id ASC")
+    @Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :chatRoomId ORDER BY m.id DESC")
     List<Messages> findByChatRoomIdAndMessageIdOrderByMessageIdDesc(@Param("chatRoomId")Long chatRoomId,Pageable pageable);
 }

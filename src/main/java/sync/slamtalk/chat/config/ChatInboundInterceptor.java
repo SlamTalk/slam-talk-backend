@@ -199,6 +199,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                             .timestamp(LocalDateTime.now().toString())
                             .build();
                     chatService.saveMessage(chatMessageDTO);
+                    log.debug("=== 저장된 메세지 : {}",chatMessageDTO.getContent());
                     log.debug("=== MESSAGE 저장 완료 ===");
                 }
             }
