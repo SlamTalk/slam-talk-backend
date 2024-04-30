@@ -1,6 +1,9 @@
 package sync.slamtalk.user.dto.response;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.entity.UserRole;
