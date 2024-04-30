@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -360,6 +361,9 @@ public class ChatServiceImpl implements ChatService {
         // ReadIndex 상관없이 가장 최신 메세지부터 30개씩 과거 메세지를 가져오기
         Pageable pageable = PageRequest.of(0,30);
         List<Messages> newMessages = messagesRepository.findByChatRoomIdAndMessageIdOrderByMessageIdDesc(chatRoomId, pageable);
+
+        // 정렬
+        Collections.sort(newMessages,Comparator.comparing(Messages::getId));
 
         // messageRepository 에서 가져온 메세지로 dto 생성하기
         for (Messages m : newMessages) {
