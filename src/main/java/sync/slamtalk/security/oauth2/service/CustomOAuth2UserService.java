@@ -21,6 +21,7 @@ import sync.slamtalk.user.entity.User;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -115,10 +116,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
      * 생성된 User 객체를 DB에 저장 : socialType, socialId, email, role 값만 있는 상태
      */
     private User saveUser(OAuthAttributes attributes, SocialType socialType) {
-        String nickname = attributes.getOauth2UserInfo().getNickname();
-        String newNickname = nicknameService.generateNickname(nickname);
+        // 소셜 닉네임 기반으로 사용가능한 닉네임 생성하기
+        String nickname = nicknameService.createAvailableNickname(attributes.getOauth2UserInfo().getNickname());
 
-        User createdUser = attributes.toEntity(socialType, attributes.getOauth2UserInfo(), newNickname);
+        User createdUser = User.of(attributes.getOauth2UserInfo().getEmail(),
+                UUID.randomUUID().toString(),
+                nickname,
+                socialType,
+                attributes.getOauth2UserInfo().getImageUrl(),
+                attributes.getOauth2UserInfo().getId());
+
         return userRepository.save(createdUser);
     }
 }
