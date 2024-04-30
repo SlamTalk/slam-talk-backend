@@ -64,8 +64,7 @@ public class UserService {
     public UserDetailsMyInfo userDetailsMyInfo(
             Long userId
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         Result result = getResult(userId, user);
 
@@ -79,6 +78,17 @@ public class UserService {
     }
 
     /**
+     * 유저 아이디를 이용해서 UserRepository에서 User를 반환하는 메서드
+     *
+     * @param userId
+     * @return User
+     */
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+    }
+
+    /**
      * 유저의 마이페이지 보기 조회시 사용되는 서비스
      *
      * @param userId 찾고자하는 userId
@@ -86,8 +96,7 @@ public class UserService {
     public UserDetailsOtherInfo userDetailsOtherInfo(
             Long userId
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         Result result = getResult(userId, user);
 
@@ -104,7 +113,7 @@ public class UserService {
      * 사용자의 레벨 점수를 계산하여 Result record로 반환하는 메서드입니다.
      *
      * @param userId 사용자의 ID
-     * @param user 사용자 객체
+     * @param user   사용자 객체
      * @return 계산된 레벨 점수를 포함한 Result record
      */
     private Result getResult(Long userId, User user) {
@@ -217,16 +226,14 @@ public class UserService {
      */
     @Transactional
     public void userAttendance(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         // 만약 이미 출석을 했다면 400 에러 반환
-        if (userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now())) {
+        if (Boolean.TRUE.equals(userAttendanceRepository.existsByUserAndAttDate(user, LocalDate.now()))) {
             throw new BaseException(UserErrorResponseCode.ATTENDANCE_ALREADY_EXISTS);
         }
 
-        UserAttendance saveAttendance = userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
-        saveAttendance.addUser(user);
+        userAttendanceRepository.save(new UserAttendance(user, LocalDate.now()));
     }
 
     /**
@@ -242,8 +249,7 @@ public class UserService {
             MultipartFile file,
             UpdateUserDetailInfoReq updateUserDetailInfoReq
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
         log.debug("[유저 마이페이지 수정] 닉네임 = {} ", updateUserDetailInfoReq.getNickname());
         log.debug("[유저 마이페이지 수정] 포지션 = {} ", updateUserDetailInfoReq.getBasketballPosition());
         log.debug("[유저 마이페이지 수정] 자기소개 = {} ", updateUserDetailInfoReq.getSelfIntroduction());
@@ -260,7 +266,7 @@ public class UserService {
         if (file != null && !file.isEmpty()) {
             log.debug("[유저 마이페이지 수정] 파일 업데이트 시도!");
             String fileUrl = awsS3Service.uploadFile(file);
-            user.updateProfileUrl(fileUrl);
+            user.updateImageUrl(fileUrl);
         }
 
         // 자기 소개 한마디이 null이 아니라면 값 update 하기
@@ -287,12 +293,12 @@ public class UserService {
 
     /**
      * 현재날짜 이후의 모든 스케줄 반환하는 메서드
+     *
      * @param userId : 유저 아이디
      * @return UserSchedule : 유저 스케줄
-     * */
+     */
     public UserSchedule userMyScheduleList(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        User user = getUser(userId);
 
         List<ToTeamFormDTO> myTeamMatchingScheduleList = getMyTeamMatchingScheduleList(user);
         List<MatePostToDto> mateList = getMyMateScheduleList(user);
@@ -302,9 +308,10 @@ public class UserService {
     /**
      * 팀매칭 관련해서 내가 쓴 글/ 내가 참여한 글 중
      * 상태가 COMPLETED 이고 현재날짜 이후의 데이터만 스케줄리스트로 전달하는 메서드
+     *
      * @param user : 유저정보
      * @return List<ToTeamFormDTO> : 팀 스케줄 리스트
-     * */
+     */
     private List<ToTeamFormDTO> getMyTeamMatchingScheduleList(User user) {
         List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(user.getId());
@@ -313,7 +320,7 @@ public class UserService {
                 .filter(teamMatching ->
                         teamMatching.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
                                 (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
+                                        (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .toList();
@@ -327,7 +334,7 @@ public class UserService {
                                                         !teamApplicant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
                                 (teamMatching.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
+                                        (teamMatching.getScheduledDate().isEqual(LocalDate.now()) && teamMatching.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
                 .map(toTeamFormDTO -> {
@@ -357,9 +364,10 @@ public class UserService {
     /**
      * 메이트 매칭 관련해서 내가 쓴 글/ 내가 참여한 글 중
      * 상태가 COMPLETED 이고 현재날짜 이후의 데이터만 스케줄리스트로 전달하는 메서드
+     *
      * @param user : 유저정보
      * @return List<MatePostToDto> : 메이트 스케줄 리스트
-     * */
+     */
     private List<MatePostToDto> getMyMateScheduleList(User user) {
         List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(user.getId());
@@ -368,7 +376,7 @@ public class UserService {
                 .filter(matePost ->
                         matePost.getRecruitmentStatus().equals(RecruitmentStatusType.COMPLETED) &&
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
+                                        (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .toList();
@@ -382,7 +390,7 @@ public class UserService {
                                                         !participant.getApplyStatus().equals(ApplyStatusType.ACCEPTED))
                                         .findFirst().isEmpty() && // 해당 조건을 만족하는 참가자가 없으면
                                 (matePost.getScheduledDate().isAfter(LocalDate.now()) ||
-                                (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
+                                        (matePost.getScheduledDate().isEqual(LocalDate.now()) && matePost.getStartTime().isAfter(LocalTime.now())))
                 )
                 .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .map(matePostToDto -> {

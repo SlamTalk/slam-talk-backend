@@ -19,6 +19,7 @@ import sync.slamtalk.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
@@ -40,7 +41,7 @@ class UserChatRoomRepositoryTest {
     @BeforeEach
     void beforeSet(){
         // user
-        User user = new UserSignUpReq(email, password, nickname).toEntity();
+        User user = User.of(email, password, nickname);
         entityManager.persist(user);
 
         // chatroom
@@ -97,7 +98,7 @@ class UserChatRoomRepositoryTest {
     @Test
     void findByUser_Id() {
         List<UserChatRoom> userChatRoomRepositoryByUserId = userChatRoomRepository.findByUser_Id(1L);
-        assertTrue(userChatRoomRepositoryByUserId.size()==3);
+        assertEquals(userChatRoomRepositoryByUserId.size(), 3);
 
     }
 

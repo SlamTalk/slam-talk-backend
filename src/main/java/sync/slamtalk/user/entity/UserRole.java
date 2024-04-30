@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * User 역할 클래스
  * Guest, User, Admin 으로 구성
- * */
+ */
 @Getter
 @RequiredArgsConstructor
 public enum UserRole {
