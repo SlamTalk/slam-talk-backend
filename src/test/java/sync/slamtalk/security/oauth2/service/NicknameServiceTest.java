@@ -9,8 +9,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.User;
+
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,7 +33,7 @@ class NicknameServiceTest {
                 .thenReturn(Optional.empty());
 
         // when
-        String generatedNickname = nicknameService.generateNickname(nickname);
+        String generatedNickname = nicknameService.createAvailableNickname(nickname);
 
         // then
         assertEquals(generatedNickname, "테스트닉네임");
@@ -46,14 +46,13 @@ class NicknameServiceTest {
         String password = "123";
         String nickname = "hello";
 
-        UserSignUpReq userSignUpReq = new UserSignUpReq(userEmail, password, nickname);
-        User user = userSignUpReq.toEntity();
+        User user = User.of(userEmail, password, nickname);
 
         Mockito.when(userRepository.findByNickname(nickname))
                 .thenReturn(Optional.of(user));
 
         // when
-        String generatedNickname = nicknameService.generateNickname(nickname);
+        String generatedNickname = nicknameService.createAvailableNickname(nickname);
 
         assertNotEquals(generatedNickname, nickname); // 여기서 generatedNickname의 닉네임을 로그로 찍고 익명이라는 단어가 contains 되는지 확인하는 코드를 작성하고 싶어
         System.out.println(generatedNickname);
@@ -69,7 +68,7 @@ class NicknameServiceTest {
 
         // when
         String nickname = "0123456789123";
-        String generatedNickname = nicknameService.generateNickname(nickname);
+        String generatedNickname = nicknameService.createAvailableNickname(nickname);
 
         // then
         assertNotEquals(generatedNickname, nickname);
@@ -86,22 +85,21 @@ class NicknameServiceTest {
         String password = "123";
         String nickname = "hello";
 
-        UserSignUpReq userSignUpReq = new UserSignUpReq(userEmail, password, nickname);
-        User user = userSignUpReq.toEntity();
+        User user = User.of(userEmail, password, nickname);
 
         AtomicInteger counter = new AtomicInteger(0);
 
         // when
         Mockito.when(userRepository.findByNickname(Mockito.any()))
                 .thenAnswer(invocation -> {
-                    if(counter.getAndIncrement() < 2) {
+                    if (counter.getAndIncrement() < 2) {
                         return Optional.of(user);
-                    } else{
+                    } else {
                         return Optional.empty();
                     }
                 });
 
-        String generatedNickname = nicknameService.generateNickname(nickname);
+        String generatedNickname = nicknameService.createAvailableNickname(nickname);
 
 
         // then

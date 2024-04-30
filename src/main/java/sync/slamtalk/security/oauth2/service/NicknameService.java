@@ -12,23 +12,25 @@ public class NicknameService {
     private final UserRepository userRepository;
 
     /**
-     * 소셜 닉네임을 기반으로 새로운 닉네임을 생성하는 메서드.
+     * 소셜 닉네임을 기반으로 사용 가능한 닉네임을 생성합니다.
      *
-     * @param nickname 소셜 닉네임
-     * @return String 기존 닉네임 또는 새로 생성된 닉네임
+     * 이 메서드는 주어진 소셜 닉네임에서 특수문자를 제거하고 소문자로 변환합니다. 만일 변환된 닉네임이 13자 이상이거나
+     * 이미 데이터베이스에 동일한 닉네임이 존재한다면, "익명"에 랜덤 숫자를 추가한 새로운 닉네임을 생성합니다.
+     * 그렇지 않다면, 변환된 닉네임을 그대로 사용합니다.
+     *
+     * @param socialNickname 소셜 닉네임
+     * @return String 사용 가능한 닉네임
      */
-    public String generateNickname(String nickname) {
-        nickname = removeSpecialCharactersAndConvertToLowercase(nickname);
+    public String createAvailableNickname(String socialNickname) {
+        String processedNickname = removeSpecialCharactersAndConvertToLowercase(socialNickname);
 
-        if (nickname.length() >= 13) {
+        if (processedNickname.length() >= 13 || isNicknameAlreadyExists(processedNickname)) {
             return generateAnonymousNickname(1); // "익명" + 랜덤 숫자 생성
-        } else {
-            if (!isNicknameAlreadyExists(nickname)) {
-                return nickname; // DB에 존재하지 않으면 기존 닉네임 반환
-            }
-            return generateAnonymousNickname(1); // DB에 존재하면 "익명" + 랜덤 숫자 생성
         }
+
+        return processedNickname; // 조건에 부합하면 처리된 닉네임 반환
     }
+
 
     /**
      * 재귀적으로 "익명" + 랜덤 숫자를 조합하여 고유한 닉네임을 생성합니다.
