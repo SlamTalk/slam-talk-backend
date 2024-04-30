@@ -28,6 +28,8 @@ import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -345,7 +347,7 @@ public class ChatServiceImpl implements ChatService {
         }
         // 마지막 메세지 날짜 순으로 채팅방 리스트 정렬
         // 발행된 메세지가 없는 경우 null 이므로, 별도처리
-        Collections.sort(chatRooms,Comparator.comparing(ChatRoomDTO::getLastMessageTime, Comparator.nullsLast(Comparator.naturalOrder())));
+        Collections.sort(chatRooms,Comparator.comparing(ChatRoomDTO::getLastMessageTime, Comparator.nullsLast(Comparator.reverseOrder())));
         return chatRooms;
     }
 
