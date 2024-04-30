@@ -12,12 +12,8 @@
     import sync.slamtalk.map.dto.BasketballCourtAdminRequestDTO;
     import sync.slamtalk.map.dto.BasketballCourtErrorResponse;
     import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
-    import sync.slamtalk.map.entity.AdminStatus;
-    import sync.slamtalk.map.entity.BasketballCourt;
-    import sync.slamtalk.map.entity.Fee;
-    import sync.slamtalk.map.entity.NightLighting;
-    import sync.slamtalk.map.entity.OpeningHours;
-    import sync.slamtalk.map.entity.ParkingAvailable;
+    import sync.slamtalk.map.entity.*;
+    import sync.slamtalk.map.entity.RegistrationStatus;
     import sync.slamtalk.map.mapper.BasketballCourtMapper;
     import sync.slamtalk.map.repository.BasketballCourtRepository;
     import sync.slamtalk.user.UserRepository;
@@ -115,7 +111,7 @@
             administrateBasketballCourtUpdates(court, basketballCourtAdminRequestDTO, court.getPhotoUrl());
 
             // AdminStatus 변경
-            court.updateAdminStatus(AdminStatus.ACCEPT);
+            court.updateRegistrationStatus(RegistrationStatus.ACCEPT);
 
             // 채팅방에 농구장 매핑
             ChatRoom chatRoom = court.getChatroom();

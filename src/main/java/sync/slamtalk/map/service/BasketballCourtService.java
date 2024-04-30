@@ -10,7 +10,7 @@ import sync.slamtalk.map.dto.BasketballCourtFullResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
-import sync.slamtalk.map.entity.AdminStatus;
+import sync.slamtalk.map.entity.RegistrationStatus;
 import sync.slamtalk.map.mapper.BasketballCourtMapper;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 
@@ -40,7 +40,7 @@ public class BasketballCourtService {
      * @return {@link BasketballCourtSummaryDto}  승인된 농구장의 간략 정보를 담은 리스트
      */
     public List<BasketballCourtSummaryDto> getAllApprovedBasketballCourtSummaries() {
-        return basketballCourtRepository.findByAdminStatus(AdminStatus.ACCEPT).stream() //수락 상태의 정보만 조회
+        return basketballCourtRepository.findByRegistrationStatus(RegistrationStatus.ACCEPT).stream() //수락 상태의 정보만 조회
                 .map(basketballCourtMapper::toDto) // dto 변환
                 .toList();
     }
@@ -53,7 +53,7 @@ public class BasketballCourtService {
      * @throws BaseException ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
      */
     public BasketballCourtFullResponseDTO getApprovedBasketballCourtDetailsById(Long courtId) {
-        return basketballCourtRepository.findByIdAndAdminStatus(courtId, AdminStatus.ACCEPT)
+        return basketballCourtRepository.findByIdAndRegistrationStatus(courtId, RegistrationStatus.ACCEPT)
                 .map(basketballCourtMapper::toFullChatDto)
                 .orElseThrow(()->new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }
@@ -65,7 +65,7 @@ public class BasketballCourtService {
      * @return {@link BasketballCourtReportSummaryDTO} 검토 중인 농구장의 간략 정보 리스트
      */
     public List<BasketballCourtReportSummaryDTO> getUserReportedBasketballCourtSummariesByUserId(Long userId) {
-        return basketballCourtRepository.findByInformerIdAndAdminStatus(userId, AdminStatus.STAND).stream()
+        return basketballCourtRepository.findByInformerIdAndRegistrationStatus(userId, RegistrationStatus.STAND).stream()
                 .map(basketballCourtMapper::toStatusDto)
                 .toList();
     }
@@ -79,7 +79,7 @@ public class BasketballCourtService {
      * @throws BaseException 농구장 ID에 해당하는 농구장이 존재하지 않을 때, 예외 발생
      */
     public BasketballCourtReportResponseDTO getUserReportedBasketballCourtDetailsByIdAndUserId(Long courtId, Long userId) {
-        return basketballCourtRepository.findByIdAndInformerIdAndAdminStatus(courtId, userId, AdminStatus.STAND)
+        return basketballCourtRepository.findByIdAndInformerIdAndRegistrationStatus(courtId, userId, RegistrationStatus.STAND)
                 .map(basketballCourtMapper::toFullStatusDto)
                 .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
     }

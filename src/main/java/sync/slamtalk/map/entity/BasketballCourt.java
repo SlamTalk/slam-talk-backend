@@ -89,7 +89,7 @@ public class BasketballCourt extends BaseEntity {
 
     @Column(name = "admin_status")
     @Enumerated(EnumType.STRING)
-    private AdminStatus adminStatus; // 관리자 상태
+    private RegistrationStatus registrationStatus; // 등록 상태
 
     @Column(name = "informer_id")
     private Long informerId; // 제보자 ID
@@ -153,8 +153,8 @@ public class BasketballCourt extends BaseEntity {
     }
 
     // AdminStatus 변경 메소드
-    public void updateAdminStatus(AdminStatus adminStatus) {
-        this.adminStatus = adminStatus;
+    public void updateRegistrationStatus(RegistrationStatus registrationStatus) {
+        this.registrationStatus = registrationStatus;
     }
 
     // 채팅방 업데이트

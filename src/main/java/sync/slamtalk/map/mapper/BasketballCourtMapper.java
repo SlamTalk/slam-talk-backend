@@ -10,7 +10,7 @@ import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
-import sync.slamtalk.map.entity.AdminStatus;
+import sync.slamtalk.map.entity.RegistrationStatus;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.entity.Fee;
 import sync.slamtalk.map.entity.NightLighting;
@@ -45,7 +45,7 @@ public class BasketballCourtMapper {
                 basketballCourt.getAddress(),
                 basketballCourt.getLatitude(),
                 basketballCourt.getLongitude(),
-                basketballCourt.getAdminStatus().name()
+                basketballCourt.getRegistrationStatus().name()
         );
     }
 
@@ -64,10 +64,10 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                getPropertiesValue(basketballCourt.getNightLighting()),
-                getPropertiesValue(basketballCourt.getOpeningHours()),
-                getPropertiesValue(basketballCourt.getFee()),
-                getPropertiesValue(basketballCourt.getParkingAvailable()),
+                getValueOrDefault(basketballCourt.getNightLighting()),
+                getValueOrDefault(basketballCourt.getOpeningHours()),
+                getValueOrDefault(basketballCourt.getFee()),
+                getValueOrDefault(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
                 getConvenienceList(basketballCourt.getConvenience()),
@@ -92,10 +92,10 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                getPropertiesValue(basketballCourt.getNightLighting()),
-                getPropertiesValue(basketballCourt.getOpeningHours()),
-                getPropertiesValue(basketballCourt.getFee()),
-                getPropertiesValue(basketballCourt.getParkingAvailable()),
+                getValueOrDefault(basketballCourt.getNightLighting()),
+                getValueOrDefault(basketballCourt.getOpeningHours()),
+                getValueOrDefault(basketballCourt.getFee()),
+                getValueOrDefault(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
                 getConvenienceList(basketballCourt.getConvenience()),
@@ -123,17 +123,17 @@ public class BasketballCourtMapper {
                 basketballCourt.getIndoorOutdoor(),
                 basketballCourt.getCourtSize(),
                 basketballCourt.getHoopCount(),
-                getPropertiesValue(basketballCourt.getNightLighting()),
-                getPropertiesValue(basketballCourt.getOpeningHours()),
-                getPropertiesValue(basketballCourt.getFee()),
-                getPropertiesValue(basketballCourt.getParkingAvailable()),
+                getValueOrDefault(basketballCourt.getNightLighting()),
+                getValueOrDefault(basketballCourt.getOpeningHours()),
+                getValueOrDefault(basketballCourt.getFee()),
+                getValueOrDefault(basketballCourt.getParkingAvailable()),
                 basketballCourt.getPhoneNum(),
                 basketballCourt.getWebsite(),
                 getConvenienceList(basketballCourt.getConvenience()),
                 basketballCourt.getAdditionalInfo(),
                 basketballCourt.getPhotoUrl(),
                 basketballCourt.getInformerId(),
-                basketballCourt.getAdminStatus().name()
+                basketballCourt.getRegistrationStatus().name()
         );
     }
 
@@ -165,7 +165,7 @@ public class BasketballCourtMapper {
                 .convenience(dto.getConvenience())
                 .additionalInfo(dto.getAdditionalInfo())
                 .photoUrl(photoUrl)
-                .adminStatus(AdminStatus.STAND) // 대기 상태
+                .registrationStatus(RegistrationStatus.STAND) // 대기 상태
                 .informerId(userId)
                 .build();
 
@@ -177,7 +177,7 @@ public class BasketballCourtMapper {
     }
 
     // 빈 값일 때, 초깃값 설정
-    private String getPropertiesValue(Enum<?> propertiesValue) {
+    private String getValueOrDefault(Enum<?> propertiesValue) {
         return propertiesValue != null ? propertiesValue.name() : INITIAL_VALUE;
     }
 }
