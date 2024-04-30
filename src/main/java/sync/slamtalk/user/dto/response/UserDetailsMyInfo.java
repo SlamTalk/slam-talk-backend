@@ -47,14 +47,18 @@ public class UserDetailsMyInfo {
             long mateCompleteParticipationCount,
             long teamCompleteParticipationCount
     ) {
+        String basketballSkillLevel = user.getBasketballSkillLevel() != null ? user.getBasketballSkillLevel().getLevel() : null;
+        String basketballPosition = user.getBasketballPosition() != null ? user.getBasketballPosition().getPosition() : null;
+        long level = levelScore / UserLevelScore.LEVEL_THRESHOLD;
+
         return UserDetailsMyInfo.builder()
                 .id(user.getId())
                 .nickname(user.getNickname())
                 .imageUrl(user.getImageUrl())
                 .selfIntroduction(user.getSelfIntroduction())
-                .basketballSkillLevel(user.getBasketballSkillLevel() == null ? null : user.getBasketballSkillLevel().getLevel())
-                .basketballPosition(user.getBasketballPosition() == null ? null : user.getBasketballPosition().getPosition())
-                .level(levelScore / UserLevelScore.LEVEL_THRESHOLD)
+                .basketballSkillLevel(basketballSkillLevel)
+                .basketballPosition(basketballPosition)
+                .level(level)
                 .levelScore(levelScore)
                 .mateCompleteParticipationCount(mateCompleteParticipationCount)
                 .teamMatchingCompleteParticipationCount(teamCompleteParticipationCount)

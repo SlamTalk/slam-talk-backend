@@ -39,17 +39,21 @@ public class UserDetailsOtherInfo {
             long mateCount,
             long teamCount
     ) {
-        return UserDetailsOtherInfo.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .imageUrl(user.getImageUrl())
-                .selfIntroduction(user.getSelfIntroduction())
-                .basketballSkillLevel(user.getBasketballSkillLevel() == null ? null : user.getBasketballSkillLevel().getLevel())
-                .basketballPosition(user.getBasketballPosition() == null ? null : user.getBasketballPosition().getPosition())
-                .levelScore(levelScore)
-                .level(levelScore / UserLevelScore.LEVEL_THRESHOLD)
-                .mateCompleteParticipationCount(mateCount)
-                .teamMatchingCompleteParticipationCount(teamCount)
-                .build();
+        String basketballSkillLevel = user.getBasketballSkillLevel() != null ? user.getBasketballSkillLevel().getLevel() : null;
+        String basketballPosition = user.getBasketballPosition() != null ? user.getBasketballPosition().getPosition() : null;
+        long level = levelScore / UserLevelScore.LEVEL_THRESHOLD;
+
+        return new UserDetailsOtherInfo(
+                user.getId(),
+                user.getNickname(),
+                user.getImageUrl(),
+                user.getSelfIntroduction(),
+                basketballSkillLevel,
+                basketballPosition,
+                level,
+                levelScore,
+                mateCount,
+                teamCount
+        );
     }
 }
