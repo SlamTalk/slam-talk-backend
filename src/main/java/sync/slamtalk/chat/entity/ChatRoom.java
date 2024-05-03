@@ -65,7 +65,7 @@ public class ChatRoom extends BaseEntity {
     // ChatRoom 에 basketball 설정
     public void setBasketballCourt(BasketballCourt basketballCourt) {
         this.basketballCourt = basketballCourt;
-        this.basketBallId = basketballCourt.getCourtId();
+        this.basketBallId = basketballCourt.getId();
     }
 
 }
