@@ -9,7 +9,7 @@ public enum ParkingAvailable {
     PARKING_AVAILABLE("가능"),
     PARKING_UNAVAILABLE("불가능");
 
-    private final String parkingAvailable_type;
+    private final String parkingAvailableType;
 
     public static ParkingAvailable fromString(String value) {
         return "PARKING_AVAILABLE".equals(value) ? PARKING_AVAILABLE : PARKING_UNAVAILABLE;

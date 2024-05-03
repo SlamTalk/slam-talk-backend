@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
 import sync.slamtalk.community.repository.CommunityRepository;
-import sync.slamtalk.map.entity.AdminStatus;
+import sync.slamtalk.map.entity.RegistrationStatus;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.mate.dto.response.MatePostToDto;
 import sync.slamtalk.mate.entity.ApplyStatusType;
@@ -125,7 +125,7 @@ public class UserService {
         // user 출석개수 반환
         long userAttendCount = userAttendanceRepository.countUserAttendancesByUser(user)
                 .orElse(0L);
-        long userReportCount = basketballCourtRepository.countBasketballCourtByAdminStatusEqualsAndInformerId(AdminStatus.ACCEPT, userId);
+        long userReportCount = basketballCourtRepository.countBasketballCourtByRegistrationStatusEqualsAndInformerId(RegistrationStatus.ACCEPT, userId);
         // 게시글 작성 개수 count
         levelScore += communityRepository.countAllByUserAndIsDeletedFalse(user) * UserLevelScore.COMMUNITY_SCORE;
         // Mate 게시판 상태가 Complete

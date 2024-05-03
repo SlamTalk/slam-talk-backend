@@ -29,7 +29,7 @@ public class BasketballCourt extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "court_id", nullable = false)
-    private Long courtId; // 농구장 ID
+    private Long id; // 농구장 ID
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_id")
@@ -38,13 +38,13 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "court_name", nullable = false, length = 50)
     private String courtName; // 농구장 이름
 
-    @Column(name = "address", nullable = false, length = 50)
+    @Column(nullable = false, length = 50)
     private String address; // 농구장 주소
 
-    @Column(name = "latitude", precision = 13, scale = 10, nullable = false)
+    @Column(precision = 13, scale = 10, nullable = false)
     private BigDecimal latitude; // 농구장 위도
 
-    @Column(name = "longitude", precision = 13, scale = 10, nullable = false)
+    @Column(precision = 13, scale = 10, nullable = false)
     private BigDecimal longitude; //농구장 경도
 
     @Column(name = "court_type", length = 50)
@@ -67,7 +67,6 @@ public class BasketballCourt extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OpeningHours openingHours; // 개방 시간
 
-    @Column(name = "fee", length = 100)
     @Enumerated(EnumType.STRING)
     private Fee fee; // 사용료
 
@@ -78,10 +77,8 @@ public class BasketballCourt extends BaseEntity {
     @Column(name = "phone_num", length = 20)
     private String phoneNum; // 전화번호
 
-    @Column(name = "website", length = 50)
     private String website; // 홈페이지 링크
 
-    @Column(name = "convenience", length = 50)
     private String convenience; // 편의 시설
 
     @Column(name = "additional_info", columnDefinition = "TEXT")
@@ -92,7 +89,7 @@ public class BasketballCourt extends BaseEntity {
 
     @Column(name = "admin_status")
     @Enumerated(EnumType.STRING)
-    private AdminStatus adminStatus; // 관리자 상태
+    private RegistrationStatus registrationStatus; // 등록 상태
 
     @Column(name = "informer_id")
     private Long informerId; // 제보자 ID
@@ -156,8 +153,8 @@ public class BasketballCourt extends BaseEntity {
     }
 
     // AdminStatus 변경 메소드
-    public void updateAdminStatus(AdminStatus adminStatus) {
-        this.adminStatus = adminStatus;
+    public void updateRegistrationStatus(RegistrationStatus registrationStatus) {
+        this.registrationStatus = registrationStatus;
     }
 
     // 채팅방 업데이트
