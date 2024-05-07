@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 
 @Getter
@@ -29,5 +30,17 @@ public class ChatMessageDTO implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String timestamp; // 메세지를 보낸 시간
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(messageId);
+    }
 
+    @Override
+    public boolean equals(Object obj) {
+        if(this==obj) return true;
+        if(obj == null || getClass() != obj.getClass())return false;
+
+        ChatMessageDTO that = (ChatMessageDTO) obj;
+        return Objects.equals(messageId,that.messageId);
+    }
 }
