@@ -27,6 +27,7 @@ public class AdminBasketballCourtController {
 
     private static final String STANDING_COURT_LIST_SUCCESS_MSG = "대기중인 농구장 목록을 성공적으로 가져왔습니다.";
     private static final String UPDATE_COURT_SUCCESS_MSG = "농구장 정보 업데이트 완료";
+    private static final String REJECT_COURT_SUCCESS_MSG = "농구장 거절 완료";
 
     private final AdminBasketballCourtService adminBasketballCourtService;
     private final ReportBasketballCourtService reportBasketballCourtService;
@@ -34,6 +35,7 @@ public class AdminBasketballCourtController {
 
     /**
      * 관리자가 대기 상태인 농구장 목록을 조회합니다.
+     *
      * @return 대기상태의 농구장 목록
      */
     @GetMapping("/stand")
@@ -49,7 +51,8 @@ public class AdminBasketballCourtController {
 
     /**
      * 대기 상태인 특정 농구장의 정보를 업데이트하고 승인 상태로 변경합니다.
-     * @param courtId 농구장 ID
+     *
+     * @param courtId                        농구장 ID
      * @param basketballCourtAdminRequestDTO 업데이트할 농구장 목록을 담은 DTO
      * @return 업데이트된 농구장 DTO
      */
@@ -62,6 +65,17 @@ public class AdminBasketballCourtController {
     public ApiResponse<BasketballCourtResponseDTO> approveAndUpdateBasketballCourt(@PathVariable Long courtId,
                                                                                    @RequestBody BasketballCourtAdminRequestDTO basketballCourtAdminRequestDTO) {
         BasketballCourt updatedCourt = reportBasketballCourtService.approveBasketballCourtInfoUpdate(courtId, basketballCourtAdminRequestDTO);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt),UPDATE_COURT_SUCCESS_MSG);
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt), UPDATE_COURT_SUCCESS_MSG);
+    }
+
+    @PutMapping("/reject/{courtId}")
+    @Operation(
+            summary = "제보 받은 특정 농구장 거절 업데이트",
+            description = "이 기능은 이용자가 제보한 농구장을 거절하는 기능입니다.",
+            tags = {"지도"}
+    )
+    public ApiResponse<BasketballCourtResponseDTO> rejectBasketballCourt(@PathVariable Long courtId) {
+        BasketballCourt updatedCourt = reportBasketballCourtService.rejectBasketballCourUpdate(courtId);
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(updatedCourt), REJECT_COURT_SUCCESS_MSG);
     }
 }

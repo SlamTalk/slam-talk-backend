@@ -121,6 +121,22 @@
         }
 
         /**
+         * 괸리자가 대기 상태의 농구장을 거절하는 기능을 수행합니다.
+         * @param courtId 거절할 농구장 ID
+         * @return 거절된 농구장 Entity
+         */
+        @Transactional
+        public BasketballCourt rejectBasketballCourUpdate(Long courtId) {
+            BasketballCourt court = basketballCourtRepository.findById(courtId)
+                    .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.MAP_FAIL));
+
+            // AdminStatus 변경
+            court.updateRegistrationStatus(RegistrationStatus.REJECT);
+
+            return basketballCourtRepository.save(court);
+        }
+
+        /**
          * 사용자에게 정보를 제공받아 농구장 정보를 업데이트하는 기능을 수행합니다.
          *<p>
          *     모든 필드는 선택적이며, 제공된 경우에만 업데이트됩니다.
