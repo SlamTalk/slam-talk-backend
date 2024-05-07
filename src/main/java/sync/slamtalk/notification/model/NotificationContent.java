@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import sync.slamtalk.common.BaseEntity;
 
 /**
  * 알림의 내용을 담고 있는 Entity
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NotificationContent {
+public class NotificationContent extends BaseEntity {
 
 	@Id
 	@Column(name = "notification_content_id")
