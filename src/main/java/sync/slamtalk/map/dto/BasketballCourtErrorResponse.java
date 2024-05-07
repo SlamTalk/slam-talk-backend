@@ -8,7 +8,8 @@ import sync.slamtalk.common.ResponseCodeDetails;
 public enum BasketballCourtErrorResponse implements ResponseCodeDetails {
     MAP_FAIL(SC_NOT_FOUND,4041,"Court Not Found"),
     USER_NOT_FOUND(SC_NOT_FOUND,4042,"User Not Found"),
-    UNAUTHORIZED_USER(SC_UNAUTHORIZED, 4043, "User Not Unauthorized")
+    UNAUTHORIZED_USER(SC_UNAUTHORIZED, 4043, "User Not Unauthorized"),
+    CHATROOM_FAIL(SC_NOT_FOUND,4044,"Chatroom Not Found")
 
     ;
 

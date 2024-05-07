@@ -5,8 +5,10 @@
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
     import org.springframework.web.multipart.MultipartFile;
+    import sync.slamtalk.chat.dto.request.ChatCreateDTO;
     import sync.slamtalk.chat.entity.ChatRoom;
     import sync.slamtalk.chat.repository.ChatRoomRepository;
+    import sync.slamtalk.chat.service.ChatService;
     import sync.slamtalk.common.BaseException;
     import sync.slamtalk.common.s3bucket.repository.AwsS3RepositoryImpl;
     import sync.slamtalk.map.dto.BasketballCourtAdminRequestDTO;
@@ -27,6 +29,7 @@
         private final AwsS3RepositoryImpl awsS3Repository;
         private final UserRepository userRepository;
         private final ChatRoomRepository chatRoomRepository;
+        private final ChatService chatService;
 
         /**
          * 사용자에게 농구장을 제보 받는 기능을 수행합니다.
@@ -113,9 +116,22 @@
             // AdminStatus 변경
             court.updateRegistrationStatus(RegistrationStatus.ACCEPT);
 
+            //채팅방 생성
+            chatService.createBasketballChatRoom(
+                    ChatCreateDTO.builder()
+                    .name(court.getCourtName())
+                    .participants(null)
+                    .roomType("BM")
+                    .basketBallId(court.getId())
+                    .togetherId(null)
+                    .teamMatchingId(null)
+                    .build());
+
             // 채팅방에 농구장 매핑
-            ChatRoom chatRoom = court.getChatroom();
+            ChatRoom chatRoom = chatRoomRepository.findByBasketBallId(courtId)
+                    .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.CHATROOM_FAIL));
             chatRoom.setBasketballCourt(court);
+            court.updateChatroom(chatRoom);
 
             return basketballCourtRepository.save(court);
         }
