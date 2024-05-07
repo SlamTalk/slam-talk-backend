@@ -37,6 +37,8 @@ public interface ChatService {
     void saveReadIndex(Long userId, Long chatRoomId, Long readIndex);
 
 
+    void notificationMessage(Long roomId);
+
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     // 페이징 방식에 의존
     //      1. 사용자가 입장한 시점의 채팅방 메세지부터 모두 내려주기

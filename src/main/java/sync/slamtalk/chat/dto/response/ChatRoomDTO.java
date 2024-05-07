@@ -30,11 +30,17 @@ public class ChatRoomDTO implements Serializable {
     // 채팅방 마지막 메세지 날짜
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String lastMessageTime;
+    // 읽지 않은 메세지 표시
+    private boolean newMsg = false;
 
 
     // 채팅방 마지막 메세지 업데이트
     public void setLast_message(String lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public void updateNoReadCnt(Boolean newMsg) {
+        this.newMsg = newMsg;
     }
 
     public void updateName(String name) {
