@@ -21,6 +21,7 @@ import sync.slamtalk.user.entity.User;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +37,7 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final StompHandler stompHandler;
+
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -203,6 +205,10 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     log.debug("=== MESSAGE 저장 완료 ===");
                 }
             }
+            // 메세지 발행시 마다 알림 추가?
+
+            // FIXME 일단 추가, 추후 삭제 하거나 유지
+            chatService.notificationMessage(roomId);
             log.debug("=== 메세지 발송 완료 ===");
         }
 
