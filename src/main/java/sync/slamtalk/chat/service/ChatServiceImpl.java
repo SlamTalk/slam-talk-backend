@@ -25,6 +25,8 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
+import sync.slamtalk.notification.NotificationSender;
+import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -43,6 +45,7 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final BasketballCourtRepository basketballCourtRepository;
     private final RedisService redisService;
+    private final NotificationSender notificationSender;
 
     /**
      * 채팅방을 생성한다.
@@ -157,9 +160,25 @@ public class ChatServiceImpl implements ChatService {
             log.debug("userChatRoom 저장 완료 : {}", savedUserChatRoom.getChat().getId());
         }
 
+        // 테스트용 임시
+        for(Long id : participants){
+            log.debug("알림을 줄 참여자 아이디 : {}",id);
+            NotificationRequest req = NotificationRequest.of("채팅방이 생성되었습니다","",Set.of(id));
+            notificationSender.send(req);
+        }
         return roomNum;
     }
 
+    @Override
+    public void notificationMessage(Long roomId) {
+        // 채팅방가지고 있는 userChatRoom 유저들에게 알림전달
+        // 잠시 보류
+//        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChat_Id(roomId);
+//        for(UserChatRoom u : userChatRooms){
+//            NotificationRequest req = NotificationRequest.of("새로운 메세지가 도착했습니다.","",Set.of(u.getUser().getId()));
+//            notificationSender.send(req);
+//        }
+    }
 
     /**
      * 농구장 채팅방을 생성한다.
@@ -281,8 +300,8 @@ public class ChatServiceImpl implements ChatService {
                         .build();
 
                 // 1:1 인 경우 상대방 프로필
-                // 1:1 만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
-                if (ucr.getRoomType().equals(RoomType.DIRECT)) {
+                // 1:1 , 팀매칭만 상대방 프로필 나머지(같이하기, 농구장은 디폴트 프로필)
+                if (ucr.getRoomType().equals(RoomType.DIRECT) || ucr.getRoomType().equals(RoomType.MATCHING)) {
                     List<UserChatRoom> optionalList = userChatRoomRepository.findByChat_Id(ucr.getChat().getId());
 
                     if (optionalList.isEmpty()) {
@@ -330,6 +349,7 @@ public class ChatServiceImpl implements ChatService {
                 // 마지막 메세지
                 PageRequest pageRequest = PageRequest.of(0, 1);
                 Page<Messages> latestByChatRoomId = messagesRepository.findLatestByChatRoomId(ucr.getChat().getId(), pageRequest);
+                // 메세지 내용이 있는 경우만(메세지를 보내적이 없는 채팅방의 경우에는 해당하지 않음)
                 if (latestByChatRoomId.hasContent()) {
                     Stream<Messages> messagesStream = latestByChatRoomId.get();
                     Messages messages = messagesStream.toList().get(0);
@@ -337,6 +357,12 @@ public class ChatServiceImpl implements ChatService {
                     dto.setLast_message(messages.getContent());
                     dto.setLastMessageTime(messages.getCreationTime());
                     chatRooms.add(dto);
+
+                    if(!messages.getId().equals(ucr.getReadIndex())){
+                        dto.updateNoReadCnt(true);
+                    }
+                    //log.debug("마지막메세지아이디:{}",messages.getId());
+                    //log.debug("유저가가지고있는메세지아이디:{}",ucr.getReadIndex());
                 }
                 if (latestByChatRoomId.isEmpty()) {
                     dto.setLast_message("주고 받은 메세지가 없습니다.");
@@ -435,14 +461,11 @@ public class ChatServiceImpl implements ChatService {
                 throw new BaseException(ChatErrorResponseCode.CHAT_ROOM_NOT_FOUND);
             }
 
-
-
             log.debug("userChatroom 존재함");
             UserChatRoom userChatRoom = existUserChatRoom.get();
             Long readIndex = userChatRoom.getReadIndex();
             log.debug("=== readIndex : {}", readIndex);
-              
-             
+
 
             // 20개씩 내역 페이징
             Pageable pageable = PageRequest.of(0, 30); // 첫 페이지, 최대 30개
@@ -457,7 +480,7 @@ public class ChatServiceImpl implements ChatService {
             // 메세지가 있는 경우
             for (Messages msg : byChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc) {
 
-                log.debug("db에서 메세지 불러오기 성공");
+                log.debug("db 에서 메세지 불러오기 성공");
                 Optional<User> optionalUser = userRepository.findById(msg.getSenderId());
                 String senderImgUrl = null;
                 if (optionalUser.isPresent()) {
@@ -481,19 +504,20 @@ public class ChatServiceImpl implements ChatService {
             }
         }
 
-
-        // TODO 중복되는 값 제거
-
         // redis 에서 가져온 내역이 있는 경우
         if (optionalList.isPresent()) {
             log.debug("Redis에서 가져온 내역이 있음");
             List<ChatMessageDTO> chatMessageDtos = optionalList.get();
-            String messageId = chatMessageDtos.get(chatMessageDtos.size() - 1).getMessageId();
+            //마지막 메세지 아이디
+            Long messageId = Long.valueOf(chatMessageDtos.get(chatMessageDtos.size() - 1).getMessageId());
+            log.debug("레디스에서 가져온 마지막 메세지 아이디:{}", messageId);
+
             if (chatMessageDtos.size() < needCnt) {
                 int more = needCnt - chatMessageDtos.size();
                 // 20 개 - redis 로 가져온 내역 갯수 = 추가 내역 페이징
                 Pageable pageable = PageRequest.of(0, more); // 첫 페이지, 최대 20개
-                List<Messages> messagesList = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, Long.parseLong(messageId), pageable);
+                // redis 에서 가져온 마지막 아이디 보다 더 작은 메세지 추가로 가져오기
+                List<Messages> messagesList = messagesRepository.findByChatRoomIdAndMessageIdLessThanOrderedByMessageIdDesc(chatRoomId, messageId, pageable);
                 for (Messages m : messagesList) {
                     Optional<User> optionalUser = userRepository.findById(m.getSenderId());
                     String imgUrl = null;
@@ -512,6 +536,9 @@ public class ChatServiceImpl implements ChatService {
                             .build();
                     optionalList.get().add(chatMessageDTO);
                 }
+                // 중복되는 거 지운 후 반환
+                Set<ChatMessageDTO> uniqueMessages = new LinkedHashSet<>(chatMessageDTOList);
+                return uniqueMessages.isEmpty() ? Collections.emptyList() : new ArrayList<>(uniqueMessages);
             }
         }
         return optionalList.orElse(Collections.emptyList());
