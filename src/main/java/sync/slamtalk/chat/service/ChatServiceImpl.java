@@ -160,7 +160,7 @@ public class ChatServiceImpl implements ChatService {
             log.debug("userChatRoom 저장 완료 : {}", savedUserChatRoom.getChat().getId());
         }
 
-        // 테스트용 임시
+        // 생성 완료에 따른 알림
         for(Long id : participants){
             log.debug("알림을 줄 참여자 아이디 : {}",id);
             NotificationRequest req = NotificationRequest.of("채팅방이 생성되었습니다","",Set.of(id));
@@ -169,15 +169,18 @@ public class ChatServiceImpl implements ChatService {
         return roomNum;
     }
 
+    /**
+     * 특정 채팅방에 참여하고 있는 유저들에게 새로운 메세지 알림
+     *
+     * @param  roomId : 채팅방 Id
+     */
     @Override
     public void notificationMessage(Long roomId) {
-        // 채팅방가지고 있는 userChatRoom 유저들에게 알림전달
-        // 잠시 보류
-//        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChat_Id(roomId);
-//        for(UserChatRoom u : userChatRooms){
-//            NotificationRequest req = NotificationRequest.of("새로운 메세지가 도착했습니다.","",Set.of(u.getUser().getId()));
-//            notificationSender.send(req);
-//        }
+        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChat_Id(roomId);
+        for(UserChatRoom u : userChatRooms){
+            NotificationRequest req = NotificationRequest.of("새로운 메세지가 도착했습니다.","",Set.of(u.getUser().getId()));
+            notificationSender.send(req);
+        }
     }
 
     /**
