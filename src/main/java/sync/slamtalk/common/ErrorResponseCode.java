@@ -6,6 +6,8 @@ public enum ErrorResponseCode implements ResponseCodeDetails {
 
     OK(SC_OK, 200,"Request Success"),
     INVALID_TOKEN(SC_BAD_REQUEST,4001,"Token Invalid"),
+    ENTITY_NOT_FOUND(SC_NOT_FOUND,4002,"Entity Not Found"),
+    UNAUTHORIZED(SC_UNAUTHORIZED,4003,"Unauthorized"),
 
     // 로그인
     LOGIN_FAIL(SC_UNAUTHORIZED,4011,"Failed Login"),

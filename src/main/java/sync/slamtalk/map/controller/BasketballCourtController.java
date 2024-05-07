@@ -30,100 +30,133 @@ import sync.slamtalk.map.service.ReportBasketballCourtService;
 @Slf4j
 @RequestMapping("/api/map")
 public class BasketballCourtController {
+
+    private static final String COURT_LIST_SUCCESS_MSG = "농구장 목록을 성공적으로 가져왔습니다.";
+    private static final String COURT_INFO_SUCCESS_MSG = "농구장 상세 정보를 성공적으로 가져왔습니다.";
+    private static final String SAVE_REPORTED_COURT_SUCCESS_MSG = "제보 받은 농구장 정보를 저장하였습니다.";
+    private static final String USER_REPORTED_STANDING_COURT_LIST_SUCCESS_MSG = "이용자가 제보한 검토중인 농구장 목록을 성공적으로 가져왔습니다.";
+    private static final String USER_REPORTED_STANDING_COURT_INFO_SUCCESS_MSG = "이용자가 제보한 검토중인 농구장 상세 정보를 성공적으로 가져왔습니다.";
+    private static final String UPDATE_USER_REPORTED_COURT_SUCCESS_MSG = "이용자가 제보한 농구장 정보를 수정하였습니다.";
+
     private final BasketballCourtService basketballCourtService;
     private final ReportBasketballCourtService reportBasketballCourtService;
     private final BasketballCourtMapper basketballCourtMapper;
 
-
-    //전체 농구장 간략 정보
+    /**
+     * 승인된 모든 농구장의 요약 정보를 조회합니다.
+     * @return 승인된 모든 농구장 리스트
+     */
     @GetMapping("/courts")
     @Operation(
-            summary = "전체 농구장 간략 정보", // 기능 제목 입니다
-            description = "이 기능은 마커에 띄울 전체 농구장의 간략 정보 응답을 보내는 기능입니다.", // 기능 설명
+            summary = "전체 농구장 간략 정보",
+            description = "이 기능은 마커에 띄울 전체 농구장의 간략 정보 응답을 보내는 기능입니다.",
             tags = {"지도", "게스트"}
     )
-    public ApiResponse<List<BasketballCourtSummaryDto>> getAllCourtSummaryInfo() {
-        List<BasketballCourtSummaryDto> courtDetails = basketballCourtService.getAllCourtSummaryInfo();
-        return (ApiResponse.ok(courtDetails, "농구장 목록을 성공적으로 가져왔습니다."));
+    public ApiResponse<List<BasketballCourtSummaryDto>> getListApprovedBasketballCourtSummaries() {
+        List<BasketballCourtSummaryDto> courtDetails = basketballCourtService.getAllApprovedBasketballCourtSummaries();
+        return ApiResponse.ok(courtDetails, COURT_LIST_SUCCESS_MSG);
     }
 
-
-    //특정 농구장 전체 정보
+    /**
+     * 특정 농구장의 상세 정보를 조회합니다.
+     * @param courtId 농구장 ID
+     * @return 농구장 ID에 해당하는 농구장의 상세 정보
+     */
     @GetMapping("/courts/{courtId}")
     @Operation(
-            summary = "마커 클릭 농구장 전체 정보", // 기능 제목 입니다
-            description = "이 기능은 클릭한 마커에 해당하는 농구장의 전체 정보 응답을 보내는 기능입니다.", // 기능 설명
+            summary = "마커 클릭 농구장 전체 정보",
+            description = "이 기능은 클릭한 마커에 해당하는 농구장의 전체 정보 응답을 보내는 기능입니다.",
             tags = {"지도", "게스트"}
     )
-    public ApiResponse<BasketballCourtFullResponseDTO> getCourtFullInfoById(@PathVariable Long courtId) {
+    public ApiResponse<BasketballCourtFullResponseDTO> getDetailedBasketballCourtInfo(@PathVariable Long courtId) {
 
-        BasketballCourtFullResponseDTO basketballCourtResponseDTO = basketballCourtService.getCourtFullInfoById(courtId);
-        return ApiResponse.ok(basketballCourtResponseDTO, "농구장 상세 정보를 성공적으로 가져왔습니다.");
+        BasketballCourtFullResponseDTO basketballCourtResponseDTO = basketballCourtService.getApprovedBasketballCourtDetailsById(courtId);
+        return ApiResponse.ok(basketballCourtResponseDTO,COURT_INFO_SUCCESS_MSG);
 
     }
 
-    // 농구장 제보
+    /**
+     * 사용자가 제보한 농구장 정보를 저장합니다.
+     * @param basketballCourtRequestDTO 사용자가 제보한 농구장 정보
+     * @param file 농구장 사진
+     * @param userId 제보한 사용자 ID
+     * @return 저장된 농구장 DTO
+     */
     @PostMapping("/report")
     @Operation(
-            summary = "제보 받은 농구장 정보 저장", // 기능 제목 입니다
-            description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.", // 기능 설명
+            summary = "제보 받은 농구장 정보 저장",
+            description = "이 기능은 이용자가 제보한 농구장 정보를 저장하는 기능입니다.",
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtResponseDTO> reportBasketballCourt(
+    public ApiResponse<BasketballCourtResponseDTO> saveUserReportedBasketballCourt(
             @RequestPart(name = "data", required = false) BasketballCourtRequestDTO basketballCourtRequestDTO,
             @RequestPart(name = "image", required = false) MultipartFile file,
             @AuthenticationPrincipal Long userId) {
 
-        BasketballCourt court = reportBasketballCourtService.reportCourt(basketballCourtRequestDTO, file, userId);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 저장하였습니다.");
+        BasketballCourt court = reportBasketballCourtService.createBasketballCourtReport(basketballCourtRequestDTO, file, userId);
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), SAVE_REPORTED_COURT_SUCCESS_MSG);
     }
 
-    // 제보한 농구장 조회
+    /**
+     * 사용자가 제보한 농구장 중 대기 상태인 농구장을 조회합니다.
+     * @param userId 사용자 ID
+     * @return 사용자가 제보한 농구장 중 대기 상태인 농구장 목록
+     */
     @GetMapping("/report/courts")
     @Operation(
-            summary = "이용자가 제보한 농구장 조회", // 기능 제목 입니다
-            description = "이 기능은 이용자가 제보한 농구장 정보를 조회하는 기능입니다.", // 기능 설명
+            summary = "이용자가 제보한 농구장 중 대기 상태인 농구장 조회",
+            description = "이 기능은 이용자가 제보한 농구장 중 대기 상태인 농구장 목록을 조회하는 기능입니다.",
             tags = {"지도"}
     )
-    public ApiResponse<List<BasketballCourtReportSummaryDTO>> getUserReportedCourtSummaryInfo(@AuthenticationPrincipal Long userId) {
+    public ApiResponse<List<BasketballCourtReportSummaryDTO>> getListUserReportedStandingBasketballCourts(@AuthenticationPrincipal Long userId) {
 
-        List<BasketballCourtReportSummaryDTO> basketballCourtSummaryDtoList = basketballCourtService.getUserReportedCourtSummaryInfo(
+        List<BasketballCourtReportSummaryDTO> basketballCourtSummaryDtoList = basketballCourtService.getUserReportedBasketballCourtSummariesByUserId(
                 userId);
-        return ApiResponse.ok(basketballCourtSummaryDtoList, "검토중인 농구장 목록을 성공적으로 가져왔습니다.");
+        return ApiResponse.ok(basketballCourtSummaryDtoList, USER_REPORTED_STANDING_COURT_LIST_SUCCESS_MSG);
     }
 
-    // 제보한 특정 농구장 상세 조회
+    /**
+     * 사용자가 제보한 농구장 중 대기 상태인 특정 농구장의 상세 정보를 조회합니다.
+     * @param courtId 농구장 ID
+     * @param userId 사용자 ID
+     * @return 제보한 농구장 중 대기 상태인 특정 농구장의 상세 정보
+     */
     @GetMapping("/report/courts/{courtId}")
     @Operation(
-            summary = "이용자가 제보한 특정 농구장 상세 조회", // 기능 제목 입니다
-            description = "이 기능은 이용자가 제보한 특정 농구장 정보를 상세 조회하는 기능입니다.", // 기능 설명
+            summary = "이용자가 제보한 농구장 중 대기 상태인 특정 농구장의 상세 정보 조회",
+            description = "이 기능은 이용자가 제보한 농구장 중 대기 상태인 특정 농구장의 상세 정보를 조회하는 기능입니다.",
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtReportResponseDTO> getUserReportedCourtInfo(@PathVariable Long courtId,
-                                                                                  @AuthenticationPrincipal Long userId) {
+    public ApiResponse<BasketballCourtReportResponseDTO> getStandingBasketballCourtDetail(@PathVariable Long courtId,
+                                                                                          @AuthenticationPrincipal Long userId) {
 
-        BasketballCourtReportResponseDTO basketballCourt = basketballCourtService.getUserReportedCourtFullInfo(
+        BasketballCourtReportResponseDTO basketballCourt = basketballCourtService.getUserReportedBasketballCourtDetailsByIdAndUserId(
                 courtId, userId);
-        return ApiResponse.ok(basketballCourt, "검토중인 농구장 상세 정보를 성공적으로 가져왔습니다.");
+        return ApiResponse.ok(basketballCourt, USER_REPORTED_STANDING_COURT_INFO_SUCCESS_MSG);
     }
 
-    // 제보한 농구장 정보 수정
+    /**
+     * 사용자가 제보한 농구장 정보를 수정합니다.
+     * @param courtId 농구장 ID
+     * @param basketballCourtRequestDTO 수정할 농구장 정보
+     * @param file 농구장 사진
+     * @param userId 제보한 사용자 ID
+     * @return 수정된 농구장 DTO
+     */
     @PatchMapping("/report/edit/{courtId}")
     @Operation(
-            summary = "이용자가 제보한 농구장 정보 수정", // 기능 제목 입니다
-            description = "이 기능은 이용자가 제보한 농구장 정보를 수정하는 기능입니다.", // 기능 설명
+            summary = "이용자가 제보한 농구장 정보 수정",
+            description = "이 기능은 이용자가 제보한 농구장 정보를 수정하는 기능입니다.",
             tags = {"지도"}
     )
-    public ApiResponse<BasketballCourtResponseDTO> editReportBasketballCourt(
+    public ApiResponse<BasketballCourtResponseDTO> updateUserReportedBasketballCourt(
             @PathVariable Long courtId,
             @RequestPart(name = "data", required = false) BasketballCourtRequestDTO basketballCourtRequestDTO,
             @RequestPart(name = "image", required = false) MultipartFile file,
             @AuthenticationPrincipal Long userId) {
 
-        System.out.println("controller");
-
-        BasketballCourt court = reportBasketballCourtService.editReportCourt(courtId, basketballCourtRequestDTO, file,
+        BasketballCourt court = reportBasketballCourtService.updateSubmittedBasketballCourtReport(courtId, basketballCourtRequestDTO, file,
                 userId);
-        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), "제보 받은 농구장 정보를 수정하였습니다.");
+        return ApiResponse.ok(basketballCourtMapper.toFullDto(court), UPDATE_USER_REPORTED_COURT_SUCCESS_MSG);
     }
 }
