@@ -5,13 +5,23 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Fee {
+public enum Fee implements EnumType{
     FREE("무료"),
     NON_FREE("유료");
 
-    private final String feeType;
+    private final String type;
 
     public static Fee fromString(String value) {
-        return "NON_FREE".equals(value) ?  NON_FREE : FREE;
+        for (Fee fee : values()) {
+            if (fee.type.equals(value)) {
+                return fee;
+            }
+        }
+
+        return null;
+    }
+
+    public String getType(){
+        return this.type;
     }
 }
