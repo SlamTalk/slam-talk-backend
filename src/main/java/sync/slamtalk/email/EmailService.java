@@ -58,7 +58,7 @@ public class EmailService {
 
     /**
      * 이메일 검증하는 메서드
-     * - 레디스에서 <key,value> 로 저장된 <code, email> 을 추적하여 이메일 검증을 완료한다.
+     * - 레디스에서 <key,value> 로 저장된 <email, code> 을 추적하여 이메일 검증을 완료한다.
      * - 검증 코드가 일치하면 이메일 인증이 성공적으로 완료되며, 해당 이메일은 60분 동안 '인증됨' 상태가 된다.
      * - 인증 코드가 일치하지 않거나, 해당 이메일에 대한 인증 코드가 존재하지 않는 경우 예외가 발생한다.
      *
@@ -70,7 +70,7 @@ public class EmailService {
             String email,
             String code
     ) {
-        String key = generateEmailVerificationKey(email, code);
+        String key = generateEmailVerificationKey(email);
         String codeFoundByEmail = redisService.getData(key);
         // 인증번호를 받은적 없는 이메일일 경우
         if (codeFoundByEmail == null) {
@@ -78,12 +78,14 @@ public class EmailService {
         }
 
         // 인증번호가 일치하지 않을 경우
-        if (!codeFoundByEmail.equals(email)) {
+        if (!codeFoundByEmail.equals(code)) {
             throw new BaseException(EmailErrorResponseCode.POST_USERS_INVALID_CODE);
         }
 
         redisService.setDataExpire(generateAuthenticatedEmailKey(email), "OK", 60 * 60L); // 인증 완료 되었을 경우, 60분 동안 회원가입 가능
-        redisService.deleteData(code);
+
+        // 인증 후 인증코드 삭제
+        redisService.deleteData(key);
     }
 
     /**
@@ -188,19 +190,17 @@ public class EmailService {
     }
 
     /**
-     * 이메일 인증을 위한 레디스 전용 키를 생성합니다. 생성된 키는 'email:{이메일주소}:authenticationCode:{인증코드}' 형식을 가집니다.
+     * 이메일 인증을 위한 레디스 전용 키를 생성합니다. 생성된 키는 'authentication:email:{이메일주소}' 형식을 가집니다.
      *
      * @param email 사용자의 이메일 주소
-     * @param code  이메일 인증을 위해 사용되는 코드
      * @return 생성된 이메일 인증 키를 문자열로 반환합니다.
      */
-    private static String generateEmailVerificationKey(String email, String code) {
+    private static String generateEmailVerificationKey(String email) {
         // key 생성
         StringJoiner sj = new StringJoiner(":");
+        sj.add("authentication");
         sj.add("email");
         sj.add(email);
-        sj.add("authenticationCode");
-        sj.add(code);
         return sj.toString();
     }
 
@@ -227,9 +227,9 @@ public class EmailService {
      * @param code  사용자에게 발급된 인증 코드입니다. 이 코드는 키 생성에 사용되며, 검증 시 해당 코드의 유효성을 검사하는 데 사용됩니다.
      */
     private void saveVerificationCodeToRedis(String email, String code) {
-        String key = generateEmailVerificationKey(email, code);
+        String key = generateEmailVerificationKey(email);
 
-        savingRedisData(key, email);
+        savingRedisData(key, code);
     }
 
     /**
