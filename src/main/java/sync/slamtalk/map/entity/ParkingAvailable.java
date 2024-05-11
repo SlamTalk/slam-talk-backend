@@ -5,13 +5,23 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ParkingAvailable {
+public enum ParkingAvailable implements EnumType{
     PARKING_AVAILABLE("가능"),
     PARKING_UNAVAILABLE("불가능");
 
-    private final String parkingAvailableType;
+    private final String type;
 
     public static ParkingAvailable fromString(String value) {
-        return "PARKING_AVAILABLE".equals(value) ? PARKING_AVAILABLE : PARKING_UNAVAILABLE;
+        for (ParkingAvailable parkingAvailable : values()) {
+            if (parkingAvailable.type.equals(value)) {
+                return parkingAvailable;
+            }
+        }
+
+        return null;
+    }
+
+    public String getType() {
+        return this.type;
     }
 }
