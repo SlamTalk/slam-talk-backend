@@ -13,18 +13,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.email.EmailService;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
-import sync.slamtalk.user.dto.request.UserChangePasswordReq;
 import sync.slamtalk.user.dto.request.UserLoginReq;
 import sync.slamtalk.user.dto.request.UserSignUpReq;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.error.UserErrorResponseCode;
+import sync.slamtalk.user.utils.PasswordGenerator;
 
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER;
 
@@ -42,6 +44,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
+    private final EmailService emailService;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -94,7 +97,7 @@ public class AuthService {
     ) {
 
         // 이메일 인증된 사용자인지 판별 하는 로직
-        String isAuth = redisService.getData(userSignUpReqDto.getEmail());
+        String isAuth = redisService.getData(generateAuthenticatedEmailKey(userSignUpReqDto.getEmail()));
         if (isAuth == null || !isAuth.equals("OK")) {
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
@@ -140,11 +143,6 @@ public class AuthService {
         generateJwtAndSetResponseTokens(response, user);
     }
 
-    private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
-        if (userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()) {
-            throw new BaseException(ALREADY_CANCEL_USER);
-        }
-    }
 
     /**
      * 쿠키에서 리프래쉬 토큰을 추출하여 엑세스 토큰과 리프래쉬 토큰을 재발급하는 메서드
@@ -179,6 +177,82 @@ public class AuthService {
 
         /* 엑세스 토큰 헤더에 저장*/
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+    }
+
+    /**
+     * 회원 탈퇴
+     *
+     * @param userId : 탈퇴하고자 하는 USER
+     */
+    @Transactional
+    public void cancelUser(
+            Long userId
+    ) {
+        // todo : 소셜 로그인일 경우 별도의 처리가 필요하다!
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+        SocialType socialType = user.getSocialType();
+
+  /*      if(socialType.equals(SocialType.KAKAO)){
+            revokeService.deleteKakaoAccount(user);
+        }*/ /*else if (socialType.equals(SocialType.GOOGLE)){
+            revokeService.deleteGoogleAccount(user, accessToken);
+        } else if (socialType.equals(SocialType.NAVER)) {
+            revokeService.deleteNaverAccount(user, accessToken);
+        }*/
+
+        userRepository.deleteById(userId);
+        // todo : 게시판, 채팅, 팀매칭, 상대팀 매칭 모든 글의 softDelete 처리를 해줘야함.
+        // todo : 댓글 및 좋아요도 해줘야한다.
+        // todo : 출석 테이블도 삭제 처리해야함.
+        // todo : 이후 스케줄러를 통해 매번 1번씩 soft 처리된 모든 필드를 삭제하는 로직을 가져가야할 것 같다.
+
+    }
+
+
+    @Transactional
+    public void userChangePassword(
+            Long userId,
+            String password
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
+
+        // Redis 서버를 통해 이메일 인증 여부를 확인합니다.
+        String redisKey = generateAuthenticatedEmailKey(user.getEmail());
+        String isAuth = redisService.getData(redisKey);
+
+        // 인증되지 않았거나 인증 데이터가 "OK"가 아닌 경우 예외를 발생시킵니다.
+        if (isAuth == null || !isAuth.equals("OK")) {
+            throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
+        }
+
+        // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
+        user.updatePassword(passwordEncoder.encode(password));
+
+        // 비밀번호 변경이 완료된 후, 사용자의 이메일 인증 데이터를 레디스 서버에서 삭제합니다.
+        redisService.deleteData(redisKey);
+    }
+
+    /**
+     * 레디스 전용 이메일 인증 키를 생성하는 로직
+     *
+     * @param email 사용자이메일
+     * @return string 이메일인증키 발급
+     */
+    private static String generateAuthenticatedEmailKey(String email) {
+        // key 생성
+        StringJoiner sj = new StringJoiner(":");
+        sj.add("email");
+        sj.add(email);
+        return sj.toString();
+    }
+
+
+    private void checkAlreadyCancelUser(UserSignUpReq userSignUpReqDto) {
+        if (userRepository.findUserByEmailAndSocialTypeIgnoringWhere(userSignUpReqDto.getEmail(), SocialType.LOCAL.toString()).isPresent()) {
+            throw new BaseException(ALREADY_CANCEL_USER);
+        }
     }
 
     /**
@@ -262,63 +336,24 @@ public class AuthService {
     }
 
     /**
-     * 회원 탈퇴
+     * 사용자에게 임시 비밀번호를 발급하여 이메일로 전송하는 메서드입니다.
      *
-     * @param userId : 탈퇴하고자 하는 USER
+     * @param email 임시 비밀번호를 발급받을 사용자의 이메일 주소입니다. 해당 이메일을 가진 사용자가 존재하지 않는 경우, 임시 비밀번호는 발급되지 않습니다.
+     * @return 없음 (void 반환 타입)
      */
-    @Transactional
-    public void cancelUser(
-            Long userId
-    ) {
-        // todo : 소셜 로그인일 경우 별도의 처리가 필요하다!
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        SocialType socialType = user.getSocialType();
 
-  /*      if(socialType.equals(SocialType.KAKAO)){
-            revokeService.deleteKakaoAccount(user);
-        }*/ /*else if (socialType.equals(SocialType.GOOGLE)){
-            revokeService.deleteGoogleAccount(user, accessToken);
-        } else if (socialType.equals(SocialType.NAVER)) {
-            revokeService.deleteNaverAccount(user, accessToken);
-        }*/
+    public void issuanceOfTemporaryPassword(String email) {
+        Optional<User> byEmail = userRepository.findByEmail(email);
 
-        userRepository.deleteById(userId);
-        // todo : 게시판, 채팅, 팀매칭, 상대팀 매칭 모든 글의 softDelete 처리를 해줘야함.
-        // todo : 댓글 및 좋아요도 해줘야한다.
-        // todo : 출석 테이블도 삭제 처리해야함.
-        // todo : 이후 스케줄러를 통해 매번 1번씩 soft 처리된 모든 필드를 삭제하는 로직을 가져가야할 것 같다.
+        // 이메일을 가진 유저가 존재하지 않는다면 임시 비밀번호를 발급 하지 않음.
+        if (byEmail.isEmpty()) return;
 
+
+        // 임시 비밀번호로 유저 업데이트
+        String temporaryPassword = PasswordGenerator.generatePassword(10);
+        User user = byEmail.get();
+        user.updatePassword(temporaryPassword);
+
+        emailService.sendTemporaryPasswordViaEmail(email, temporaryPassword);
     }
-
-    /**
-     * 사용자의 비밀번호를 변경하는 메서드입니다.
-     * <p>
-     * 이 메서드는 먼저 레디스 서버를 통해 사용자의 이메일 인증 여부를 확인합니다.
-     * 인증이 완료된 경우에만 비밀번호 변경 절차를 진행합니다.
-     * 변경하려는 비밀번호는 암호화 과정을 거치게 됩니다.
-     *
-     * @param userChangePasswordReq 변경하고자 하는 사용자의 이메일 및 새 비밀번호 정보가 담긴 DTO 객체입니다.
-     *                              이 객체를 통해 사용자 식별 및 비밀번호 업데이트에 필요한 데이터를 전달받습니다.
-     */
-    @Transactional
-    public void userChangePassword(UserChangePasswordReq userChangePasswordReq) {
-
-        // Redis 서버를 통해 이메일 인증 여부를 확인합니다.
-        String isAuth = redisService.getData(userChangePasswordReq.getEmail());
-        // 인증되지 않았거나 인증 데이터가 "OK"가 아닌 경우 예외를 발생시킵니다.
-        if (isAuth == null || !isAuth.equals("OK")) {
-            throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
-        }
-
-        // userRepository를 통해 해당 이메일을 가진 사용자를 찾습니다.
-        // 찾는 과정에서 사용자를 찾지 못하면 예외를 발생시킵니다.
-        User user = userRepository.findByEmail(userChangePasswordReq.getEmail())
-                .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
-        user.updatePassword(passwordEncoder.encode(userChangePasswordReq.getPassword()));
-        // 비밀번호 변경이 완료된 후, 사용자의 이메일 인증 데이터를 레디스 서버에서 삭제합니다.
-        redisService.deleteData(userChangePasswordReq.getEmail());
-    }
-
 }
