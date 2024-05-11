@@ -80,7 +80,8 @@ public class SecurityConfig {
                                     "/favicon.ico",
                                     "/api/send-mail",
                                     "/api/mail-check",
-                                    "/api/user/change-password"
+                                    "/api/user/password",
+                                    "/api/user/temporary-passwords"
                             ).permitAll();
 
                             // 게스트 권환 설정
