@@ -80,7 +80,6 @@ public class SecurityConfig {
                                     "/favicon.ico",
                                     "/api/send-mail",
                                     "/api/mail-check",
-                                    "/api/user/password",
                                     "/api/user/temporary-passwords"
                             ).permitAll();
 
