@@ -343,7 +343,7 @@ public class AuthService {
      */
 
     public void issuanceOfTemporaryPassword(String email) {
-        Optional<User> byEmail = userRepository.findByEmail(email);
+        Optional<User> byEmail = userRepository.findByEmailAndSocialType(email, SocialType.LOCAL);
 
         // 이메일을 가진 유저가 존재하지 않는다면 임시 비밀번호를 발급 하지 않음.
         if (byEmail.isEmpty()) return;
