@@ -11,7 +11,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.common.BaseException;
-import sync.slamtalk.user.UserRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +24,6 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
     private final RedisService redisService; //redis 관련
     private final TemplateEngine templateEngine;
-    private final UserRepository userRepository;
     private static final String PASSWORD_RESET_TEMPLATE = "password-reset-template";
     private static final String REGISTER_EMAIL_CERTIFICATE_TEMPLATE = "register-email-verification-template";
     private static final String EMAIL_ENCODING = "UTF-8";
