@@ -17,6 +17,7 @@ import sync.slamtalk.security.oauth2.OAuthAttributes;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
+import sync.slamtalk.user.service.NicknameService;
 
 import java.util.Collections;
 import java.util.HashMap;
