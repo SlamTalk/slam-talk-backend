@@ -8,7 +8,6 @@ import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.notification.NotificationSender;
 import sync.slamtalk.notification.dto.request.ChatNotificationRequest;
-import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.Notification;
 import sync.slamtalk.notification.model.NotificationType;
 
@@ -48,7 +47,7 @@ public class ChatNotificationServiceImpl implements ChatNotificationService{
                     // 읽었다 -> 생성함
                     String message = messageService.newMessage(roomId,userId);
                     String uri = messageService.getPath(roomId);
-                    ChatNotificationRequest req = ChatNotificationRequest.of(message,uri, Set.of(u.getUser().getId()),roomId,null, NotificationType.CHAT);
+                    ChatNotificationRequest req = ChatNotificationRequest.of(message,uri, Set.of(u.getUser().getId()),u.getId(),null, NotificationType.CHAT);
                     notificationSender.send(req);
                 }
                 for(Notification noty : notifications){
@@ -57,7 +56,7 @@ public class ChatNotificationServiceImpl implements ChatNotificationService{
                         // 읽었다 -> 생성함
                         String message = messageService.createChatRoom(roomId);
                         String uri = messageService.getPath(roomId);
-                        NotificationRequest req = NotificationRequest.of(message,uri,Set.of(u.getUser().getId()),null,NotificationType.CHAT);
+                        ChatNotificationRequest req = ChatNotificationRequest.of(message,uri,Set.of(u.getUser().getId()),u.getId(),null,NotificationType.CHAT);
                         notificationSender.send(req);
                     }else{
                         // 읽지 않았다 -> 생성 안함
