@@ -1,6 +1,7 @@
 package sync.slamtalk.user.dto.response;
 
 import lombok.*;
+import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
 import sync.slamtalk.user.utils.UserLevelScore;
 
@@ -13,6 +14,7 @@ public class UserDetailsOtherInfo {
     private Long id;
     private String nickname;
     private String imageUrl;
+    private SocialType socialType;
 
     /* 마이페이지 기능 */
     private String selfIntroduction;
@@ -47,6 +49,7 @@ public class UserDetailsOtherInfo {
                 user.getId(),
                 user.getNickname(),
                 user.getImageUrl(),
+                user.getSocialType(),
                 user.getSelfIntroduction(),
                 basketballSkillLevel,
                 basketballPosition,

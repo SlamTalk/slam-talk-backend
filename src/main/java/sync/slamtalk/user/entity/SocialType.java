@@ -1,5 +1,5 @@
 package sync.slamtalk.user.entity;
 
 public enum SocialType {
-    LOCAL, KAKAO, NAVER, GOOGLE
+    LOCAL, KAKAO, NAVER, GOOGLE, NONE
 }
