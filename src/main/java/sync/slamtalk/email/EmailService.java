@@ -11,10 +11,12 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import sync.slamtalk.chat.redis.RedisService;
 import sync.slamtalk.common.BaseException;
+import sync.slamtalk.user.UserRepository;
+import sync.slamtalk.user.entity.SocialType;
+import sync.slamtalk.user.error.UserErrorResponseCode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 @Slf4j
@@ -24,6 +26,7 @@ public class EmailService {
     private final JavaMailSender javaMailSender;
     private final RedisService redisService; //redis 관련
     private final TemplateEngine templateEngine;
+    private final UserRepository userRepository;
     private static final String PASSWORD_RESET_TEMPLATE = "password-reset-template";
     private static final String REGISTER_EMAIL_CERTIFICATE_TEMPLATE = "register-email-verification-template";
     private static final String EMAIL_ENCODING = "UTF-8";
@@ -42,6 +45,8 @@ public class EmailService {
      */
     public void sendEmailVerificationMail(String email) {
         String code = UUID.randomUUID().toString().substring(0, 6); //랜덤 인증번호 uuid를 이용!
+
+        checkEmailExistence(email);
 
         // 인증코드 이메일 전송하기
         sendEmailForTheTemplate(
@@ -112,6 +117,16 @@ public class EmailService {
                 email,
                 "SlamTalk 임시 비밀번호 입니다",
                 temporaryPassword);
+    }
+
+    /**
+     * 회원가입 시 중복 이메일이 존재하는지 검사하는 메서드
+     */
+    private void checkEmailExistence(String email) {
+        if (userRepository.findByEmailAndSocialType(email, SocialType.LOCAL).isPresent()) {
+            log.debug("이미 존재하는 유저 이메일입니다.");
+            throw new BaseException(UserErrorResponseCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     /**
