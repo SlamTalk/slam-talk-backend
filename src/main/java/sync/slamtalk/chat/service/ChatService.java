@@ -22,7 +22,7 @@ public interface ChatService {
 
 
     // 메세지 저장
-    void saveMessage(ChatMessageDTO chatMessageDTO);
+    Long saveMessage(ChatMessageDTO chatMessageDTO);
 
 
     // 정상적으로 존재하는 채팅방인지 확인
@@ -35,9 +35,6 @@ public interface ChatService {
 
     // 채팅방 나갈때 readIndex 저장
     void saveReadIndex(Long userId, Long chatRoomId, Long readIndex);
-
-
-    void notificationMessage(Long roomId);
 
     // 특정 방에서 주고 받은 모든 메세지 가져오기
     // 페이징 방식에 의존
