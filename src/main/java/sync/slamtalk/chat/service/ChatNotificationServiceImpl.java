@@ -54,7 +54,7 @@ public class ChatNotificationServiceImpl implements ChatNotificationService{
                     log.debug("=== notification 도는중 === ");
                     if(noty.isRead()){
                         // 읽었다 -> 생성함
-                        String message = messageService.createChatRoom(roomId);
+                        String message = messageService.newMessage(roomId,userId);
                         String uri = messageService.getPath(roomId);
                         ChatNotificationRequest req = ChatNotificationRequest.of(message,uri,Set.of(u.getUser().getId()),u.getId(),null,NotificationType.CHAT);
                         notificationSender.send(req);
