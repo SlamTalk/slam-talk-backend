@@ -233,6 +233,8 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
+        if(!SocialType.LOCAL.equals(user.getSocialType())) throw new BaseException(UserErrorResponseCode.SOCIAL_LOGIN_PASSWORD_CHANGE_NOT_SUPPORTED);
+
         // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
         user.updatePassword(passwordEncoder.encode(password));
 
