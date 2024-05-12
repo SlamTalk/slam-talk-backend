@@ -51,7 +51,7 @@ public class MessageService {
 
                 for(UserChatRoom u: userChatRooms){
                     if(u.getUser().getId().equals(userId)){
-                        return u.getUser().getUsername() + "님과 대화에서 새로운 메세지가 도착했습니다.";
+                        return u.getUser().getNickname() + "님과 대화에서 새로운 메세지가 도착했습니다.";
                     }
                 }
             }
