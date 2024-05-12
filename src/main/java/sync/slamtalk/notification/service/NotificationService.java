@@ -97,4 +97,15 @@ public class NotificationService {
 		return notificationRepository.findById(notificationId)
 				.orElseThrow(() -> new BaseException(ErrorResponseCode.ENTITY_NOT_FOUND));
 	}
+
+	/**
+	 * 유저의 특정 채팅방 알림 지우기
+	 * @param userId
+	 * @param chatRoomId
+	 */
+	public void deleteChatNotification(Long userId,Long chatRoomId){
+		log.debug("{}유저의 채팅방{}을 지운다",userId,chatRoomId);
+		notificationRepository.deleteNotificationBy(userId,chatRoomId);
+
+	}
 }
