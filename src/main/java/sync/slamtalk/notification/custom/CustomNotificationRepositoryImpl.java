@@ -25,9 +25,9 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
 	private final JdbcTemplate jdbcTemplate;
 	private final UserChatRoomRepository userChatRoomRepository;
 
-	private static final String INSERT_NOTIFICATIONS_SQL = "INSERT INTO notification (notification_content_id, user_id, is_read, created_at, updated_at) VALUES (?, ?, false, NOW(), NOW())";
+	private static final String INSERT_NOTIFICATIONS_SQL = "INSERT INTO notification (notification_content_id, user_id, is_read, created_at, updated_at) VALUES (?, ?,false, NOW(), NOW())";
 	private static final String INSERT_NOTIFICATION_CONTENT_SQL = "INSERT INTO notification_content (message, uri, user_id, notification_type, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
-	private static final String INSERT_CHATNOTIFICATION_SQL = "INSERT INTO notification (notification_content_id, user_id, is_read, user_chat_room_id, notification_type, created_at, updated_at) VALUES (?, ?, false, ?, ?, NOW(), NOW())";
+	private static final String INSERT_CHATNOTIFICATION_SQL = "INSERT INTO notification (notification_content_id, user_id, is_read, user_chat_room_id, created_at, updated_at) VALUES (?, ?, false, ?, NOW(), NOW())";
 
 
 	/**
@@ -62,23 +62,16 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
 	@Override
 	public void insertNotifications(String message,String uri,Set<Long> memberIds,Long chatRoomId, Long userId, NotificationType notificationType){
 		// 알림 내용 등록
-		long notificationContentId = saveNotificationContent(message,uri,userId,notificationType);
+		long notificationContentId = saveNotificationContent(message, uri,userId,notificationType);
 
-		List<Long> collect = memberIds.stream().toList();
-
-		log.debug(collect.get(0).toString());
-
-		// UserChatRoom 조회
-		UserChatRoom userChatRoom = userChatRoomRepository.findByUserChatroom(collect.get(0),chatRoomId).orElseThrow(
-				() -> new RuntimeException("UserChatRoom not found")
-		);
-
+		// batchUpdate를 사용하기 위해 파라미터 리스트 생성
 		List<Object[]> parameters = new ArrayList<>();
-		for(Long memberId : memberIds){
-			parameters.add(new Object[]{notificationContentId, memberId, userChatRoom.getId()});
+		for (Long memberId : memberIds) {
+			parameters.add(new Object[] {notificationContentId, memberId, chatRoomId});
 		}
 
-		jdbcTemplate.batchUpdate(INSERT_CHATNOTIFICATION_SQL,parameters);
+		// batchUpdate를 사용하여 여러 개의 알림을 한 번에 등록
+		jdbcTemplate.batchUpdate(INSERT_CHATNOTIFICATION_SQL, parameters);
 
 	}
 
