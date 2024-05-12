@@ -25,8 +25,9 @@ import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.notification.NotificationSender;
-import sync.slamtalk.notification.dto.request.NotificationRequest;
+import sync.slamtalk.notification.dto.request.ChatNotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
+import sync.slamtalk.notification.service.NotificationService;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -46,6 +47,7 @@ public class ChatServiceImpl implements ChatService {
     private final NotificationSender notificationSender;
     private final MessageService messageService;
     private final ChatNotificationServiceImpl chatNotificationService;
+    private final NotificationService notificationService;
 
     /**
      * 채팅방을 생성한다.
@@ -137,9 +139,11 @@ public class ChatServiceImpl implements ChatService {
         directs.add(userB);
 
         int dIndex = 1;
+        Long userChatRoomId=0L;
         for (Long user : chatCreateDTO.getParticipants()) {
 
             Optional<User> optionalUser = userRepository.findById(user);
+
 
             // UserChatRoom 생성
             UserChatRoom userChatRoom = UserChatRoom.builder()
@@ -163,6 +167,7 @@ public class ChatServiceImpl implements ChatService {
                 }
             }
             UserChatRoom savedUserChatRoom = userChatRoomRepository.save(userChatRoom);
+            userChatRoomId = savedUserChatRoom.getId();
             log.debug("userChatRoom 저장 완료 : {}", savedUserChatRoom.getChat().getId());
         }
 
@@ -171,7 +176,7 @@ public class ChatServiceImpl implements ChatService {
             log.debug("알림을 줄 참여자 아이디 : {}",id);
             String message = messageService.createChatRoom(roomNum);
             String uri = messageService.getPath(roomNum);
-            NotificationRequest req = NotificationRequest.of(message,uri,Set.of(id),null, NotificationType.CHAT);
+            ChatNotificationRequest req = ChatNotificationRequest.of(message,uri,Set.of(id),userChatRoomId,null, NotificationType.CHAT);
             notificationSender.send(req);
         }
         return roomNum;
@@ -367,11 +372,13 @@ public class ChatServiceImpl implements ChatService {
                     dto.setLastMessageTime(messages.getCreationTime());
                     chatRooms.add(dto);
 
+                    // 채팅 리스트에 빨간 점
                     if(!messages.getId().equals(ucr.getReadIndex())){
                         dto.updateNoReadCnt(true);
                     }
-                    //log.debug("마지막메세지아이디:{}",messages.getId());
-                    //log.debug("유저가가지고있는메세지아이디:{}",ucr.getReadIndex());
+                    // 알림 제거
+                    notificationService.deleteChatNotification(userId,ucr.getId());
+                    log.debug("방번호: {} -> 알림제거",ucr.getChat());
                 }
                 if (latestByChatRoomId.isEmpty()) {
                     dto.setLast_message("주고 받은 메세지가 없습니다.");
