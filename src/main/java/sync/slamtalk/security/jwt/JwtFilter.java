@@ -12,9 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import sync.slamtalk.security.config.SecurityConstants;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Jwt를 위한 커스텀 필터
@@ -25,6 +25,8 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // permitAll 관련
    @Value("${jwt.access.header}")
    public String authorizationHeader;
+   @Value("${app.exception-paths}")
+   private List<String> EXCEPTION_PATHS;
    @Value("${jwt.refresh.header}")
    public String refreshAuthorizationHeader;
    private final JwtTokenProvider tokenProvider;
@@ -45,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // pe
       String requestURI = httpServletRequest.getRequestURI();
 
       // EXCEPTION_PATHS 경로에 있는 것들은 토큰 검사 안함.
-      for(String exceptionPath : SecurityConstants.EXCLUDE_URLS){
+      for(String exceptionPath : EXCEPTION_PATHS){
          if(httpServletRequest.getRequestURI().contains(exceptionPath)){
             log.trace("이 페이지는 검사 안함 : {}", httpServletRequest.getRequestURI());
             filterChain.doFilter(httpServletRequest, httpServletResponse);
@@ -53,6 +55,8 @@ public class JwtFilter extends OncePerRequestFilter { // BaseAuthoriFilter // pe
          }
       }
 
+
+      // TODO : 로그인, 회원가입, 리프레쉬, 로그아웃 시 URL 안거치게 하는 로직 추가하기
 
       // 1. Request header accessToken 토큰 추출 및 유효성 검사
       if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {

@@ -2,6 +2,8 @@ package sync.slamtalk.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,8 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id", callSuper = false)
+@SQLDelete(sql = "UPDATE users SET is_deleted = true, refresh_token = null  WHERE id = ?")
+@SQLRestriction("is_deleted <> true")
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 public class User extends BaseEntity implements UserDetails {
@@ -33,7 +37,9 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
     @Column(nullable = false, unique = true)
     private String nickname;
+    @Column(nullable = false)
     private String email;
+    @Column(nullable = false)
     private String imageUrl;
     @Column
     private String refreshToken;
@@ -47,9 +53,6 @@ public class User extends BaseEntity implements UserDetails {
     private SocialType socialType;
     @Column
     private String socialId;
-
-    @Column
-    private String oauth2AccessToken;
 
     /* 마이페이지 기능 */
     @Column
@@ -143,21 +146,6 @@ public class User extends BaseEntity implements UserDetails {
                 .build();
     }
 
-    public void userWithdrawal(String newNickname) {
-        delete();
-        this.nickname = newNickname;
-        this.password = null;
-        this.email = null;
-        this.imageUrl = null;
-        this.socialId = null;
-        this.socialType = SocialType.NONE;
-        this.refreshToken = null;
-        this.selfIntroduction = null;
-        this.basketballSkillLevel = null;
-        this.basketballPosition = null;
-        this.oauth2AccessToken = null;
-    }
-
     /**
      * 리프레쉬 토큰 update하는 메서드
      *
@@ -228,18 +216,6 @@ public class User extends BaseEntity implements UserDetails {
      */
     public void updatePassword(String password) {
         this.password = password;
-    }
-
-    /**
-     * 이 메소드는 OAuth2 인증을 위해 사용자의 액세스 토큰을 업데이트합니다.
-     * OAuth2 인증 절차에서 액세스 토큰은 사용자의 인증 정보를 서버에 제공하는 중요한 역할을 합니다.
-     * 새로운 액세스 토큰이 발급되었을 때 이 메소드를 호출하여 기존 토큰을 새 토큰으로 교체합니다.
-     *
-     * @param oauth2AccessToken 새로 발급받은 OAuth2 액세스 토큰. 이 토큰은 사용자의 인증 상태를 나타내며,
-     *                          API 요청 시 인증 헤더에 포함되어야 합니다.
-     */
-    public void updateOauth2AccessToken(String oauth2AccessToken){
-        this.oauth2AccessToken = oauth2AccessToken;
     }
 
     /* UserDetails 관련 메서드 */

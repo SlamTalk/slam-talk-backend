@@ -1,4 +1,4 @@
-package sync.slamtalk.user.service;
+package sync.slamtalk.security.oauth2.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,7 +10,6 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class NicknameService {
     private final UserRepository userRepository;
-    private final Random random = new Random();
 
     /**
      * 소셜 닉네임을 기반으로 사용 가능한 닉네임을 생성합니다.
@@ -26,23 +25,11 @@ public class NicknameService {
         String processedNickname = removeSpecialCharactersAndConvertToLowercase(socialNickname);
 
         if (processedNickname.length() >= 13 || isNicknameAlreadyExists(processedNickname)) {
-            return generateAnonymousNickname("익명",1); // "익명" + 랜덤 숫자 생성
+            return generateAnonymousNickname(1); // "익명" + 랜덤 숫자 생성
         }
 
         return processedNickname; // 조건에 부합하면 처리된 닉네임 반환
     }
-
-    /**
-     * 탈퇴한 사용자를 위한 익명 닉네임을 생성합니다.
-     * "탈퇴유저"라는 문자열에 뒤이어 랜덤 숫자를 결합하여 새로운 닉네임을 형성합니다.
-     * 이 메소드는 탈퇴한 사용자에게 고유한 닉네임을 제공하기 위해 사용됩니다.
-     *
-     * @return String 타입으로, "탈퇴유저"라는 문자열과 뒤에 붙는 랜덤 숫자를 결합한 새로운 닉네임을 반환합니다.
-     */
-    public String createANicknameForDeletedUser() {
-        return generateAnonymousNickname("탈퇴유저", 1); // "탈퇴유저" + 랜덤 숫자 생성
-    }
-
 
 
     /**
@@ -51,19 +38,17 @@ public class NicknameService {
      * @param depth 재귀 호출의 깊이
      * @return String 생성된 고유 닉네임
      */
-    private String generateAnonymousNickname(String keyword, int depth) {
+    private String generateAnonymousNickname(int depth) {
         int length = (depth == 1) ? 4 : (depth == 2) ? 8 : 11; // 재귀 단계에 따른 랜덤 숫자 길이
         String randomDigits = generateRandomDigits(length);
-        String newNickname = keyword + randomDigits;
+        String newNickname = "익명" + randomDigits;
 
         if (isNicknameAlreadyExists(newNickname)) {
-            return generateAnonymousNickname(keyword,depth + 1); // 재귀 호출 시 깊이 증가
+            return generateAnonymousNickname(depth + 1); // 재귀 호출 시 깊이 증가
         } else {
             return newNickname;
         }
     }
-
-
 
     /**
      * 주어진 길이에 따라 랜덤 숫자 문자열을 생성합니다.
@@ -72,6 +57,7 @@ public class NicknameService {
      * @return String 생성된 랜덤 숫자 문자열
      */
     private String generateRandomDigits(int length) {
+        Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
         for (int i = 0; i < length; i++) {

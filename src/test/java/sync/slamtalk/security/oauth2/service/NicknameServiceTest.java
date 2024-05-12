@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
-import sync.slamtalk.user.service.NicknameService;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,7 +36,7 @@ class NicknameServiceTest {
         String generatedNickname = nicknameService.createAvailableNickname(nickname);
 
         // then
-        assertEquals(generatedNickname, nickname);
+        assertEquals(generatedNickname, "테스트닉네임");
     }
 
     @Test

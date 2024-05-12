@@ -17,7 +17,6 @@ import sync.slamtalk.security.oauth2.OAuthAttributes;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.SocialType;
 import sync.slamtalk.user.entity.User;
-import sync.slamtalk.user.service.NicknameService;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,19 +69,16 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // socialType에 따라 유저 정보를 통해 OAuthAttributes 객체 생성
         OAuthAttributes extractAttributes = OAuthAttributes.of(socialType, userNameAttributeName, attributes);
 
-        User user = getUser(extractAttributes, socialType); // getUser() 메소드로 User 객체 생성 후 반환
-
-        // 소셜 엑세스 토큰 저장하는 로직 추가
-        user.updateOauth2AccessToken(userRequest.getAccessToken().getTokenValue());
+        User createdUser = getUser(extractAttributes, socialType); // getUser() 메소드로 User 객체 생성 후 반환
 
         // DefaultOAuth2User를 구현한 CustomOAuth2User 객체를 생성해서 반환
         return new CustomOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(user.getRole().getKey())),
+                Collections.singleton(new SimpleGrantedAuthority(createdUser.getRole().getKey())),
                 attributes,
                 extractAttributes.getNameAttributeKey(),
-                user.getEmail(),
-                user.getRole(),
-                user.getSocialType()
+                createdUser.getEmail(),
+                createdUser.getRole(),
+                createdUser.getSocialType()
         );
     }
 
