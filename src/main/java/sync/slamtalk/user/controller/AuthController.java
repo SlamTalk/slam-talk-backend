@@ -140,8 +140,12 @@ public class AuthController {
             summary = "회원 탈퇴",
             description = "회원 탈퇴 시 모든 유저의 정보가 사라진다"
     )
-    public ApiResponse<Void> userWithdrawal(@AuthenticationPrincipal Long userId) {
-        authService.userWithdrawal(userId);
+    public ApiResponse<Void> userWithdrawal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @AuthenticationPrincipal Long userId
+    ) {
+        authService.userWithdrawal(request, response, userId);
         return ApiResponse.ok();
     }
 
