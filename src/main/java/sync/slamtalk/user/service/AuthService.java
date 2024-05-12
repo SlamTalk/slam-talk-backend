@@ -248,6 +248,7 @@ public class AuthService {
      * @return 없음 (void 반환 타입)
      */
 
+    @Transactional
     public void issuanceOfTemporaryPassword(String email) {
         Optional<User> byEmail = userRepository.findByEmailAndSocialType(email, SocialType.LOCAL);
 
@@ -258,7 +259,7 @@ public class AuthService {
         // 임시 비밀번호로 유저 업데이트
         String temporaryPassword = PasswordGenerator.generatePassword(10);
         User user = byEmail.get();
-        user.updatePassword(temporaryPassword);
+        user.updatePassword(passwordEncoder.encode(temporaryPassword));
 
         emailService.sendTemporaryPasswordViaEmail(email, temporaryPassword);
     }
