@@ -3,7 +3,6 @@ package sync.slamtalk.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +23,6 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "id", callSuper = false)
 @SQLDelete(sql = "UPDATE users SET is_deleted = true, refresh_token = null  WHERE id = ?")
-@SQLRestriction("is_deleted <> true")
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 public class User extends BaseEntity implements UserDetails {
@@ -37,9 +35,7 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
     @Column(nullable = false, unique = true)
     private String nickname;
-    @Column(nullable = false)
     private String email;
-    @Column(nullable = false)
     private String imageUrl;
     @Column
     private String refreshToken;
@@ -146,6 +142,20 @@ public class User extends BaseEntity implements UserDetails {
                 .build();
     }
 
+    public void userWithdrawal(String newNickname) {
+        delete();
+        this.nickname = newNickname;
+        this.password = null;
+        this.email = null;
+        this.imageUrl = null;
+        this.socialId = null;
+        this.socialType = SocialType.NONE;
+        this.refreshToken = null;
+        this.selfIntroduction = null;
+        this.basketballSkillLevel = null;
+        this.basketballPosition = null;
+    }
+
     /**
      * 리프레쉬 토큰 update하는 메서드
      *
@@ -217,6 +227,8 @@ public class User extends BaseEntity implements UserDetails {
     public void updatePassword(String password) {
         this.password = password;
     }
+
+
 
     /* UserDetails 관련 메서드 */
     @Override
