@@ -3,8 +3,8 @@ package sync.slamtalk.community.mapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import sync.slamtalk.community.dto.CommentResponseDTO;
 import sync.slamtalk.community.dto.CommunityCreateRequestDTO;
@@ -18,15 +18,12 @@ public class CommunityMapper {
 
     public Community toCommunityEntity(CommunityCreateRequestDTO requestDTO, User user) {
         // 빌더 패턴을 사용하여 Community 인스턴스 생성
-        Community community = Community.builder()
+        return Community.builder()
                 .user(user)
                 .title(requestDTO.getTitle())
                 .content(requestDTO.getContent())
                 .category(requestDTO.getCategory())
                 .build();
-
-
-        return community;
     }
 
     public CommunityResponseDTO toCommunityResponseDTO(Community community) {
@@ -36,7 +33,7 @@ public class CommunityMapper {
                 .stream()
                 .map(CommunityImage::getImageUrl)
                 .filter(url -> url != null && !url.trim().isEmpty()) // 공백과 null이 아닌 URL만 필터링
-                .collect(Collectors.toList());
+                .toList();
 
         return CommunityResponseDTO.builder()
                 .communityId(community.getCommunityId())
@@ -58,7 +55,7 @@ public class CommunityMapper {
                 .stream()
                 .map(CommunityImage::getImageUrl)
                 .filter(url -> url != null && !url.trim().isEmpty()) // 공백과 null이 아닌 URL만 필터링
-                .collect(Collectors.toList());
+                .toList();
 
         return CommunityResponseDTO.builder()
                 .communityId(community.getCommunityId())
@@ -74,7 +71,7 @@ public class CommunityMapper {
     }
 
     // Community 엔티티 리스트를 CommunityResponseDTO 리스트로 변환
-    public List<CommunityResponseDTO> toCommunityResponseDTOList(List<Community> communities) {
+    public List<CommunityResponseDTO> toCommunityResponseDTOList(List<Community> communities, Map<Community,Long> commentCount) {
         return communities.stream()
                 .map(community -> CommunityResponseDTO.builder()
                         .communityId(community.getCommunityId())
@@ -82,7 +79,8 @@ public class CommunityMapper {
                         .category(community.getCategory())
                         .userNickname(community.getUser().getNickname())
                         .userId(community.getUser().getId())
+                        .commentCount(commentCount.get(community))
                         .build())
-                .collect(Collectors.toList());
+                .toList();
     }
 }

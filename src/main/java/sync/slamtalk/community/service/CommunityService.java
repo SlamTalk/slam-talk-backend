@@ -1,9 +1,6 @@
 package sync.slamtalk.community.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +17,7 @@ import sync.slamtalk.community.entity.Community;
 import sync.slamtalk.community.entity.CommunityCategory;
 import sync.slamtalk.community.entity.CommunityImage;
 import sync.slamtalk.community.mapper.CommunityMapper;
+import sync.slamtalk.community.repository.CommentRepository;
 import sync.slamtalk.community.repository.CommunityRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
@@ -28,6 +26,7 @@ import sync.slamtalk.user.entity.User;
 @Slf4j
 @RequiredArgsConstructor
 public class CommunityService {
+    private final CommentRepository commentRepository;
     private final CommunityRepository communityRepository;
     private final CommunityMapper communityMapper;
     private final UserRepository userRepository;
@@ -114,14 +113,24 @@ public class CommunityService {
     @Transactional(readOnly = true)
     public List<CommunityResponseDTO> getPostList() {
         List<Community> communities = communityRepository.findByIsDeletedFalse();
-        return communityMapper.toCommunityResponseDTOList(communities);
+        Map<Community, Long> commentCounts = new HashMap<>();
+
+        for (Community community : communities) {
+            commentCounts.put(community, commentRepository.countByCommunityAndIsDeletedFalse(community));
+        }
+        return communityMapper.toCommunityResponseDTOList(communities, commentCounts);
     }
 
     // 태그 별 게시글 목록 조회
     @Transactional(readOnly = true)
     public List<CommunityResponseDTO> getPostListByCategory(CommunityCategory category) {
         List<Community> communities = communityRepository.findByCategoryAndIsDeletedFalse(category);
-        return communityMapper.toCommunityResponseDTOList(communities);
+        Map<Community, Long> commentCounts = new HashMap<>();
+
+        for (Community community : communities) {
+            commentCounts.put(community, commentRepository.countByCommunityAndIsDeletedFalse(community));
+        }
+        return communityMapper.toCommunityResponseDTOList(communities, commentCounts);
     }
 
     //단일 게시글 조회
@@ -165,11 +174,11 @@ public class CommunityService {
         // images 리스트에 실제로 내용이 있는 파일만 필터링 후 업로드
         List<String> imageUrls = awsS3Repository.uploadFiles(images.stream()
                 .filter(image -> !image.isEmpty())
-                .collect(Collectors.toList()));
+                .toList());
 
         return imageUrls.stream()
                 .map(url -> new CommunityImage(null, community, url))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 게시글 등록 입력 데이터(제목,내용,태그) 검증
