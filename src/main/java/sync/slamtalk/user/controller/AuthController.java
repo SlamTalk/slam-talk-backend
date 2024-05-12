@@ -14,6 +14,7 @@ import sync.slamtalk.common.ApiResponse;
 import sync.slamtalk.user.dto.request.UserChangePasswordReq;
 import sync.slamtalk.user.dto.request.UserLoginReq;
 import sync.slamtalk.user.dto.request.UserSignUpReq;
+import sync.slamtalk.user.dto.request.UserTmpPasswordReq;
 import sync.slamtalk.user.service.AuthService;
 
 /**
@@ -111,15 +112,26 @@ public class AuthController {
         return ApiResponse.ok();
     }
 
-    @PatchMapping("/user/change-password")
+    @PatchMapping("/user/temporary-passwords")
+    @Operation(
+            summary = "임시 비밀번호 발급",
+            description = "사용자가 원하는 이메일로 임시 비밀번호를 재발급 해준다."
+
+    )
+    public ApiResponse<Void> sendTemporaryPasswordViaEmail(@Valid @RequestBody UserTmpPasswordReq userTmpPasswordReq){
+        authService.issuanceOfTemporaryPassword(userTmpPasswordReq.getEmail());
+        return ApiResponse.ok();
+    }
+    @PatchMapping("/user/password")
     @Operation(
             summary = "유저 비밀번호 변경하기",
             description = "이메일인증을 한 유저의 비밀번호는 특정 비밀번호로 변경이 가능하다."
     )
     public ApiResponse<Void> userChangePassword(
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody UserChangePasswordReq userChangePasswordReq
     ) {
-        authService.userChangePassword(userChangePasswordReq);
+        authService.userChangePassword(userId, userChangePasswordReq.getPassword());
         return ApiResponse.ok();
     }
 

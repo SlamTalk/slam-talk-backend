@@ -3,6 +3,8 @@ package sync.slamtalk.map.mapper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
+
 import org.springframework.stereotype.Component;
 import sync.slamtalk.map.dto.BasketballCourtFullResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtReportResponseDTO;
@@ -10,12 +12,7 @@ import sync.slamtalk.map.dto.BasketballCourtReportSummaryDTO;
 import sync.slamtalk.map.dto.BasketballCourtRequestDTO;
 import sync.slamtalk.map.dto.BasketballCourtResponseDTO;
 import sync.slamtalk.map.dto.BasketballCourtSummaryDto;
-import sync.slamtalk.map.entity.RegistrationStatus;
-import sync.slamtalk.map.entity.BasketballCourt;
-import sync.slamtalk.map.entity.Fee;
-import sync.slamtalk.map.entity.NightLighting;
-import sync.slamtalk.map.entity.OpeningHours;
-import sync.slamtalk.map.entity.ParkingAvailable;
+import sync.slamtalk.map.entity.*;
 
 @Component
 public class BasketballCourtMapper {
@@ -177,7 +174,11 @@ public class BasketballCourtMapper {
     }
 
     // 빈 값일 때, 초깃값 설정
-    private String getValueOrDefault(Enum<?> propertiesValue) {
-        return propertiesValue != null ? propertiesValue.name() : INITIAL_VALUE;
+    private String getValueOrDefault(Enum<?> propertyValue) {
+        if (propertyValue == null) {
+            return INITIAL_VALUE;
+        }
+
+        return ((EnumType) propertyValue).getType();
     }
 }

@@ -5,13 +5,23 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum NightLighting {
+public enum NightLighting implements EnumType{
     LIGHT("있음"),
     NON_LIGHT("없음");
 
-    private final String lightingType;
+    private final String type;
 
     public static NightLighting fromString(String value) {
-        return "LIGHT".equals(value) ? LIGHT : NON_LIGHT;
+        for (NightLighting nightLighting : values()) {
+            if (nightLighting.type.equals(value)) {
+                return nightLighting;
+            }
+        }
+
+        return null;
+    }
+
+    public String getType(){
+        return this.type;
     }
 }
