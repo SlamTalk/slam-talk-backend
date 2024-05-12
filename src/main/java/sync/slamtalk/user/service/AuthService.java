@@ -26,7 +26,6 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 import sync.slamtalk.user.utils.PasswordGenerator;
 
 import java.util.Optional;
-import java.util.StringJoiner;
 
 import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER;
 
@@ -45,6 +44,7 @@ public class AuthService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
+    private final NicknameService nicknameService;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -185,28 +185,13 @@ public class AuthService {
      * @param userId : 탈퇴하고자 하는 USER
      */
     @Transactional
-    public void cancelUser(
+    public void userWithdrawal(
             Long userId
     ) {
-        // todo : 소셜 로그인일 경우 별도의 처리가 필요하다!
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        SocialType socialType = user.getSocialType();
 
-  /*      if(socialType.equals(SocialType.KAKAO)){
-            revokeService.deleteKakaoAccount(user);
-        }*/ /*else if (socialType.equals(SocialType.GOOGLE)){
-            revokeService.deleteGoogleAccount(user, accessToken);
-        } else if (socialType.equals(SocialType.NAVER)) {
-            revokeService.deleteNaverAccount(user, accessToken);
-        }*/
-
-        userRepository.deleteById(userId);
-        // todo : 게시판, 채팅, 팀매칭, 상대팀 매칭 모든 글의 softDelete 처리를 해줘야함.
-        // todo : 댓글 및 좋아요도 해줘야한다.
-        // todo : 출석 테이블도 삭제 처리해야함.
-        // todo : 이후 스케줄러를 통해 매번 1번씩 soft 처리된 모든 필드를 삭제하는 로직을 가져가야할 것 같다.
-
+        user.userWithdrawal(nicknameService.createANicknameForDeletedUser());
     }
 
     @Transactional
