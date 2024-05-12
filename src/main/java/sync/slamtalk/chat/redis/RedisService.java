@@ -1,13 +1,14 @@
 package sync.slamtalk.chat.redis;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 import sync.slamtalk.chat.dto.request.ChatMessageDTO;
+import sync.slamtalk.common.BaseException;
+import sync.slamtalk.email.EmailErrorResponseCode;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -16,11 +17,10 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-@Service
-@AllArgsConstructor
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class RedisService {
-    @Autowired
     private final RedisTemplate<String, String> redisTemplate;
     private final StringRedisTemplate stringRedisTemplate;
     private final UserRepository userRepository;
@@ -127,24 +127,176 @@ public class RedisService {
     }
 
 
-    /* 이메일 인증관련 메서드*/
-    public String getData(String key) {
+
+    /**
+     * 이메일 인증 코드를 저장하는 메소드입니다.
+     * 입력받은 이메일 주소와 인증 코드를 이용하여, Redis 등의 데이터베이스에 인증 코드를 저장합니다.
+     * 저장된 인증 코드는 24시간 동안 유효합니다.
+     *
+     * @param email 이메일 주소. 인증 코드를 받을 대상의 이메일 주소입니다.
+     * @param code  인증 코드. 이메일을 통해 사용자에게 전송된 인증 코드입니다.
+     *              <p>
+     *              주의: 이 메소드는 Redis 서버와의 연결 오류가 발생할 경우,
+     *              EmailErrorResponseCode.DATABASE_ERROR 예외를 발생시킵니다.
+     */
+    public void saveEmailVerificationCode(
+            String email,
+            String code
+    ) {
+
+        String key = generateEmailVerificationKey(email);
+        setValueExpire(key, code, 60 * 60 * 24L); // {key,value} 24시간 동안 저장.
+    }
+
+    /**
+     * 이메일 인증이 완료되어 로그인 가능한 상태를 저장하는 메서드입니다.
+     * 이 메서드는 이메일 주소를 기준으로 한 키를 생성하고, 해당 키와 "OK" 값을 데이터베이스에 저장하여,
+     * 이메일 인증이 성공적으로 완료되었음을 표시합니다. 저장된 데이터는 1시간 동안 유효합니다.
+     * 만약 데이터베이스 연결에 문제가 발생할 경우, EmailErrorResponseCode.DATABASE_ERROR 예외를 발생시킵니다.
+     *
+     * @param email 이메일 인증이 완료된 사용자의 이메일 주소입니다. 이 주소를 기반으로 데이터베이스에 저장될 키가 생성됩니다.
+     *              <p>
+     *              Note: Redis 서버와의 연결 오류가 발생하면, 로깅 후 EmailErrorResponseCode.DATABASE_ERROR 예외가 발생합니다.
+     */
+    public void saveVerificationCompletionEmail(String email) {
+
+        String key = generateEmailVerificationCompletedKey(email);
+        setValueExpire(key, "OK", 60 * 60 * 1L); // {key,value} 1시간 동안 저장.
+    }
+
+    /**
+     * 이 메소드의 목적은 Redis에서 이메일 인증 코드에 해당하는 값을 가져오는 것입니다.
+     *
+     * @param email 이메일 주소. 인증 코드와 함께 사용되어 Redis에서 해당 값을 검색하는 데 사용되는 키를 생성하는 데 사용됩니다.
+     * @param code 이메일과 함께 사용되어 Redis에서 값을 검색하는 데 사용되는 인증 코드입니다.
+     * @return String 타입으로, Redis에서 검색된 이메일 인증 코드의 값입니다. 만약 해당되는 값이 없다면 null이 반환될 수 있습니다.
+     */
+    public String getEmailVerificationCodeValue(
+            String email,
+            String code
+    ) {
+        String key = generateEmailVerificationKey(email);
+        return getValue(key);
+    }
+
+    /**
+     * 이 메서드의 목적은 Redis에서 이메일 인증이 완료된 값을 가져오는 것입니다.
+     * 사용자가 이메일 인증 절차를 완료하였을 때, 해당 인증의 상태를 확인하기 위해 Redis에서 값을 조회합니다.
+     *
+     * @param email 이메일 주소입니다. 이메일 인증이 완료된 값을 조회하기 위한 키를 생성하는 데 사용됩니다.
+     * @return String 타입으로, Redis에서 조회한 이메일 인증 완료 값입니다. 해당하는 값이 없을 경우 null이 반환될 수 있습니다.
+     */
+    public String getEmailVerificationCompletedValue(String email){
+        String key = generateEmailVerificationCompletedKey(email);
+        return getValue(key);
+    }
+
+    /**
+     * 이 메서드의 목적은 Redis에서 특정 이메일에 대한 이메일 인증 코드 값을 삭제하는 것입니다.
+     * 이메일 인증 절차가 완료되었거나, 더 이상 해당 인증 코드가 필요 없을 때 사용되어 Redis 내의 데이터를 관리할 수 있게 합니다.
+     * 이를 통해 불필요한 데이터를 정리하고, Redis의 저장 공간을 효율적으로 사용할 수 있습니다.
+     *
+     * @param email 삭제하고자 하는 이메일 인증 코드와 관련된 이메일 주소입니다. 이 이메일 주소를 기반으로 Redis에서 삭제할 키를 생성합니다.
+     */
+    public void deleteEmailVerificationCodeValue(String email){
+        String key = generateEmailVerificationKey(email);
+        deleteValue(key);
+    }
+
+    /**
+     * 이 메서드의 목적은 Redis에서 특정 이메일에 대한 이메일 인증 완료 값을 삭제하는 것입니다.
+     * 사용자가 이메일 인증 절차를 성공적으로 마친 후, 해당 인증 관련 정보가 더 이상 필요하지 않을 경우 이 메서드를 통해 데이터를 삭제합니다.
+     * 이를 통해 Redis 내에 불필요한 데이터를 정리하고, 저장 공간을 효율적으로 활용할 수 있습니다.
+     *
+     * @param email 삭제하고자 하는 이메일 인증 완료 값과 관련된 이메일 주소입니다. 이 이메일 주소를 기반으로 Redis에서 삭제할 키를 조회합니다.
+     */
+    public void deleteEmailVerificationCompletedValue(String email){
+        String key = generateEmailVerificationCompletedKey(email);
+        deleteValue(key);
+    }
+
+    /**
+     * 이 메서드의 주목적은 Redis에서 주어진 키에 해당하는 값을 조회하는 것입니다.
+     * Redis에 저장된 데이터 중 특정 키를 이용하여 그에 맞는 값을 불러오는 기능을 수행합니다.
+     * 이 과정에서 Redis의 ValueOperations를 사용하여 키-값 쌍의 데이터를 다룹니다.
+     *
+     * @param key 조회하고자 하는 값의 키입니다. 이 키는 Redis 내에서 해당 값에 접근하기 위해 사용됩니다.
+     * @return String 타입으로, Redis에서 키에 해당하는 값입니다. 만약 해당 키로 저장된 값이 없다면 null이 반환될 수 있습니다.
+     */
+    private String getValue(String key) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         return valueOperations.get(key);
     }
 
-    public void setData(String key, String value) {
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        valueOperations.set(key, value);
+    /**
+     * 이 메서드의 목적은 주어진 키와 값을 Redis에 저장하고, 설정된 시간 동안만 유효하게 만드는 것입니다.
+     * 특정 키에 대한 값을 Redis에 저장할 때, 이 값이 일정 시간 후에 자동으로 만료되도록 설정합니다.
+     * 만료 시간이 지나면, Redis에서 해당 키-값 쌍은 자동으로 삭제됩니다.
+     * 이 기능은 일시적인 데이터를 저장할 때 유용하며, 데이터의 유효기간을 관리하는 데 사용됩니다.
+     * 만약 Redis 서버와의 통신 중 오류가 발생하면, 예외를 발생시켜 오류를 알립니다.
+     *
+     * @param key 저장할 데이터의 키입니다. 이 키를 사용하여 나중에 값을 검색할 수 있습니다.
+     * @param value 저장할 데이터의 값입니다. 이 값은 지정된 키와 함께 Redis에 저장됩니다.
+     * @param duration 값이 Redis에 저장될 시간(초 단위)입니다. 이 시간이 지나면, 값은 자동으로 Redis에서 삭제됩니다.
+     * @throws BaseException Redis 서버와의 통신 중 오류가 발생하면, 이 메서드는 EmailErrorResponseCode.DATABASE_ERROR을 포함하는 BaseException을 발생시킵니다.
+     */
+    private void setValueExpire(
+            String key,
+            String value,
+            long duration
+    ) {
+        try {
+            ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+            Duration expireDuration = Duration.ofSeconds(duration);
+            valueOperations.set(key, value, expireDuration);
+        } catch (Exception e) {
+            log.error("redis 서버에서 오류 발생 : = {}", e.toString());
+            throw new BaseException(EmailErrorResponseCode.DATABASE_ERROR);
+        }
     }
 
-    public void setDataExpire(String key, String value, long duration) {
-        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
-        Duration expireDuration = Duration.ofSeconds(duration);
-        valueOperations.set(key, value, expireDuration);
-    }
-
-    public void deleteData(String key) {
+    /**
+     * 이 메서드는 Redis에서 특정 키에 해당하는 값을 삭제하는 목적을 가집니다.
+     * Redis에 저장된 데이터 중에서 더 이상 필요하지 않거나 유효하지 않은 데이터를 제거할 때 사용됩니다.
+     * 이를 통해 Redis 내의 데이터 관리가 용이해지며, 불필요한 데이터로 인한 자원 낭비를 방지할 수 있습니다.
+     *
+     * @param key 삭제할 데이터의 키입니다. 이 키에 해당하는 값이 Redis에서 삭제됩니다.
+     */
+    private void deleteValue(String key) {
         redisTemplate.delete(key);
+    }
+
+    /**
+     * 이메일 인증을 위한 레디스 전용 키를 생성합니다. 생성된 키는 'authentication:email:{이메일주소}' 형식을 가집니다.
+     *
+     * @param email 사용자의 이메일 주소
+     * @return 생성된 이메일 인증 키를 문자열로 반환합니다.
+     */
+    private static String generateEmailVerificationKey(String email) {
+        // key 생성
+        StringJoiner sj = new StringJoiner(":");
+        sj.add("authentication");
+        sj.add("email");
+        sj.add(email);
+        return sj.toString();
+    }
+
+
+    /**
+     * 이 메서드는 이메일 인증이 완료되었을 때 사용할 키를 생성합니다.
+     * 생성된 키는 주로 데이터베이스에서 해당 이메일 인증 정보를 식별하기 위해 사용됩니다.
+     * 이메일 주소를 기반으로 키를 구성하며, ":"를 사용하여 "email"이라는 문자열과 이메일 주소를 결합합니다.
+     * 예를 들어, 이메일 주소가 "example@example.com"인 경우, 생성된 키는 "email:example@example.com"이 됩니다.
+     *
+     * @param email 이메일 주소. 인증이 완료된 사용자의 이메일 주소입니다.
+     * @return 생성된 키 문자열. 데이터베이스에서 이메일 인증 정보를 식별하기 위해 사용됩니다.
+     */
+    private static String generateEmailVerificationCompletedKey(String email) {
+        // key 생성
+        StringJoiner sj = new StringJoiner(":");
+        sj.add("completion");
+        sj.add("email");
+        sj.add(email);
+        return sj.toString();
     }
 }
