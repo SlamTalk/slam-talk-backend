@@ -34,4 +34,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 	 * @param userId 회원 ID
 	 */
 	void deleteAllByUserId(Long userId);
+
+	@Query("delete from Notification where userChatRoom.id = :chatRoomId and userId=:userId")
+	@Modifying
+	void deleteNotificationBy(Long userId, Long chatRoomId);
 }
