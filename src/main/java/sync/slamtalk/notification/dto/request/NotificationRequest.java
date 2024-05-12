@@ -1,10 +1,7 @@
 package sync.slamtalk.notification.dto.request;
-
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import sync.slamtalk.notification.NotificationSender;
+import sync.slamtalk.notification.model.NotificationType;
 
 import java.util.Set;
 
@@ -21,4 +18,6 @@ public class NotificationRequest {
 	private String message;
 	private String uri;
 	private Set<Long> targets;
+	private Long userId;
+	private NotificationType notificationType;
 }
