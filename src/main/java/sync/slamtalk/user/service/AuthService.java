@@ -97,7 +97,7 @@ public class AuthService {
     ) {
 
         // 이메일 인증된 사용자인지 판별 하는 로직
-        String isAuth = redisService.getData(generateAuthenticatedEmailKey(userSignUpReqDto.getEmail()));
+        String isAuth = redisService.getEmailVerificationCompletedValue(userSignUpReqDto.getEmail());
         if (isAuth == null || !isAuth.equals("OK")) {
             log.debug("이메일 인증을 하지 않았습니다!");
             throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
@@ -117,7 +117,7 @@ public class AuthService {
         userRepository.save(user);
 
         // 레디스 이메일 인증한 유저 삭제하기
-        redisService.deleteData(userSignUpReqDto.getEmail());
+        redisService.deleteEmailVerificationCompletedValue(userSignUpReqDto.getEmail());
 
         generateJwtAndSetResponseTokens(response, user);
     }
@@ -209,7 +209,6 @@ public class AuthService {
 
     }
 
-
     @Transactional
     public void userChangePassword(
             Long userId,
@@ -218,34 +217,31 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
-        // Redis 서버를 통해 이메일 인증 여부를 확인합니다.
-        String redisKey = generateAuthenticatedEmailKey(user.getEmail());
-        String isAuth = redisService.getData(redisKey);
-
-        // 인증되지 않았거나 인증 데이터가 "OK"가 아닌 경우 예외를 발생시킵니다.
-        if (isAuth == null || !isAuth.equals("OK")) {
-            throw new BaseException(UserErrorResponseCode.UNVERIFIED_EMAIL);
-        }
-
         // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
         user.updatePassword(passwordEncoder.encode(password));
 
-        // 비밀번호 변경이 완료된 후, 사용자의 이메일 인증 데이터를 레디스 서버에서 삭제합니다.
-        redisService.deleteData(redisKey);
     }
 
     /**
-     * 레디스 전용 이메일 인증 키를 생성하는 로직
+     * 사용자에게 임시 비밀번호를 발급하여 이메일로 전송하는 메서드입니다.
      *
-     * @param email 사용자이메일
-     * @return string 이메일인증키 발급
+     * @param email 임시 비밀번호를 발급받을 사용자의 이메일 주소입니다. 해당 이메일을 가진 사용자가 존재하지 않는 경우, 임시 비밀번호는 발급되지 않습니다.
+     * @return 없음 (void 반환 타입)
      */
-    private static String generateAuthenticatedEmailKey(String email) {
-        // key 생성
-        StringJoiner sj = new StringJoiner(":");
-        sj.add("email");
-        sj.add(email);
-        return sj.toString();
+
+    public void issuanceOfTemporaryPassword(String email) {
+        Optional<User> byEmail = userRepository.findByEmailAndSocialType(email, SocialType.LOCAL);
+
+        // 이메일을 가진 유저가 존재하지 않는다면 임시 비밀번호를 발급 하지 않음.
+        if (byEmail.isEmpty()) return;
+
+
+        // 임시 비밀번호로 유저 업데이트
+        String temporaryPassword = PasswordGenerator.generatePassword(10);
+        User user = byEmail.get();
+        user.updatePassword(temporaryPassword);
+
+        emailService.sendTemporaryPasswordViaEmail(email, temporaryPassword);
     }
 
 
@@ -335,25 +331,4 @@ public class AuthService {
         );
     }
 
-    /**
-     * 사용자에게 임시 비밀번호를 발급하여 이메일로 전송하는 메서드입니다.
-     *
-     * @param email 임시 비밀번호를 발급받을 사용자의 이메일 주소입니다. 해당 이메일을 가진 사용자가 존재하지 않는 경우, 임시 비밀번호는 발급되지 않습니다.
-     * @return 없음 (void 반환 타입)
-     */
-
-    public void issuanceOfTemporaryPassword(String email) {
-        Optional<User> byEmail = userRepository.findByEmailAndSocialType(email, SocialType.LOCAL);
-
-        // 이메일을 가진 유저가 존재하지 않는다면 임시 비밀번호를 발급 하지 않음.
-        if (byEmail.isEmpty()) return;
-
-
-        // 임시 비밀번호로 유저 업데이트
-        String temporaryPassword = PasswordGenerator.generatePassword(10);
-        User user = byEmail.get();
-        user.updatePassword(temporaryPassword);
-
-        emailService.sendTemporaryPasswordViaEmail(email, temporaryPassword);
-    }
 }

@@ -52,7 +52,10 @@ public class EmailService {
         );
 
         // 레디스에 해당 인증코드 저장하기
-        saveVerificationCodeToRedis(email, code);
+        redisService.saveEmailVerificationCode(
+                email,
+                code
+        );
     }
 
 
@@ -70,8 +73,10 @@ public class EmailService {
             String email,
             String code
     ) {
-        String key = generateEmailVerificationKey(email);
-        String codeFoundByEmail = redisService.getData(key);
+        String codeFoundByEmail = redisService.getEmailVerificationCodeValue(
+                email,
+                code
+        );
         // 인증번호를 받은적 없는 이메일일 경우
         if (codeFoundByEmail == null) {
             throw new BaseException(EmailErrorResponseCode.AUTHENTICATION_CODE_DOES_NOT_EXIST);
@@ -82,10 +87,11 @@ public class EmailService {
             throw new BaseException(EmailErrorResponseCode.POST_USERS_INVALID_CODE);
         }
 
-        redisService.setDataExpire(generateAuthenticatedEmailKey(email), "OK", 60 * 60L); // 인증 완료 되었을 경우, 60분 동안 회원가입 가능
+        // 인증 완료된 이메일 redis에 1시간 가량 저장.
+        redisService.saveVerificationCompletionEmail(email);
 
         // 인증 후 인증코드 삭제
-        redisService.deleteData(key);
+        redisService.deleteEmailVerificationCodeValue(email);
     }
 
     /**
@@ -187,68 +193,6 @@ public class EmailService {
         Context context = new Context();
         variables.forEach(context::setVariable);
         return templateEngine.process(templateName, context);
-    }
-
-    /**
-     * 이메일 인증을 위한 레디스 전용 키를 생성합니다. 생성된 키는 'authentication:email:{이메일주소}' 형식을 가집니다.
-     *
-     * @param email 사용자의 이메일 주소
-     * @return 생성된 이메일 인증 키를 문자열로 반환합니다.
-     */
-    private static String generateEmailVerificationKey(String email) {
-        // key 생성
-        StringJoiner sj = new StringJoiner(":");
-        sj.add("authentication");
-        sj.add("email");
-        sj.add(email);
-        return sj.toString();
-    }
-
-
-    /**
-     * 레디스를 위한 이메일 인증 키를 생성하는 메서드입니다. 생성된 키는 'email:{사용자이메일}' 형식을 따릅니다.
-     *
-     * @param email 사용자의 이메일 주소입니다.
-     * @return 생성된 이메일 인증 키를 문자열로 반환합니다.
-     */
-    private static String generateAuthenticatedEmailKey(String email) {
-        // key 생성
-        StringJoiner sj = new StringJoiner(":");
-        sj.add("email");
-        sj.add(email);
-        return sj.toString();
-    }
-
-    /**
-     * 이메일 인증 코드를 Redis에 저장합니다.
-     * 이메일 주소와 인증 코드를 사용하여 Redis에 특정 키를 생성하고, 이 키를 통해 인증 정보를 저장합니다.
-     *
-     * @param email 인증 코드가 발급된 사용자의 이메일 주소입니다. 이 주소는 저장할 데이터의 키 생성에 사용됩니다.
-     * @param code  사용자에게 발급된 인증 코드입니다. 이 코드는 키 생성에 사용되며, 검증 시 해당 코드의 유효성을 검사하는 데 사용됩니다.
-     */
-    private void saveVerificationCodeToRedis(String email, String code) {
-        String key = generateEmailVerificationKey(email);
-
-        savingRedisData(key, code);
-    }
-
-    /**
-     * Redis에 데이터를 저장하는 메서드
-     * - 지정된 키(key)와 값(value)을 받아 Redis에 저장한다. 해당 데이터는 24시간 동안 유지된다.
-     * - Redis 서비스를 통해 데이터 저장 시, 만료 시간을 설정하여 데이터가 자동으로 만료되도록 한다.
-     * - 데이터 저장 중 예외 발생 시, 로그를 기록하고 예외를 발생시킨다.
-     *
-     * @param key   저장할 데이터의 키
-     * @param value 저장할 데이터의 값
-     * @throws BaseException Redis 서버 오류 발생 시 예외를 발생시킨다.
-     */
-    private void savingRedisData(String key, String value) {
-        try {
-            redisService.setDataExpire(key, value, 60 * 60 * 24L); // {key,value} 24시간 동안 저장.
-        } catch (Exception e) {
-            log.error("redis 서버에서 오류 발생 : = {}", e.toString());
-            throw new BaseException(EmailErrorResponseCode.DATABASE_ERROR);
-        }
     }
 
 }
