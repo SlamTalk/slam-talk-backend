@@ -180,9 +180,6 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 Optional<UserChatRoom> byUserChatroom = userChatRoomRepository.findByUserChatroom(userId, roomId);
                 if(byUserChatroom.isPresent()){
                     UserChatRoom userChatRoom = byUserChatroom.get();
-                    // 채팅 알림 지우기 -> 컨트롤러 호출
-                    notificationService.deleteChatNotification(userId,userChatRoom.getId());
-
                 }
             }
 
