@@ -12,8 +12,12 @@ import sync.slamtalk.chat.dto.request.ChatMessageDTO;
 import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.Messages;
 import sync.slamtalk.chat.entity.RoomType;
+import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.ChatRoomRepository;
+import sync.slamtalk.chat.repository.UserChatRoomRepository;
+import sync.slamtalk.chat.service.ChatNotificationServiceImpl;
 import sync.slamtalk.chat.service.ChatServiceImpl;
+import sync.slamtalk.notification.service.NotificationService;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
@@ -21,7 +25,6 @@ import sync.slamtalk.user.entity.User;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,6 +40,9 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final StompHandler stompHandler;
+    private final NotificationService notificationService;
+    private final UserChatRoomRepository userChatRoomRepository;
+    private final ChatNotificationServiceImpl chatNotificationService;
 
 
     @Override
@@ -117,9 +123,9 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                     }
                 }
             }
-
             log.debug("=== SUBSCRIBE 완료 ===");
 
+            // 메세지 읽음 처리 -> 컨트롤러 호출
         }
 
 
@@ -170,6 +176,14 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                 Messages lastMessageFromChatRoom = chatService.getLastMessageFromChatRoom(roomId);
                 chatService.saveReadIndex(userId, roomId, lastMessageFromChatRoom.getId());
                 log.debug("=== ReadIndex 저장 ===");
+
+                Optional<UserChatRoom> byUserChatroom = userChatRoomRepository.findByUserChatroom(userId, roomId);
+                if(byUserChatroom.isPresent()){
+                    UserChatRoom userChatRoom = byUserChatroom.get();
+                    // 채팅 알림 지우기 -> 컨트롤러 호출
+                    notificationService.deleteChatNotification(userId,userChatRoom.getId());
+
+                }
             }
 
 
@@ -200,15 +214,11 @@ public class ChatInboundInterceptor implements ChannelInterceptor {
                             .senderNickname(nickname)
                             .timestamp(LocalDateTime.now().toString())
                             .build();
-                    chatService.saveMessage(chatMessageDTO);
-                    log.debug("=== 저장된 메세지 : {}",chatMessageDTO.getContent());
-                    log.debug("=== MESSAGE 저장 완료 ===");
+                    Long savedMsgId = chatService.saveMessage(chatMessageDTO);
+                    // 메세지 알림
+                    chatNotificationService.notificationMessage(savedMsgId,roomId,userId);
                 }
             }
-            // 메세지 발행시 마다 알림 추가?
-
-            // FIXME 일단 추가, 추후 삭제 하거나 유지
-            chatService.notificationMessage(roomId);
             log.debug("=== 메세지 발송 완료 ===");
         }
 
