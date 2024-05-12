@@ -3,7 +3,11 @@ package sync.slamtalk.chat.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import sync.slamtalk.common.BaseEntity;
+import sync.slamtalk.notification.model.Notification;
 import sync.slamtalk.user.entity.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,6 +31,13 @@ public class UserChatRoom extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chatroom_id", nullable = false)
     private ChatRoom chat;
+
+
+    // 채팅방 알림
+    @OneToMany(mappedBy = "userChatRoom")
+    private List<Notification> notifications = new ArrayList<>();
+
+
 
     // 채팅방 이름
     @Column(name = "chatroom_name")
@@ -88,6 +99,14 @@ public class UserChatRoom extends BaseEntity {
 
 
     /**
+     * 채팅방 이름 설정
+     */
+    public void setName(String name){
+        this.name = name;
+    }
+
+
+    /**
      * 개인 채팅 아이디 설정
      */
     public void setDirectId(Long directId) {
@@ -108,6 +127,19 @@ public class UserChatRoom extends BaseEntity {
      */
     public void updateIsFirst(Boolean isFirst) {
         this.isFirst = isFirst;
+    }
+
+
+    /**
+     * 알림 추가
+     */
+    public void addNotification(Notification notification){
+        if(this.notifications.isEmpty()){
+            this.notifications = new ArrayList<>();
+        }
+        notifications.add(notification);
+        notification.setUserChatRoom(this);
+
     }
 
 }

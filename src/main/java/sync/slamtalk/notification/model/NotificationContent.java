@@ -19,7 +19,16 @@ public class NotificationContent extends BaseEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	// 메세지
 	private String message;
 
+	// 링크
 	private String uri;
+
+	// userId
+	private Long userId;
+
+	// 알림 타입
+	@Enumerated(EnumType.STRING)
+	private NotificationType notificationType;
 }
