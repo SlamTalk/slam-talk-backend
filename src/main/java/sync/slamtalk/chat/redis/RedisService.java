@@ -211,7 +211,7 @@ public class RedisService {
      * @param email 삭제하고자 하는 이메일 인증 완료 값과 관련된 이메일 주소입니다. 이 이메일 주소를 기반으로 Redis에서 삭제할 키를 조회합니다.
      */
     public void deleteEmailVerificationCompletedValue(String email){
-        String key = (email);
+        String key = generateEmailVerificationCompletedKey(email);
         deleteValue(key);
     }
 
@@ -294,6 +294,7 @@ public class RedisService {
     private static String generateEmailVerificationCompletedKey(String email) {
         // key 생성
         StringJoiner sj = new StringJoiner(":");
+        sj.add("completion");
         sj.add("email");
         sj.add(email);
         return sj.toString();
