@@ -16,8 +16,6 @@ import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
 import sync.slamtalk.notification.NotificationSender;
-import sync.slamtalk.notification.dto.request.NotificationRequest;
-import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -40,7 +38,6 @@ public class MatePostService {
     private final UserRepository userRepository;
     private final EntityToDtoMapper entityToDtoMapper;
     private final QueryRepository queryRepository;
-    private final NotificationSender notificationSender;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
