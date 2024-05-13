@@ -16,7 +16,6 @@ import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
-import sync.slamtalk.notification.NotificationSender;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -70,13 +69,11 @@ public class MatePostService {
     public MatePostRes getMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
 
-        MatePostRes matePostRes = getMatePostRes(matePostId, post);
-
-        return matePostRes;
+        return getMatePostRes(matePostId, post);
     }
 
     private MatePostRes getMatePostRes(long matePostId, MatePost post) {
@@ -89,7 +86,7 @@ public class MatePostService {
         List<String> skillList = post.toSkillLevelTypeList();
         List<PositionListDto> positionList = entityToDtoMapper.toPositionListDto(post);
 
-        MatePostRes matePostRes = MatePostRes.builder()
+        return MatePostRes.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(writerId)
                 .writerNickname(writerNickname)
@@ -107,7 +104,6 @@ public class MatePostService {
                 .participants(participantsToArrayList)
                 .createdAt(post.getCreatedAt())
                 .build();
-        return matePostRes;
     }
 
     /**
@@ -124,7 +120,7 @@ public class MatePostService {
      */
     public boolean deleteMatePost(long matePostId, long userId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
         if(!(post.isCorrespondToUser(userId))){
@@ -148,10 +144,10 @@ public class MatePostService {
     public boolean updateMatePost(long matePostId, MatePostReq matePostReq, long userId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        if(post.isCorrespondToUser(userId) == false) {
+        if(!post.isCorrespondToUser(userId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -226,7 +222,7 @@ public class MatePostService {
         List<UnrefinedMatePostDto> listedMatePosts = queryRepository.findMatePostList(condition);
 
         log.debug("listedMatePosts: {}", listedMatePosts);
-        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
+        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).toList();
         List<MatePostToDto> result = refinedDto.stream().map(dto -> {
                     List<ParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
                      dto.setParticipants(refined);
@@ -235,7 +231,7 @@ public class MatePostService {
         ).toList();
         MatePostListDto response = new MatePostListDto();
         response.setMatePostList(result);
-        if(listedMatePosts.isEmpty() == false) {
+        if(!listedMatePosts.isEmpty()) {
             response.setNextCursor(listedMatePosts.get(listedMatePosts.size() - 1).getCreatedAt().toString());
         }
         return response;
