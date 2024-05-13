@@ -36,7 +36,7 @@
         private final ChatRoomRepository chatRoomRepository;
         private final ChatService chatService;
         private final NotificationSender notificationSender;
-
+        private static final String URI = "https://www.slam-talk.site/map/";
         /**
          * 사용자에게 농구장을 제보 받는 기능을 수행합니다.
          * <p>
@@ -145,7 +145,7 @@
 
             notificationSender.send(NotificationRequest.of(
                     user.getNickname() + "님이 제보하신 " + court.getCourtName() + "이 수락되었습니다.",
-                    "https://www.slam-talk.site/map/" + courtId,
+                    URI + courtId,
                     Set.of(user.getId()),
                     user.getId(),
                     NotificationType.BASKETBALL
