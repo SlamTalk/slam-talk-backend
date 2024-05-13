@@ -301,8 +301,8 @@ public class MatePostService {
         });
 
         return new MyMateListRes(
-                allByWriter.stream().map(MatePostKeyInformation::of).toList(),
-                allByApplications.stream().map(MatePostKeyInformation::of).toList()
+                allByWriter.stream().map(MatePostKeyInformation::ofMyPost).toList(),
+                allByApplications.stream().map(m -> MatePostKeyInformation.ofParticipantPost(m, userId)).toList()
         );
     }
 }
