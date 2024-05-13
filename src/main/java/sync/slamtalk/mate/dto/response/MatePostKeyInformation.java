@@ -2,6 +2,7 @@ package sync.slamtalk.mate.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.entity.RecruitmentStatusType;
 
 import java.time.LocalTime;
@@ -11,15 +12,15 @@ import java.time.LocalTime;
 public class MatePostKeyInformation {
     long matePostId;
     String title;
-    String locationDetail;
+    String location;
     LocalTime startTime;
     RecruitmentStatusType status;
 
-    public static MatePostKeyInformation of(MatePostToDto post){
+    public static MatePostKeyInformation of(MatePost post){
         return MatePostKeyInformation.of(
                 post.getMatePostId(),
                 post.getTitle(),
-                post.getLocationDetail(),
+                post.getLocation() +" "+ post.getLocationDetail(),
                 post.getStartTime(),
                 post.getRecruitmentStatus()
         );

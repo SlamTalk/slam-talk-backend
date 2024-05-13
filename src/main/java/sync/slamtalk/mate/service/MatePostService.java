@@ -284,35 +284,25 @@ public class MatePostService {
         List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
-        List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
-                .map(entityToDtoMapper::FromMatePostToMatePostDto)
-                .toList());
-
-        List<MatePostToDto> participatedPost = new ArrayList<>(allByApplications.stream()
-                .map(entityToDtoMapper::FromMatePostToMatePostDto)
-                .map(matePostToDto -> {
-                    matePostToDto.setParticipants(
-                            matePostToDto.getParticipants().stream()
-                                    .filter(participant -> participant.getParticipantId().equals(userId))
-                                    .toList()
-                    );
-                    return matePostToDto;
-                })
-                .toList());
+        // 정렬 기준은 먼저 scheduledDate 필드의 값으로, 같을 경우에는 startTime 필드의 값으로 정렬됩니다.
+        allByWriter.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
         // 정렬 기준은 먼저 scheduledDate 필드의 값으로, 같을 경우에는 startTime 필드의 값으로 정렬됩니다.
-        for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
-            toTeamFormDTOS.sort((o1, o2) -> {
-                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
-                    return o1.getStartTime().compareTo(o2.getStartTime());
-                }
-                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
-            });
-        }
+        allByApplications.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
         return new MyMateListRes(
-                authoredPost.stream().map(MatePostKeyInformation::of).toList(),
-                participatedPost.stream().map(MatePostKeyInformation::of).toList()
+                allByWriter.stream().map(MatePostKeyInformation::of).toList(),
+                allByApplications.stream().map(MatePostKeyInformation::of).toList()
         );
     }
 }
