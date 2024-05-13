@@ -9,14 +9,12 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import sync.slamtalk.common.Site;
 import sync.slamtalk.mate.entity.MatePost;
 import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
-import sync.slamtalk.mate.service.MateDeclineEvent;
 import sync.slamtalk.notification.NotificationSender;
 import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.notification.util.StringSlicer;
 
 import java.time.LocalDate;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor

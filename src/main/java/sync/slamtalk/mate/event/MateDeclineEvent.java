@@ -1,4 +1,4 @@
-package sync.slamtalk.mate.service;
+package sync.slamtalk.mate.event;
 
 import sync.slamtalk.mate.entity.MatePost;
 
