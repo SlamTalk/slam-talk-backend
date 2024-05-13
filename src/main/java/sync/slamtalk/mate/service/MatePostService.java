@@ -12,6 +12,7 @@ import sync.slamtalk.mate.dto.request.MatePostReq;
 import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.event.CompleteMateEvent;
+import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
@@ -130,6 +131,7 @@ public class MatePostService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         post.softDeleteMatePost();
+        eventPublisher.publishEvent(new MatePostPostDeletionEvent(post, post.getParticipants().stream().map(Participant::getParticipantId).collect(Collectors.toSet())));
         return true;
     }
 
