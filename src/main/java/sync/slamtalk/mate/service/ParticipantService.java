@@ -2,6 +2,7 @@ package sync.slamtalk.mate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
@@ -9,6 +10,7 @@ import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
+import sync.slamtalk.mate.event.MateSupportEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.ParticipantRepository;
@@ -31,6 +33,7 @@ public class ParticipantService {
     private final ParticipantRepository participantRepository;
     private final UserRepository userRepository;
     private final EntityToDtoMapper entityToDtoMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     /*
     해당 글의 참여자 목록에 신청자를 등록한다.
@@ -56,17 +59,22 @@ public class ParticipantService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(post.getRecruitmentStatus().equals(RecruitmentStatusType.RECRUITING)){
-            Participant participant = new Participant(participantId, participantNickname, fromParticipantDto.getPosition(),
-                    fromParticipantDto.getSkillLevel(), post);
-
-            Participant resultParticipant = participantRepository.save(participant);
-
-            ParticipantDto resultdto = new ParticipantDto(resultParticipant);
-            return resultdto;
-        } else {
+        // 모집중이 아닐 경우 신청을 못함
+        if(!post.getRecruitmentStatus().equals(RecruitmentStatusType.RECRUITING)) {
             throw new BaseException(NOT_ALLOWED_TO_PARTICIPATE);
         }
+
+        Participant participant = new Participant(participantId, participantNickname, fromParticipantDto.getPosition(),
+                    fromParticipantDto.getSkillLevel(), post);
+
+        Participant resultParticipant = participantRepository.save(participant);
+
+        ParticipantDto resultdto = new ParticipantDto(resultParticipant);
+
+        // 이벤트 발생
+        eventPublisher.publishEvent(new MateSupportEvent(post, user.getNickname(), post.getWriterId()));
+
+        return resultdto;
 
     }
 
