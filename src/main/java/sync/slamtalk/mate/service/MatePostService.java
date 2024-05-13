@@ -3,6 +3,7 @@ package sync.slamtalk.mate.service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
@@ -10,9 +11,12 @@ import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.dto.request.MatePostReq;
 import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.event.CompleteMateEvent;
+import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
+import sync.slamtalk.notification.NotificationSender;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -35,6 +39,7 @@ public class MatePostService {
     private final UserRepository userRepository;
     private final EntityToDtoMapper entityToDtoMapper;
     private final QueryRepository queryRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Objective : 메이트찾기 게시글을 등록한다.
@@ -126,6 +131,7 @@ public class MatePostService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         post.softDeleteMatePost();
+        eventPublisher.publishEvent(new MatePostPostDeletionEvent(post, post.getParticipants().stream().map(Participant::getParticipantId).collect(Collectors.toSet())));
         return true;
     }
 
@@ -253,22 +259,27 @@ public class MatePostService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(post.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            List<Participant> participants = post.getParticipants();
-
-            if(participants.size() == 0 || participants.stream().filter(participant -> participant.getApplyStatus() == ApplyStatusType.ACCEPTED).count() == 0){
-                throw new BaseException(NO_ACCEPTED_PARTICIPANT);
-            }else{
-                for(Participant participant : participants){
-                    if(participant.getApplyStatus() != ApplyStatusType.ACCEPTED){
-                        participant.softDeleteParticipant();
-                    }
-                }
-            }
-            post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
-        }else{
+        if(post.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        List<Participant> participants = post.getParticipants();
+
+        if(participants.isEmpty() || participants.stream().filter(participant -> participant.getApplyStatus() == ApplyStatusType.ACCEPTED).count() == 0){
+            throw new BaseException(NO_ACCEPTED_PARTICIPANT);
+        }
+
+        for(Participant participant : participants){
+            if(participant.getApplyStatus() != ApplyStatusType.ACCEPTED){
+                    participant.softDeleteParticipant();
+            }
+        }
+
+        post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
+
+
+        eventPublisher.publishEvent(new CompleteMateEvent(post, participants.stream().map(Participant::getParticipantId).collect(Collectors.toSet())));
+
         return participantService.getParticipants(post.getMatePostId());
     }
 
