@@ -285,11 +285,11 @@ public class MatePostService {
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
         List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .toList());
 
         List<MatePostToDto> participatedPost = new ArrayList<>(allByApplications.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
+                .map(entityToDtoMapper::FromMatePostToMatePostDto)
                 .map(matePostToDto -> {
                     matePostToDto.setParticipants(
                             matePostToDto.getParticipants().stream()
@@ -300,8 +300,9 @@ public class MatePostService {
                 })
                 .toList());
 
+        // 정렬 기준은 먼저 scheduledDate 필드의 값으로, 같을 경우에는 startTime 필드의 값으로 정렬됩니다.
         for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
-            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
+            toTeamFormDTOS.sort((o1, o2) -> {
                 if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
                     return o1.getStartTime().compareTo(o2.getStartTime());
                 }
@@ -309,6 +310,9 @@ public class MatePostService {
             });
         }
 
-        return new MyMateListRes(authoredPost, participatedPost);
+        return new MyMateListRes(
+                authoredPost.stream().map(MatePostKeyInformation::of).toList(),
+                participatedPost.stream().map(MatePostKeyInformation::of).toList()
+        );
     }
 }
