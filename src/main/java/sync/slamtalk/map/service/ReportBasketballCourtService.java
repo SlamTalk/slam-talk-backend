@@ -1,6 +1,8 @@
     package sync.slamtalk.map.service;
 
     import java.util.Optional;
+    import java.util.Set;
+
     import lombok.RequiredArgsConstructor;
     import org.springframework.stereotype.Service;
     import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,9 @@
     import sync.slamtalk.map.entity.RegistrationStatus;
     import sync.slamtalk.map.mapper.BasketballCourtMapper;
     import sync.slamtalk.map.repository.BasketballCourtRepository;
+    import sync.slamtalk.notification.NotificationSender;
+    import sync.slamtalk.notification.dto.request.NotificationRequest;
+    import sync.slamtalk.notification.model.NotificationType;
     import sync.slamtalk.user.UserRepository;
     import sync.slamtalk.user.entity.User;
 
@@ -30,7 +35,8 @@
         private final UserRepository userRepository;
         private final ChatRoomRepository chatRoomRepository;
         private final ChatService chatService;
-
+        private final NotificationSender notificationSender;
+        private static final String URL = "https://www.slam-talk.site/map/";
         /**
          * 사용자에게 농구장을 제보 받는 기능을 수행합니다.
          * <p>
@@ -132,6 +138,18 @@
                     .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.CHATROOM_FAIL));
             chatRoom.setBasketballCourt(court);
             court.updateChatroom(chatRoom);
+
+            // 제보자에게 알림
+            User user = userRepository.findById(court.getInformerId())
+                    .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.USER_NOT_FOUND));
+
+            notificationSender.send(NotificationRequest.of(
+                    user.getNickname() + "님이 제보하신 " + court.getCourtName() + "이 수락되었습니다.",
+                    URL + courtId,
+                    Set.of(user.getId()),
+                    user.getId(),
+                    NotificationType.BASKETBALL
+            ));
 
             return basketballCourtRepository.save(court);
         }
