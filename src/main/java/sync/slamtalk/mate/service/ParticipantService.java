@@ -10,6 +10,7 @@ import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
+import sync.slamtalk.mate.event.MateDeclineEvent;
 import sync.slamtalk.mate.event.MateSupportAcceptanceEvent;
 import sync.slamtalk.mate.event.MateSupportEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
@@ -87,7 +88,7 @@ public class ParticipantService {
         List<Participant> participants = matePost.getParticipants();
         ArrayList<ParticipantDto> resultDtoList = new ArrayList<>();
         for (Participant participant : participants) {
-            if (participant.getIsDeleted()) {
+            if (Boolean.TRUE.equals(participant.getIsDeleted())) {
                 continue;
             }
             ParticipantDto resultDto = new ParticipantDto(participant);
@@ -101,7 +102,7 @@ public class ParticipantService {
     public ParticipantDto acceptParticipant(long matePostId, long participantTableId, long hostId) {
         MatePost matePost = matePostRepository.findById(matePostId).orElseThrow(() -> new BaseException(MateErrorResponseCode.MATE_POST_NOT_FOUND));
 
-        if (matePost.isCorrespondToUser(hostId) == false) { // 접근자가 게시글 작성자가 아닐 때
+        if (!matePost.isCorrespondToUser(hostId)) { // 접근자가 게시글 작성자가 아닐 때
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -136,7 +137,7 @@ public class ParticipantService {
 
         MatePost matePost = matePostRepository.findById(matePostId).orElseThrow(() -> new BaseException(MATE_POST_NOT_FOUND));
 
-        if (participant.isCorrespondTo(writerId) == false) {
+        if (!participant.isCorrespondTo(writerId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -150,8 +151,6 @@ public class ParticipantService {
         participant.disconnectParent();
         participantRepository.delete(participant);
 
-        //알림 발생
-        eventPublisher.publishEvent(new MateDeclineEvent(matePost, participant.getParticipantId()));
     }
 
     // 모집 글 게시자가 참여자를 거절했을 때
@@ -163,19 +162,22 @@ public class ParticipantService {
 
         Participant participant = participantRepository.findById(participantTableId).orElseThrow(() -> new BaseException(PARTICIPANT_NOT_FOUND));
 
-        if (matePost.isCorrespondToUser(hostId) == false) {
+        if (!matePost.isCorrespondToUser(hostId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
-        if (matePost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING) {
-            if (participant.getApplyStatus() == ApplyStatusType.WAITING) {  // 모집글 작성자는 대기 상태인 참여자만 거절할 수 있다.
-                participant.updateApplyStatus(ApplyStatusType.REJECTED);
-                return new ParticipantDto(participant);
-            } else {
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 해당 참여자는 상태를 변경할 수 없습니다. (수락된 참여자, 취소한 참여자,거절된 참여자 포함)
-            }
-        } else {
+        if (matePost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        if (participant.getApplyStatus() != ApplyStatusType.WAITING) {  // 모집글 작성자는 대기 상태인 참여자만 거절할 수 있다.
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 해당 참여자는 상태를 변경할 수 없습니다. (수락된 참여자, 취소한 참여자,거절된 참여자 포함)
+        }
+
+        //알림 발생
+        eventPublisher.publishEvent(new MateDeclineEvent(matePost, participant.getParticipantId()));
+        participant.updateApplyStatus(ApplyStatusType.REJECTED);
+
+        return new ParticipantDto(participant);
     }
 }
 

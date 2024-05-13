@@ -11,6 +11,7 @@ public enum NotificationType {
     LEVEL("LEVEL"), // 레벨
     BASKETBALL("BASKETBALL"), // 농구장
     MATE("MATE"), // 메이트
+    TEAM("TEAM"), // 팀
     COMMUNITY("COMMUNITY"), // 커뮤니티
     CHAT("chat"); // 채팅
 
