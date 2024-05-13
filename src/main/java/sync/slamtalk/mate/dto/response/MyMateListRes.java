@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 public class MyMateListRes {
 
-    List<MatePostToDto> authoredPost; // 내가 쓴 글
-    List<MatePostToDto> participatedPost; // 내가 참여한 글
+    List<MatePostKeyInformation> authoredPost; // 내가 쓴 글
+    List<MatePostKeyInformation> participatedPost; // 내가 참여한 글
 }

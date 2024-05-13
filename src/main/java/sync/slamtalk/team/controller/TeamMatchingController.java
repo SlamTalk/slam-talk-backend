@@ -16,10 +16,6 @@ import sync.slamtalk.team.dto.response.MyTeamMatchingListRes;
 import sync.slamtalk.team.service.TeamMatchingService;
 
 import java.net.URI;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
 
 
 @Slf4j

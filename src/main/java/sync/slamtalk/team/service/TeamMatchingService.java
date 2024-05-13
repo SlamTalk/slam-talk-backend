@@ -12,6 +12,7 @@ import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.QueryRepository;
 import sync.slamtalk.team.dto.*;
 import sync.slamtalk.team.dto.response.MyTeamMatchingListRes;
+import sync.slamtalk.team.dto.response.TeamMatchingKeyInformation;
 import sync.slamtalk.team.entity.TeamApplicant;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.repository.TeamApplicantRepository;
@@ -19,9 +20,6 @@ import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -360,31 +358,23 @@ public class TeamMatchingService {
         List<TeamMatching> allByWriter = teamMatchingRepository.findAllByWriterAndIsDeletedFalse(user);
         List<TeamMatching> allByApplications = teamMatchingRepository.findAllByApplicationId(userId);
 
-        List<ToTeamFormDTO> authoredPost = new ArrayList<>(allByWriter.stream()
-                .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
-                .toList());
+        allByWriter.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
-        List<ToTeamFormDTO> participatedPost = new ArrayList<>(allByApplications.stream()
-                .map(teamMatchingEntity -> teamMatchingEntity.toTeamFormDto(new ToTeamFormDTO()))
-                .map(toTeamFormDTO -> {
-                    toTeamFormDTO.setTeamApplicants(
-                            toTeamFormDTO.getTeamApplicants().stream()
-                                    .filter(toApplicantDto -> toApplicantDto.getApplicantId().equals(userId))
-                                    .toList()
-                    );
-                    return toTeamFormDTO;
-                })
-                .toList());
+        allByApplications.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
-        for (List<ToTeamFormDTO> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
-            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
-                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
-                    return o1.getStartTime().compareTo(o2.getStartTime());
-                }
-                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
-            });
-        }
-
-        return new MyTeamMatchingListRes(authoredPost, participatedPost);
+        return new MyTeamMatchingListRes(
+                allByWriter.stream().map(TeamMatchingKeyInformation::ofMyPost).toList(),
+                allByApplications.stream().map(t -> TeamMatchingKeyInformation.ofParticipantPost(t, userId)).toList()
+        );
     }
 }
