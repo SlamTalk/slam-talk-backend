@@ -9,10 +9,15 @@ public final class Site {
         throw new AssertionError("Util class cannot be instantiated.");
     }
     private static final String DOMAIN_URL = "https://www.slam-talk.site";
-    private static final String MATE_MATCHING_URL = DOMAIN_URL + "/matching/team-details/%d";
+    private static final String MATE_MATCHING_URL = DOMAIN_URL + "/matching/mate-details/%d";
+    private static final String TEAM_MATCHING_URL = DOMAIN_URL + "/matching/team-details/%d";
 
     public static String mateMatching(Long mateMatchingId) {
         return String.format(MATE_MATCHING_URL, mateMatchingId);
+    }
+
+    public static String teamMatching(Long teamMatchingId) {
+        return String.format(TEAM_MATCHING_URL, teamMatchingId);
     }
 
 }
