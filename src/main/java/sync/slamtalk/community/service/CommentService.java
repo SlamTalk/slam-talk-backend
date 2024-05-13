@@ -1,7 +1,7 @@
 package sync.slamtalk.community.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,9 @@ import sync.slamtalk.community.entity.Community;
 import sync.slamtalk.community.mapper.CommentMapper;
 import sync.slamtalk.community.repository.CommentRepository;
 import sync.slamtalk.community.repository.CommunityRepository;
+import sync.slamtalk.notification.NotificationSender;
+import sync.slamtalk.notification.dto.request.NotificationRequest;
+import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
@@ -25,6 +28,8 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final CommunityRepository communityRepository;
     private final UserRepository userRepository;
+    private final NotificationSender notificationSender;
+    private static final String URL = "https://www.slam-talk.site/community/article/";
 
     // 댓글 입력
     @Transactional
@@ -44,6 +49,15 @@ public class CommentService {
         Comment comment = CommentMapper.toEntity(requestDTO, community, user);
         comment = commentRepository.save(comment);
 
+        // 게시글 작성자에게 댓글 알림
+        notificationSender.send(NotificationRequest.of(
+                user.getNickname() + "님이 " + community.getTitle() + "에 댓글을 남겼습니다." + System.lineSeparator() + "'" + comment.getContent() + "'",
+                URL + community.getCommunityId(),
+                Set.of(community.getUser().getId()),
+                userId,
+                NotificationType.COMMUNITY
+        ));
+
         return CommentMapper.toCommentResponseDto(comment);
     }
 
@@ -53,7 +67,7 @@ public class CommentService {
         List<Comment> comments = commentRepository.findByCommunity_communityIdAndIsDeletedFalse(communityId);
         return comments.stream()
                 .map(CommentMapper::toCommentResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 댓글 수정

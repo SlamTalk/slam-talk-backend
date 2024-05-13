@@ -12,6 +12,6 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class MyTeamMatchingListRes {
-    List<ToTeamFormDTO> authoredPost; // 내가 쓴 글
-    List<ToTeamFormDTO> participatedPost; // 내가 참여한 글
+    List<TeamMatchingKeyInformation> authoredPost; // 내가 쓴 글
+    List<TeamMatchingKeyInformation> participatedPost; // 내가 참여한 글
 }
