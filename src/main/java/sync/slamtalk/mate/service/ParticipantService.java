@@ -10,6 +10,7 @@ import sync.slamtalk.mate.dto.response.ParticipantDto;
 import sync.slamtalk.mate.dto.PositionListDto;
 import sync.slamtalk.mate.entity.*;
 import sync.slamtalk.mate.error.MateErrorResponseCode;
+import sync.slamtalk.mate.event.MateSupportAcceptanceEvent;
 import sync.slamtalk.mate.event.MateSupportEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
@@ -104,25 +105,29 @@ public class ParticipantService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(matePost.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            Participant participant = participantRepository.findById(participantTableId).orElseThrow(()->new BaseException(PARTICIPANT_NOT_FOUND));
-
-            if(participant.getApplyStatus() == ApplyStatusType.WAITING){
-                List<PositionListDto> allowedPosition = entityToDtoMapper.toPositionListDto(matePost);
-                List<String> allowedSkillLevel= matePost.toSkillLevelTypeList();
-                if(participant.checkCapabilities(allowedPosition, allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치할 때
-                    participant.updateApplyStatus(ApplyStatusType.ACCEPTED);
-                    matePost.increasePositionNumbers(participant.getPosition());
-                    return new ParticipantDto(participant);
-                }else{
-                    throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
-                }
-            }else{
-                throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
-            }
-        }else{
+        if(matePost.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+        Participant participant = participantRepository.findById(participantTableId).orElseThrow(()->new BaseException(PARTICIPANT_NOT_FOUND));
+
+        if(participant.getApplyStatus() != ApplyStatusType.WAITING){
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS); // 대기 중인(WAITING) 참여자가 아닐 때 상태를 변경할 수 없습니다.
+        }
+
+        List<PositionListDto> allowedPosition = entityToDtoMapper.toPositionListDto(matePost);
+        List<String> allowedSkillLevel= matePost.toSkillLevelTypeList();
+
+        if(!participant.checkCapabilities(allowedPosition, allowedSkillLevel)) { // 참여자의 포지션(그리고 참여 가능한 인원 수)와 실력이 모집글의 요구사항과 일치하지 않을 때
+            throw new BaseException(PARTICIPANT_NOT_ALLOWED_TO_CHANGE_STATUS);
+        }
+
+        participant.updateApplyStatus(ApplyStatusType.ACCEPTED);
+        matePost.increasePositionNumbers(participant.getPosition());
+
+        //알림 발생
+        eventPublisher.publishEvent(new MateSupportAcceptanceEvent(matePost, participant.getParticipantId()));
+        return new ParticipantDto(participant);
+
     }
 
 
