@@ -20,7 +20,6 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.email.EmailService;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
-import sync.slamtalk.security.logout.CustomLogoutHandler;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.dto.request.UserLoginReq;
@@ -51,7 +50,6 @@ public class AuthService {
     private final EmailService emailService;
     private final RevokeSocialLoginService revokeSocialLoginService;
     private final NicknameService nicknameService;
-    private final CustomLogoutHandler customLogoutHandler;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -184,6 +182,9 @@ public class AuthService {
 
         /* 엑세스 토큰 헤더에 저장*/
         response.addHeader(accessAuthorizationHeader, jwtTokenDto.getAccessToken());
+
+        /* 중복 로그인일 경우 refreshToken 덮여씌우기*/
+        if(!refreshToken.equals(jwtTokenDto.getRefreshToken())) setRefreshTokenCookie(response, jwtTokenDto.getRefreshToken());
     }
 
     /**

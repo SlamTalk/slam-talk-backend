@@ -45,12 +45,11 @@ public class JwtTokenProvider implements InitializingBean {
     /* RefreshToken 설정 */
     private final int refreshTokenExpirationPeriod;
     private final UserRepository userRepository;
-    private SecretKey key;
-
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.refresh.header}")
     public String refreshAuthorizationCookieName;
+    private SecretKey key;
 
     public JwtTokenProvider(
             @Value("${jwt.secretKey}") String secretKey,
@@ -89,7 +88,7 @@ public class JwtTokenProvider implements InitializingBean {
         log.debug("authorities = {}", authorities);
 
         String accessToken = createAccessToken(user, authorities);
-        String refreshToken = createRefreshToken();
+        String refreshToken = createRefreshToken(user);
 
         user.updateRefreshToken(refreshToken);
 
@@ -120,11 +119,12 @@ public class JwtTokenProvider implements InitializingBean {
      *
      * @return refreshToken
      */
-    public String createRefreshToken() {
+    public String createRefreshToken(User user) {
         long now = (new Date()).getTime();
         Date refreshTokenValidity = new Date(now + this.refreshTokenExpirationPeriod);
 
         return Jwts.builder()
+                .subject(String.valueOf(user.getId())) // 사용자이름 이름을 클레임으로 저장.
                 .expiration(refreshTokenValidity) // 토큰 만료 시간 저장
                 .signWith(key, Jwts.SIG.HS512)
                 .compact();
@@ -147,7 +147,7 @@ public class JwtTokenProvider implements InitializingBean {
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                        .toList();
 
 
         return new UsernamePasswordAuthenticationToken(userId, accessToken, authorities);
@@ -155,10 +155,11 @@ public class JwtTokenProvider implements InitializingBean {
 
     /**
      * 웹소켓 STOMP 사용시 accessToken에서 userId 추출하는 메서드
+     *
      * @param accessToken
      * @return long userid
-     * */
-    public Long stompExtractUserIdFromToken(String accessToken){
+     */
+    public Long stompExtractUserIdFromToken(String accessToken) {
         // 웹 소켓에서 오는 Bearer 키워드 제거하기
         String token = resolveToken(accessToken);
 
@@ -169,11 +170,11 @@ public class JwtTokenProvider implements InitializingBean {
     }
 
     /**
-     *  accessToken에서 서명 검증 및 Claims 반환하는 메서드
+     * accessToken에서 서명 검증 및 Claims 반환하는 메서드
      *
      * @param accessToken 엑세스 토큰
      * @return Claims 사용자에 대한 정보
-     * */
+     */
     private Claims getClaimsFromAccessToken(String accessToken) {
         Jws<Claims> claimsJws = Jwts
                 .parser()
@@ -188,6 +189,22 @@ public class JwtTokenProvider implements InitializingBean {
             throw new BaseException(UserErrorResponseCode.INVALID_TOKEN);
         }
         return claims;
+    }
+
+    /**
+     * 주어진 refreshToken에서 사용자 ID를 추출합니다.
+     *
+     * @param refreshToken 사용자 인증에 사용되는 refresh token 문자열입니다.
+     * @return 추출된 사용자 ID를 Long 타입으로 반환합니다.
+     */
+    private Long getUserIdFromRefreshToken(String refreshToken) {
+        Jws<Claims> claimsJws = Jwts
+                .parser()
+                .verifyWith(key) // 서명 검증
+                .build()
+                .parseSignedClaims(refreshToken);
+
+        return Long.valueOf(claimsJws.getPayload().getSubject());
     }
 
     /**
@@ -220,36 +237,41 @@ public class JwtTokenProvider implements InitializingBean {
 
     /**
      * RefreshToken으로 AccessToken 재발급하는 메서드
+     *
      * @param refreshToken
      * @return Optional<JwtTokenResponseDto>
-     * */
+     */
     @Transactional
-    public Optional<JwtTokenDto> generateNewAccessToken(String refreshToken){
+    public Optional<JwtTokenDto> generateNewAccessToken(String refreshToken) {
         log.debug("[엑세스 토큰 재발급] 엑세스 토큰 재발급");
-        User user = userRepository.findByRefreshToken(refreshToken)
+        Long userId = getUserIdFromRefreshToken(refreshToken);
+        User user = userRepository.findById(userId)
                 .orElse(null);
 
-        if(user != null) {
-            // 권한 정보 가져오기
-            String authorities = user.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.joining(","));
+        // 비정상적인 로그인 상황
+        if (user == null) return Optional.empty();
 
-            log.debug("[엑세스 토큰 재발급] authorities = {}", authorities);
+        // 만약 유저의 refreshToken이 다를 경우 (중복 로그인일 경우 최신값으로 덮여 씌우기)
+        if(!user.getRefreshToken().equals(refreshToken)) refreshToken = user.getRefreshToken();
 
-            String accessToken = createAccessToken(user, authorities);
+        // 권한 정보 가져오기
+        String authorities = user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
 
-            return Optional.of(new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken));
-        }
-        log.debug("[엑세스 토큰 재발급] Option empty");
-        return Optional.empty();
+        log.debug("[엑세스 토큰 재발급] authorities = {}", authorities);
+
+        String accessToken = createAccessToken(user, authorities);
+
+        return Optional.of(new JwtTokenDto(GRANT_TYPE, accessToken, refreshToken));
     }
 
     /**
      * request 헤더에서 AccessToken 추출하는 메서드
+     *
      * @param request
      * @return String : AccessToken
-     * */
+     */
     public String resolveAccessToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(accessAuthorizationHeader);
 
@@ -258,9 +280,10 @@ public class JwtTokenProvider implements InitializingBean {
 
     /**
      * Token의 Bearer유형의 토큰 접두사 를 제거하는 메서드
+     *
      * @param bearerToken
      * @return String : RefreshToken
-     * */
+     */
     private String resolveToken(String bearerToken) {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
@@ -271,14 +294,15 @@ public class JwtTokenProvider implements InitializingBean {
 
     /**
      * request 쿠키에서 Token 추출하는 메서드
+     *
      * @param request
      * @return String
-     * */
+     */
     public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
         /* Cookie 에서 Token 정보 가져오는 로직 */
         Optional<Cookie> optionalAccessTokenCookie = CookieUtil.getCookie(request, cookieName);
 
-        if(optionalAccessTokenCookie.isPresent()){
+        if (optionalAccessTokenCookie.isPresent()) {
             return optionalAccessTokenCookie.get().getValue();
         }
 
