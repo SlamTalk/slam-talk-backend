@@ -1,6 +1,5 @@
 package sync.slamtalk.chat.dto.response;
 
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

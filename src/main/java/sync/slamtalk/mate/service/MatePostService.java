@@ -3,6 +3,7 @@ package sync.slamtalk.mate.service;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.common.BaseException;
@@ -10,6 +11,8 @@ import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.dto.request.MatePostReq;
 import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.event.CompleteMateEvent;
+import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
 import sync.slamtalk.mate.repository.MatePostRepository;
 import sync.slamtalk.mate.repository.QueryRepository;
@@ -35,6 +38,7 @@ public class MatePostService {
     private final UserRepository userRepository;
     private final EntityToDtoMapper entityToDtoMapper;
     private final QueryRepository queryRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Objective : 메이트찾기 게시글을 등록한다.
@@ -65,13 +69,11 @@ public class MatePostService {
     public MatePostRes getMatePost(long matePostId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
 
-        MatePostRes matePostRes = getMatePostRes(matePostId, post);
-
-        return matePostRes;
+        return getMatePostRes(matePostId, post);
     }
 
     private MatePostRes getMatePostRes(long matePostId, MatePost post) {
@@ -84,7 +86,7 @@ public class MatePostService {
         List<String> skillList = post.toSkillLevelTypeList();
         List<PositionListDto> positionList = entityToDtoMapper.toPositionListDto(post);
 
-        MatePostRes matePostRes = MatePostRes.builder()
+        return MatePostRes.builder()
                 .matePostId(post.getMatePostId())
                 .writerId(writerId)
                 .writerNickname(writerNickname)
@@ -102,7 +104,6 @@ public class MatePostService {
                 .participants(participantsToArrayList)
                 .createdAt(post.getCreatedAt())
                 .build();
-        return matePostRes;
     }
 
     /**
@@ -119,13 +120,14 @@ public class MatePostService {
      */
     public boolean deleteMatePost(long matePostId, long userId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
         if(!(post.isCorrespondToUser(userId))){
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
         post.softDeleteMatePost();
+        eventPublisher.publishEvent(new MatePostPostDeletionEvent(post, post.getParticipants().stream().map(Participant::getParticipantId).collect(Collectors.toSet())));
         return true;
     }
 
@@ -142,10 +144,10 @@ public class MatePostService {
     public boolean updateMatePost(long matePostId, MatePostReq matePostReq, long userId){
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
-        if(post.getIsDeleted()){
+        if(Boolean.TRUE.equals(post.getIsDeleted())){
             throw new BaseException(MATE_POST_ALREADY_DELETED);
         }
-        if(post.isCorrespondToUser(userId) == false) {
+        if(!post.isCorrespondToUser(userId)) {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
@@ -220,7 +222,7 @@ public class MatePostService {
         List<UnrefinedMatePostDto> listedMatePosts = queryRepository.findMatePostList(condition);
 
         log.debug("listedMatePosts: {}", listedMatePosts);
-        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).collect(Collectors.toList());
+        List<MatePostToDto> refinedDto = listedMatePosts.stream().map(dto -> new EntityToDtoMapper().fromUnrefinedToMatePostDto(dto)).toList();
         List<MatePostToDto> result = refinedDto.stream().map(dto -> {
                     List<ParticipantDto> refined = queryRepository.findParticipantByMatePostId(dto.getMatePostId());
                      dto.setParticipants(refined);
@@ -229,7 +231,7 @@ public class MatePostService {
         ).toList();
         MatePostListDto response = new MatePostListDto();
         response.setMatePostList(result);
-        if(listedMatePosts.isEmpty() == false) {
+        if(!listedMatePosts.isEmpty()) {
             response.setNextCursor(listedMatePosts.get(listedMatePosts.size() - 1).getCreatedAt().toString());
         }
         return response;
@@ -253,22 +255,27 @@ public class MatePostService {
             throw new BaseException(USER_NOT_AUTHORIZED);
         }
 
-        if(post.getRecruitmentStatus() == RecruitmentStatusType.RECRUITING){
-            List<Participant> participants = post.getParticipants();
-
-            if(participants.size() == 0 || participants.stream().filter(participant -> participant.getApplyStatus() == ApplyStatusType.ACCEPTED).count() == 0){
-                throw new BaseException(NO_ACCEPTED_PARTICIPANT);
-            }else{
-                for(Participant participant : participants){
-                    if(participant.getApplyStatus() != ApplyStatusType.ACCEPTED){
-                        participant.softDeleteParticipant();
-                    }
-                }
-            }
-            post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
-        }else{
+        if(post.getRecruitmentStatus() != RecruitmentStatusType.RECRUITING) {
             throw new BaseException(MATE_POST_ALREADY_CANCELED_OR_COMPLETED);
         }
+
+        List<Participant> participants = post.getParticipants();
+
+        if(participants.isEmpty() || participants.stream().filter(participant -> participant.getApplyStatus() == ApplyStatusType.ACCEPTED).count() == 0){
+            throw new BaseException(NO_ACCEPTED_PARTICIPANT);
+        }
+
+        for(Participant participant : participants){
+            if(participant.getApplyStatus() != ApplyStatusType.ACCEPTED){
+                    participant.softDeleteParticipant();
+            }
+        }
+
+        post.updateRecruitmentStatus(RecruitmentStatusType.COMPLETED);
+
+
+        eventPublisher.publishEvent(new CompleteMateEvent(post, participants.stream().map(Participant::getParticipantId).collect(Collectors.toSet())));
+
         return participantService.getParticipants(post.getMatePostId());
     }
 
@@ -284,31 +291,25 @@ public class MatePostService {
         List<MatePost> allByWriter = matePostRepository.findAllByWriterAndIsDeletedFalse(user);
         List<MatePost> allByApplications = matePostRepository.findAllByApplicationId(userId);
 
-        List<MatePostToDto> authoredPost = new ArrayList<>(allByWriter.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
-                .toList());
+        // 정렬 기준은 먼저 scheduledDate 필드의 값으로, 같을 경우에는 startTime 필드의 값으로 정렬됩니다.
+        allByWriter.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
-        List<MatePostToDto> participatedPost = new ArrayList<>(allByApplications.stream()
-                .map(matePost -> entityToDtoMapper.FromMatePostToMatePostDto(matePost))
-                .map(matePostToDto -> {
-                    matePostToDto.setParticipants(
-                            matePostToDto.getParticipants().stream()
-                                    .filter(participant -> participant.getParticipantId().equals(userId))
-                                    .toList()
-                    );
-                    return matePostToDto;
-                })
-                .toList());
+        // 정렬 기준은 먼저 scheduledDate 필드의 값으로, 같을 경우에는 startTime 필드의 값으로 정렬됩니다.
+        allByApplications.sort((o1, o2) -> {
+            if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
+                return o1.getStartTime().compareTo(o2.getStartTime());
+            }
+            return o1.getScheduledDate().compareTo(o2.getScheduledDate());
+        });
 
-        for (List<MatePostToDto> toTeamFormDTOS : Arrays.asList(authoredPost, participatedPost)) {
-            Collections.sort(toTeamFormDTOS, (o1, o2) -> {
-                if (o1.getScheduledDate().isEqual(o2.getScheduledDate())) {
-                    return o1.getStartTime().compareTo(o2.getStartTime());
-                }
-                return o1.getScheduledDate().compareTo(o2.getScheduledDate());
-            });
-        }
-
-        return new MyMateListRes(authoredPost, participatedPost);
+        return new MyMateListRes(
+                allByWriter.stream().map(MatePostKeyInformation::ofMyPost).toList(),
+                allByApplications.stream().map(m -> MatePostKeyInformation.ofParticipantPost(m, userId)).toList()
+        );
     }
 }

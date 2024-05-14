@@ -16,7 +16,10 @@ public enum UserErrorResponseCode implements ResponseCodeDetails {
     ATTENDANCE_ALREADY_EXISTS(SC_BAD_REQUEST, 4008, "하루에 한번만 출석이 가능합니다."),
     UNVERIFIED_EMAIL(SC_BAD_REQUEST, 4009, "이메일 인증을 하지 않았습니다"),
     ALREADY_CANCEL_USER(SC_BAD_REQUEST, 4010, "회원탈퇴 후 7일 동안 재가입이 불가능합니다"),
-    FAILED_TO_CREATE_TEMPORARY_PASSWORD_ISSUANCE(SC_INTERNAL_SERVER_ERROR, 4011, "임시 비밀번호 재발급이 실패하였습니다");
+    FAILED_TO_CREATE_TEMPORARY_PASSWORD_ISSUANCE(SC_INTERNAL_SERVER_ERROR, 4011, "임시 비밀번호 재발급이 실패하였습니다"),
+    NEED_TO_LOG_IN_AGAIN(SC_BAD_REQUEST, 4012, "회원 탈퇴를 진행하기 위해서는 다시 로그인해야 합니다."),
+    SOCIAL_TYPE_DOESNT_EXIST(SC_BAD_REQUEST, 4013, "잘못된 접근입니다"),
+    SOCIAL_LOGIN_PASSWORD_CHANGE_NOT_SUPPORTED(SC_BAD_REQUEST, 4014, "소셜로그인의 경우 비밀번호 변경 기능은 사용 불가능합니다.") ;
     ;
 
     private final int code;

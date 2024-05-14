@@ -1,14 +1,18 @@
 package sync.slamtalk.user.service;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sync.slamtalk.chat.redis.RedisService;
@@ -16,6 +20,7 @@ import sync.slamtalk.common.BaseException;
 import sync.slamtalk.email.EmailService;
 import sync.slamtalk.security.dto.JwtTokenDto;
 import sync.slamtalk.security.jwt.JwtTokenProvider;
+import sync.slamtalk.security.logout.CustomLogoutHandler;
 import sync.slamtalk.security.utils.CookieUtil;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.dto.request.UserLoginReq;
@@ -26,7 +31,6 @@ import sync.slamtalk.user.error.UserErrorResponseCode;
 import sync.slamtalk.user.utils.PasswordGenerator;
 
 import java.util.Optional;
-import java.util.StringJoiner;
 
 import static sync.slamtalk.user.error.UserErrorResponseCode.ALREADY_CANCEL_USER;
 
@@ -45,6 +49,9 @@ public class AuthService {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider tokenProvider;
     private final EmailService emailService;
+    private final RevokeSocialLoginService revokeSocialLoginService;
+    private final NicknameService nicknameService;
+    private final CustomLogoutHandler customLogoutHandler;
     @Value("${jwt.access.header}")
     public String accessAuthorizationHeader;
     @Value("${jwt.access.expiration}")
@@ -180,33 +187,42 @@ public class AuthService {
     }
 
     /**
-     * 회원 탈퇴
+     * 사용자 계정 탈퇴 처리를 위한 메소드입니다. 이 메소드는 전달받은 사용자 ID를 기반으로 사용자를 찾아 탈퇴 처리합니다.
+     * 탈퇴 처리 과정에서는 먼저 사용자의 소셜 로그인 계정을 해지하고, 로그아웃 처리를 진행한 후,
+     * 탈퇴한 사용자의 닉네임을 재설정합니다. 이 메소드는 @Transactional 어노테이션을 통해
+     * 전체 프로세스가 하나의 트랜잭션으로 관리되어, 중간에 오류가 발생할 경우 모든 작업이 롤백됩니다.
      *
-     * @param userId : 탈퇴하고자 하는 USER
+     * @param request  현재 요청의 HttpServletRequest 객체입니다. 사용자 로그아웃 처리에 사용됩니다.
+     * @param response 현재 응답의 HttpServletResponse 객체입니다. 사용자 로그아웃 처리에 사용됩니다.
+     * @param userId   탈퇴를 요청한 사용자의 고유 ID입니다. 이 ID를 통해 사용자 정보를 조회하고 탈퇴 처리를 진행합니다.
+     * @throws BaseException 사용자를 찾을 수 없는 경우에 발생합니다. 이 예외는 NOT_FOUND_USER 에러 코드와 함께 발생합니다.
+     *                       사용자의 소셜 타입에 따라 구글, 네이버, 카카오 계정 해지에 실패할 경우에도 발생할 수 있습니다.
      */
     @Transactional
-    public void cancelUser(
+    public void userWithdrawal(
+            HttpServletRequest request,
+            HttpServletResponse response,
             Long userId
     ) {
-        // todo : 소셜 로그인일 경우 별도의 처리가 필요하다!
+        // 사용자 ID를 통해 사용자 정보를 조회합니다. 사용자를 찾을 수 없는 경우, BaseException 예외를 발생시킵니다.
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
-        SocialType socialType = user.getSocialType();
 
-  /*      if(socialType.equals(SocialType.KAKAO)){
-            revokeService.deleteKakaoAccount(user);
-        }*/ /*else if (socialType.equals(SocialType.GOOGLE)){
-            revokeService.deleteGoogleAccount(user, accessToken);
-        } else if (socialType.equals(SocialType.NAVER)) {
-            revokeService.deleteNaverAccount(user, accessToken);
-        }*/
+        // 사용자의 소셜 로그인 타입에 따라 해당 소셜 계정의 연동을 해제합니다.
+        switch (user.getSocialType()) {
+            case GOOGLE -> revokeSocialLoginService.deleteGoogleAccount(user);
+            case NAVER -> revokeSocialLoginService.deleteNaverAccount(user);
+            case KAKAO -> revokeSocialLoginService.deleteKakaoAccount(user);
+            default -> {
+                break; // 소셜 로그인이 아닐 경우 연동해지가 필요없음.
+            }
+        }
 
-        userRepository.deleteById(userId);
-        // todo : 게시판, 채팅, 팀매칭, 상대팀 매칭 모든 글의 softDelete 처리를 해줘야함.
-        // todo : 댓글 및 좋아요도 해줘야한다.
-        // todo : 출석 테이블도 삭제 처리해야함.
-        // todo : 이후 스케줄러를 통해 매번 1번씩 soft 처리된 모든 필드를 삭제하는 로직을 가져가야할 것 같다.
+        // 사용자를 로그아웃 처리합니다.
+        logoutUser(request, response);
 
+        // 탈퇴한 사용자의 닉네임을 재설정합니다.
+        user.userWithdrawal(nicknameService.createANicknameForDeletedUser());
     }
 
     @Transactional
@@ -217,10 +233,13 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BaseException(UserErrorResponseCode.NOT_FOUND_USER));
 
+        if(!SocialType.LOCAL.equals(user.getSocialType())) throw new BaseException(UserErrorResponseCode.SOCIAL_LOGIN_PASSWORD_CHANGE_NOT_SUPPORTED);
+
         // 찾은 사용자의 비밀번호를 업데이트합니다. 새 비밀번호는 암호화되어 저장합니다.
         user.updatePassword(passwordEncoder.encode(password));
 
     }
+
 
     /**
      * 사용자에게 임시 비밀번호를 발급하여 이메일로 전송하는 메서드입니다.
@@ -229,6 +248,7 @@ public class AuthService {
      * @return 없음 (void 반환 타입)
      */
 
+    @Transactional
     public void issuanceOfTemporaryPassword(String email) {
         Optional<User> byEmail = userRepository.findByEmailAndSocialType(email, SocialType.LOCAL);
 
@@ -239,7 +259,7 @@ public class AuthService {
         // 임시 비밀번호로 유저 업데이트
         String temporaryPassword = PasswordGenerator.generatePassword(10);
         User user = byEmail.get();
-        user.updatePassword(temporaryPassword);
+        user.updatePassword(passwordEncoder.encode(temporaryPassword));
 
         emailService.sendTemporaryPasswordViaEmail(email, temporaryPassword);
     }
@@ -329,6 +349,40 @@ public class AuthService {
                 refreshTokenExpirationPeriod,
                 domain
         );
+    }
+
+    /**
+     * 현재 로그인한 사용자를 로그아웃 처리하는 메서드입니다.
+     * 이 메서드는 사용자의 인증 정보를 받아 로그아웃 처리를 수행하고,
+     * 필요한 경우 추가적인 로그아웃 관련 처리(예: 쿠키 삭제)를 수행합니다.
+     *
+     * @param request 사용자의 요청 정보를 담고 있는 HttpServletRequest 객체입니다.
+     *                이 객체를 통해 사용자의 요청 및 세션 정보에 접근할 수 있습니다.
+     * @param response 서버의 응답 정보를 담고 있는 HttpServletResponse 객체입니다.
+     *                 이 객체를 통해 로그아웃 처리 후의 응답 상태 코드 설정 및 쿠키 삭제 등의 응답 관련 처리를 수행할 수 있습니다.
+     *
+     * 이 메서드는 사용자의 인증 정보를 SecurityContextHolder의 컨텍스트에서 가져와 해당 사용자를 로그아웃 처리합니다.
+     * 로그아웃 처리가 성공적으로 이루어지면, 응답 상태 코드로 HttpStatus.OK(200) 값을 설정하고,
+     * JSESSIONID 쿠키를 삭제하여 클라이언트의 세션을 종료시킵니다.
+     *
+     * 로그아웃 처리 과정 중에 추가적인 로그아웃 관련 처리가 필요한 경우,
+     * 이 부분에 해당 처리 로직을 구현할 수 있습니다. 예를 들어, 특정 쿠키를 삭제하거나,
+     * 로그아웃 이벤트를 로깅하는 등의 처리를 추가할 수 있습니다.
+     *
+     * @return 이 메서드는 반환값이 없습니다(void).
+     */
+    private void logoutUser(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+
+        // 필요한 경우, 여기에서 쿠키 삭제 등의 추가적인 로그아웃 관련 처리를 할 수 있습니다.
+        response.setStatus(HttpStatus.OK.value());
+        response.addCookie(new Cookie("JSESSIONID", null)); // JSESSIONID 쿠키 삭제
     }
 
 }

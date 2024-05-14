@@ -135,13 +135,18 @@ public class AuthController {
         return ApiResponse.ok();
     }
 
-    @DeleteMapping("/user/delete")
+    @DeleteMapping("/user")
     @Operation(
             summary = "회원 탈퇴",
-            description = "7일이내로 회원탈퇴과정이 진행되고, 회원탈퇴 클릭 시 재회원가입, 로그인이 불가능하다."
+            description = "회원 탈퇴 시 모든 유저의 정보가 사라진다"
     )
-    public ApiResponse<Void> cancelUser(@AuthenticationPrincipal Long userId) {
-        authService.cancelUser(userId);
+    public ApiResponse<Void> userWithdrawal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @AuthenticationPrincipal Long userId
+    ) {
+        authService.userWithdrawal(request, response, userId);
         return ApiResponse.ok();
     }
+
 }

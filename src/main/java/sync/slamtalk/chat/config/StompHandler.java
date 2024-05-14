@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
-import sync.slamtalk.chat.entity.ChatRoom;
 import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.chat.service.ChatServiceImpl;
