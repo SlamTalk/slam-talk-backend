@@ -18,7 +18,7 @@ public class MessageService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserChatRoomRepository userChatRoomRepository;
 
-    static final String path  = "https://www.slam-talk.site/chatting/chatroom/";
+    static final String path  = "https://www.slam-talk.site/chatting";
 
 
     /**
@@ -60,7 +60,7 @@ public class MessageService {
     }
 
     public String getPath(Long chatRoomId){
-        return  path + chatRoomId;
+        return  path;
     }
 
 }
