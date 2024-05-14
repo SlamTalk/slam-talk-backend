@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.ErrorResponseException;
 import sync.slamtalk.chat.dto.ChatErrorResponseCode;
 import sync.slamtalk.chat.dto.request.ChatCreateDTO;
 import sync.slamtalk.chat.dto.request.ChatMessageDTO;
@@ -33,6 +34,7 @@ import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -61,6 +63,21 @@ public class ChatServiceImpl implements ChatService {
         long roomNum = 0L;
         RoomType roomType = RoomType.DIRECT;
 
+        // 일단 참여자들 모두 존재 하는 계정인지 확인
+        if(chatCreateDTO.getParticipants().isEmpty()) {
+            throw new BaseException(ErrorResponseCode.CHAT_FAIL);
+        }
+
+        List<Long> nonExistentUserIds = chatCreateDTO.getParticipants().stream()
+                .filter(userId -> !userRepository.existsById(userId))
+                .collect(Collectors.toList());
+
+        if (!nonExistentUserIds.isEmpty()) {
+            throw new BaseException(ErrorResponseCode.CHAT_FAIL);
+        }
+
+
+
         switch (chatCreateDTO.getRoomType()) {
             case "DM":
                 break;
@@ -78,22 +95,28 @@ public class ChatServiceImpl implements ChatService {
             Long userA = participants.get(0);
             Long userB = participants.get(1);
 
-            Optional<UserChatRoom> optionalChatRoomA = userChatRoomRepository.findByDirectId(userA, userB);
-            Optional<UserChatRoom> optionalChatRoomB = userChatRoomRepository.findByDirectId(userB, userA);
+            List<UserChatRoom> userChatRoomsA = userChatRoomRepository.findByDirectId(userA, userB);
+            List<UserChatRoom> userChatRoomsB = userChatRoomRepository.findByDirectId(userB, userA);
 
-            if (optionalChatRoomA.isPresent() && optionalChatRoomB.isPresent()) {
-                // A유저의 채팅방 중 roomType = DIRECT && directId 가 B유저
-                // B유저의 채팅방 중 roomType = DIRECT && directId 가 A유저
-
-                // A 유저, B 유저 모두 삭제 하지 않은 경우
-                if (Boolean.TRUE.equals(!optionalChatRoomA.get().getIsDeleted()) && Boolean.TRUE.equals(!optionalChatRoomB.get().getIsDeleted())) {
-                    // A유저 B유저 모두 동일한 채팅방 아이디를 가지고 있을 것이기 때문
-                    return optionalChatRoomA.get().getChat().getId();
+            boolean dmOfA = false;
+            boolean dmOfB = false;
+            long dmRoomId = 0L;
+            for(UserChatRoom ucr : userChatRoomsA){
+                if(ucr.getRoomType().equals(RoomType.DIRECT) && ucr.getDirectId().equals(userB)){
+                    dmOfA = true;
+                    dmRoomId = ucr.getChat().getId(); // 채팅방 아이디
+                    break;
                 }
-                // A 유저, B 유저 둘 중 하나라도 삭제한 경우 새로 생성
-
             }
-
+            for(UserChatRoom ucr : userChatRoomsB){
+                if(ucr.getRoomType().equals(RoomType.DIRECT) && ucr.getDirectId().equals(userA)){
+                    dmOfB =true;
+                    break;
+                }
+            }
+            if(dmOfA && dmOfB){
+                return dmRoomId;
+            }
         }
 
         // TM,MM 은 id 로 검사
@@ -144,6 +167,9 @@ public class ChatServiceImpl implements ChatService {
         for (Long user : chatCreateDTO.getParticipants()) {
 
             Optional<User> optionalUser = userRepository.findById(user);
+            if(optionalUser.isEmpty()){
+                throw new BaseException(ErrorResponseCode.CHAT_FAIL);
+            }
 
 
             // UserChatRoom 생성
