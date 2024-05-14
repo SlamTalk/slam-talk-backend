@@ -14,7 +14,6 @@ import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.notification.util.StringSlicer;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Component
@@ -22,7 +21,7 @@ import java.util.Set;
 public class MatePostRejectSupportNotifier {
     private final NotificationSender notificationSender;
 
-    private static final String MATE_SUPPORT_REJECTION_MESSAGE =  "‘메이트 찾기 '%s' 글에 대한 신청이 거절되었습니다.’ '%s'";
+    private static final String MATE_SUPPORT_REJECTION_MESSAGE =  "메이트 찾기 %s 글에 대한 신청이 거절되었습니다.";
 
 
     @Async
@@ -33,7 +32,7 @@ public class MatePostRejectSupportNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(MATE_SUPPORT_REJECTION_MESSAGE, StringSlicer.slice(matePost.getTitle()), LocalDate.now()),
+                String.format(MATE_SUPPORT_REJECTION_MESSAGE, StringSlicer.slice(matePost.getTitle())),
                 Site.mateMatching(matePost.getMatePostId()),
                 Set.of(event.applicationUserId()),
                 matePost.getWriterId(),

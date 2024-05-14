@@ -14,14 +14,12 @@ import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.notification.util.StringSlicer;
 
-import java.time.LocalDate;
-
 @Component
 @RequiredArgsConstructor
 public class MatePostDeleteNotifier {
     private final NotificationSender notificationSender;
 
-    private static final String MATE_POST_DELETION_REJECTION_MESSAGE =  "‘메이트 찾기 '%s'의  모집이 취소되었습니다.’ '%s'";
+    private static final String MATE_POST_DELETION_REJECTION_MESSAGE =  "메이트 찾기 %s의 모집이 취소되었습니다.";
 
 
     @Async
@@ -32,7 +30,7 @@ public class MatePostDeleteNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(MATE_POST_DELETION_REJECTION_MESSAGE, StringSlicer.slice(matePost.getTitle()), LocalDate.now()),
+                String.format(MATE_POST_DELETION_REJECTION_MESSAGE, StringSlicer.slice(matePost.getTitle())),
                 Site.mateMatching(matePost.getMatePostId()),
                 event.participantUserIds(),
                 matePost.getWriterId(),
