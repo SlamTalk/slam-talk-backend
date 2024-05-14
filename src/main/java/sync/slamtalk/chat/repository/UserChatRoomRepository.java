@@ -48,7 +48,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
      * DirectId로 UserChatRoom 조회
      */
     @Query("select m from UserChatRoom m where m.user.id=:userId and m.directId=:directId")
-    Optional<UserChatRoom> findByDirectId(Long userId, Long directId);
+    List<UserChatRoom> findByDirectId(Long userId, Long directId);
 
 
     /**
