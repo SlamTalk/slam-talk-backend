@@ -2,6 +2,7 @@ package sync.slamtalk.notification.model;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import sync.slamtalk.chat.entity.UserChatRoom;
@@ -53,5 +54,13 @@ public class Notification extends BaseEntity {
 	 */
 	public void read() {
 		this.isRead = true;
+	}
+
+
+	@Builder
+	public Notification(Long userId,NotificationContent notificationContent, UserChatRoom userChatRoom){
+		this.userId = userId;
+		this.content = notificationContent;
+		this.userChatRoom = userChatRoom;
 	}
 }
