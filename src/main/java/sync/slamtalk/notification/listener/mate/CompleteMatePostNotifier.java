@@ -14,15 +14,13 @@ import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.notification.util.StringSlicer;
 
-import java.time.LocalDate;
-
 @Component
 @RequiredArgsConstructor
 public class CompleteMatePostNotifier {
 
     private final NotificationSender notificationSender;
 
-    private static final String COMPLETE_MATEPOST_MESSAGE =  "’'%s'의 모집이 완료되었습니다.’ '%s'";
+    private static final String COMPLETE_MATEPOST_MESSAGE =  "메이트 찾기 %s의 모집이 완료되었습니다.";
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -33,7 +31,7 @@ public class CompleteMatePostNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(COMPLETE_MATEPOST_MESSAGE, StringSlicer.slice(matePost.getTitle()), LocalDate.now()),
+                String.format(COMPLETE_MATEPOST_MESSAGE, StringSlicer.slice(matePost.getTitle())),
                 Site.mateMatching(matePost.getMatePostId()),
                 event.userIds(),
                 matePost.getWriterId(),

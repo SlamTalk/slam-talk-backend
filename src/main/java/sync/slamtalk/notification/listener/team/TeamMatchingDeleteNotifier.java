@@ -14,14 +14,12 @@ import sync.slamtalk.notification.util.StringSlicer;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.event.TeamMatchingPostDeletionEvent;
 
-import java.time.LocalDate;
-
 @Component
 @RequiredArgsConstructor
 public class TeamMatchingDeleteNotifier {
     private final NotificationSender notificationSender;
 
-    private static final String MATE_POST_DELETION_REJECTION_MESSAGE =  "‘상대팀 찾기 '%s'의  모집이 취소되었습니다.’ '%s'";
+    private static final String MATE_POST_DELETION_REJECTION_MESSAGE =  "상대팀 찾기 %s의 모집이 취소되었습니다.";
 
 
     @Async
@@ -33,7 +31,7 @@ public class TeamMatchingDeleteNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(MATE_POST_DELETION_REJECTION_MESSAGE, StringSlicer.slice(teamMatching.getTitle()), LocalDate.now()),
+                String.format(MATE_POST_DELETION_REJECTION_MESSAGE, StringSlicer.slice(teamMatching.getTitle())),
                 Site.teamMatching(teamMatching.getTeamMatchingId()),
                 event.participantUserIds(),
                 teamMatching.getWriter().getId(),

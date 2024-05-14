@@ -14,15 +14,13 @@ import sync.slamtalk.notification.util.StringSlicer;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.event.CompleteTeamMatchingEvent;
 
-import java.time.LocalDate;
-
 @Component
 @RequiredArgsConstructor
 public class CompleteTeamMachingNotifier {
 
     private final NotificationSender notificationSender;
 
-    private static final String COMPLETE_TEAM_MATCHING_MESSAGE =  "상대팀 찾기 '%s'의 모집이 완료되었습니다.’ '%s'";
+    private static final String COMPLETE_TEAM_MATCHING_MESSAGE =  "상대팀 찾기 %s의 모집이 완료되었습니다.";
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -33,7 +31,7 @@ public class CompleteTeamMachingNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(COMPLETE_TEAM_MATCHING_MESSAGE, StringSlicer.slice(teamMatching.getTitle()), LocalDate.now()),
+                String.format(COMPLETE_TEAM_MATCHING_MESSAGE, StringSlicer.slice(teamMatching.getTitle())),
                 Site.teamMatching(teamMatching.getTeamMatchingId()),
                 event.participantUserIds(),
                 teamMatching.getWriter().getId(),
