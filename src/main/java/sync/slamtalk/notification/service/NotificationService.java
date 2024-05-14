@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sync.slamtalk.chat.entity.UserChatRoom;
 import sync.slamtalk.common.BaseException;
 import sync.slamtalk.common.ErrorResponseCode;
 import sync.slamtalk.notification.NotificationRepository;
@@ -13,6 +14,7 @@ import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -104,8 +106,18 @@ public class NotificationService {
 	 * @param chatRoomId
 	 */
 	public void deleteChatNotification(Long userId,Long chatRoomId){
-		log.debug("{}유저의 채팅방{}을 지운다",userId,chatRoomId);
-		notificationRepository.deleteNotificationBy(userId,chatRoomId);
+		// 특정 회원의 특정 채팅방 모든 알림 조회
+		List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
+		// 연관 관계 해제
+		for(Notification notification : notifications){
+			UserChatRoom userChatRoom = notification.getUserChatRoom();
+			if(userChatRoom != null){
+				userChatRoom.removeNotification(notification); // 연관 관계 해제
+			}
+		}
+
+		// 알림 삭제
+		notificationRepository.deleteNotificationBy(userId,chatRoomId);
 	}
 }
