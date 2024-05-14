@@ -1,31 +1,39 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>슬램톡 | 이메일 인증</title>
 </head>
+
 <body>
-<div class="container" style="color: #404040; min-width: 360px; max-width: 600px; margin-top: 50px; padding: 0 300px;">
-    <div class="content">
+<div style="color: #404040; width: 100%; max-width: 600px; margin: 0 auto; margin-top: 50px;">
+    <div>
         <img src="https://slamtalks3.s3.ap-northeast-2.amazonaws.com/1561891asdfmme1561.png" alt="slam talk logo"
              style="width: 128px; display: block; margin: 0 auto;">
-        <h1 style="color: black; text-align: center;">이메일 인증을 진행해주세요</h1>
-        <p style="text-align: center; color: black;">안녕하세요. 슬램톡을 이용해주셔서 감사합니다 :)</p>
-        <p style="text-align: center; color: black;">슬램톡 회원가입을 위해 아래 인증코드를 화면에 입력해주세요.</p>
+        <h1 style="color: black; text-align: center;">이메일 인증 코드입니다.</h1>
+        <p style="text-align: center; color: black;">안녕하세요. 슬램톡을 이용해 주셔서 감사합니다 :)</p>
+        <p style="text-align: center; color: black;">슬램톡 가입을 위해 아래 인증코드를 화면에 입력해 주세요.</p>
     </div>
-    <div class="code"
-         style="border-radius: 6px; color: black; height: 120px; margin: 40px 0; background-color: ghostwhite; text-align: center; font-size: 30px;">
-        <b th:text="${code}" style="line-height: 120px;"></b></div>
-    <p style="text-align: center; color: black;">본 인증코드의 유효기간은 24 시간입니다. 시간이 지나면 인증코드 재발급을 해주세요.</p>
+    <div
+            style="border-radius: 6px; color: black; height: 120px; margin: 40px 0; background-color: ghostwhite; text-align: center; font-size: 40px;">
+        <p th:text="${code}" style="line-height: 120px;">
+        </p>
+    </div>
+    <p style="text-align: center; color: black;">본 인증코드의 유효기간은 <b>24시간</b>입니다. 시간이 지나면 인증코드 재발급을 해주세요.</p>
     <div style="width: 100%">
         <div>
-            <a href="https://www.slam-talk.site/signup" class="homepage-btn"
-               style="background-color: #ff634a; color: white; text-align: center; font-size: medium; text-decoration: none; border-radius: 6px; display: block; margin: 30px 0; padding: 10px">
-                홈페이지로 이동하기
+            <a href="https://www.slam-talk.site/signup"
+               style="background-color: #ff634a; color: white; text-align: center; font-size: medium; text-decoration: none; border-radius: 6px; display: block; margin: 30px 0; padding: 15px">
+                <b>홈페이지로 이동하기</b>
             </a>
+        </div>
+        <div style="text-align: center;">
+            &copy;Slam Talk. All rights reserved.
         </div>
     </div>
 </div>
 </body>
+
 </html>
