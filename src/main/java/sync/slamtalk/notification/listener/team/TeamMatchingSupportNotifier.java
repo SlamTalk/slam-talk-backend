@@ -14,7 +14,6 @@ import sync.slamtalk.notification.util.StringSlicer;
 import sync.slamtalk.team.entity.TeamMatching;
 import sync.slamtalk.team.event.TeamMatchingSupportEvent;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Component
@@ -23,7 +22,7 @@ public class TeamMatchingSupportNotifier {
 
     private final NotificationSender notificationSender;
 
-    private static final String APPLICATION_MESSAGE =  "’'%s' 님이 상대팀 찾기 '%s' 모집에 지원했습니다.’ '%s'";
+    private static final String APPLICATION_MESSAGE =  "%s님이 상대팀 찾기 %s 모집에 지원했습니다.";
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -34,7 +33,7 @@ public class TeamMatchingSupportNotifier {
 
         // 알림 요청 객체를 생성합니다.
         NotificationRequest request = NotificationRequest.of(
-                String.format(APPLICATION_MESSAGE, event.participantNickname(), StringSlicer.slice(teamMatching.getTitle()),LocalDate.now()),
+                String.format(APPLICATION_MESSAGE, event.participantNickname(), StringSlicer.slice(teamMatching.getTitle())),
                 Site.teamMatching(teamMatching.getTeamMatchingId()),
                 Set.of(event.writerUserId()),
                 teamMatching.getWriter().getId(),
