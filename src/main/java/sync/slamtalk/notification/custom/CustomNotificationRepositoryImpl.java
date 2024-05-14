@@ -6,8 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.transaction.annotation.Transactional;
-import sync.slamtalk.chat.entity.UserChatRoom;
-import sync.slamtalk.chat.repository.UserChatRoomRepository;
 import sync.slamtalk.notification.model.NotificationType;
 
 import java.sql.Statement;
@@ -16,14 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 public class CustomNotificationRepositoryImpl implements CustomNotificationRepository {
 
 	private final JdbcTemplate jdbcTemplate;
-	private final UserChatRoomRepository userChatRoomRepository;
 
 	private static final String INSERT_NOTIFICATIONS_SQL = "INSERT INTO notification (notification_content_id, user_id, is_read, created_at, updated_at) VALUES (?, ?,false, NOW(), NOW())";
 	private static final String INSERT_NOTIFICATION_CONTENT_SQL = "INSERT INTO notification_content (message, uri, user_id, notification_type, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
@@ -72,7 +68,6 @@ public class CustomNotificationRepositoryImpl implements CustomNotificationRepos
 
 		// batchUpdate를 사용하여 여러 개의 알림을 한 번에 등록
 		jdbcTemplate.batchUpdate(INSERT_CHATNOTIFICATION_SQL, parameters);
-
 	}
 
 	/**
