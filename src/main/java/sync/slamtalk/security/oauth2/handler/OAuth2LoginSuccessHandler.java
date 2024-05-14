@@ -59,7 +59,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         User user = optionalUser.get();
-        String refreshToken = jwtTokenProvider.createRefreshToken();
+        String refreshToken = jwtTokenProvider.createRefreshToken(user);
         user.updateRefreshToken(refreshToken);
 
         // HTTP 상태 코드 설정 - 301 Redirect
