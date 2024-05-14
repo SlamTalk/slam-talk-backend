@@ -26,6 +26,7 @@ import sync.slamtalk.map.entity.BasketballCourt;
 import sync.slamtalk.map.repository.BasketballCourtRepository;
 import sync.slamtalk.notification.NotificationSender;
 import sync.slamtalk.notification.dto.request.ChatNotificationRequest;
+import sync.slamtalk.notification.dto.request.NotificationRequest;
 import sync.slamtalk.notification.model.NotificationType;
 import sync.slamtalk.notification.service.NotificationService;
 import sync.slamtalk.user.UserRepository;
@@ -172,25 +173,17 @@ public class ChatServiceImpl implements ChatService {
         }
 
         // 채팅방 생성 완료에 따른 알림
+        // userchatRoom 을 따로 연결 x , 다른 일반 알림이랑 동일하게
         for(Long id : participants){
             log.debug("알림을 줄 참여자 아이디 : {}",id);
             String message = messageService.createChatRoom(roomNum);
             String uri = messageService.getPath(roomNum);
-            ChatNotificationRequest req = ChatNotificationRequest.of(message,uri,Set.of(id),userChatRoomId,null, NotificationType.CHAT);
+            // 채팅방 생성 알림은 일반 알림 처럼
+            NotificationRequest req = NotificationRequest.of(message,uri,Set.of(id),null,NotificationType.CHAT);
             notificationSender.send(req);
         }
         return roomNum;
     }
-
-    /**
-     * 특정 채팅방에 참여하고 있는 유저들에게 새로운 메세지 알림 생성
-     *
-     * @param  roomId : 채팅방 Id
-     */
-    // TODO
-    // 해당 roomId 에 참여하고 있는 userChatRoom 에 알림들에서 동일한 방의 알림이 있다면 생성 하지 말고,
-    // 해당 roomId 에 대한 알림이 없다면 생성해주어라 -> 알림 읽기, 삭제 동작이 이상함
-
 
     /**
      * 농구장 채팅방을 생성한다.
@@ -376,10 +369,17 @@ public class ChatServiceImpl implements ChatService {
                     if(!messages.getId().equals(ucr.getReadIndex())){
                         dto.updateNoReadCnt(true);
                     }
-                    // 알림 제거
-                    notificationService.deleteChatNotification(userId,ucr.getId());
-                    log.debug("방번호: {} -> 알림제거",ucr.getChat());
+
                 }
+
+                // 알림 제거
+                // 유저 리스트에 가지고 있는 채팅방에 대해, 메세지 알림을 제거한다.
+                // userChatRoom 과 연관관계 매핑이 되어 있는 애들 한에서만 제거
+                // userChatRoom null 이면 대상이 아님
+                notificationService.deleteChatNotification(userId,ucr.getId());
+
+                log.debug("유저가 참여한 방 번호: {} -> 알림 제거",ucr.getId());
+
                 if (latestByChatRoomId.isEmpty()) {
                     dto.setLast_message("주고 받은 메세지가 없습니다.");
                     chatRooms.add(dto);
@@ -387,6 +387,14 @@ public class ChatServiceImpl implements ChatService {
 
             }
         }
+
+        Optional<UserChatRoom> byId = userChatRoomRepository.findById(userId);
+        if(byId.isPresent()){
+            UserChatRoom userChatRoom = byId.get();
+            log.debug("채팅방 메세지 알림 제거 후, 유저의 남은 알림 갯수 : {}",userChatRoom.getNotifications().size());
+        }
+
+
         // 마지막 메세지 날짜 순으로 채팅방 리스트 정렬
         // 발행된 메세지가 없는 경우 null 이므로, 별도처리
         Collections.sort(chatRooms,Comparator.comparing(ChatRoomDTO::getLastMessageTime, Comparator.nullsLast(Comparator.reverseOrder())));
