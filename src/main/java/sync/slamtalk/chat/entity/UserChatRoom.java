@@ -34,7 +34,7 @@ public class UserChatRoom extends BaseEntity {
 
 
     // 채팅방 알림
-    @OneToMany(mappedBy = "userChatRoom")
+    @OneToMany(mappedBy = "userChatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> notifications = new ArrayList<>();
 
 
@@ -140,6 +140,23 @@ public class UserChatRoom extends BaseEntity {
         notifications.add(notification);
         notification.setUserChatRoom(this);
 
+    }
+
+    /**
+     * 알림 삭제
+     */
+    public void removeNotification(Notification notification){
+        notifications.remove(notification);
+        notification.setUserChatRoom(null);
+    }
+
+    /**
+     * 모든 알림 삭제
+     */
+    public void clearNotifications(){
+        for(Notification notification : new ArrayList<>(notifications)){
+            removeNotification(notification);
+        }
     }
 
 }
