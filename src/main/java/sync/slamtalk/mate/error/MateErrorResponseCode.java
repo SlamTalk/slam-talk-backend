@@ -17,7 +17,10 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
     MATE_POST_ALREADY_CANCELED_OR_COMPLETED(SC_BAD_REQUEST, 4006, "이미 취소 되었거나 모집 완료된 글입니다."),
     NOT_ALLOWED_TO_PARTICIPATE(SC_BAD_REQUEST, 4008, "해당 글에 참여할 수 없습니다."),
     NO_ACCEPTED_PARTICIPANT(SC_BAD_REQUEST, 4009, "수락된 참여자가 없습니다."),
-    MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4010, "이미 삭제된 글입니다.");
+    MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4010, "이미 삭제된 글입니다."),
+    APPOINTMENT_DATE_ERROR(SC_BAD_REQUEST, 4043, "약속날짜는 현재날짜와 같거나 그 이후여야 합니다."),
+    APPOINTMENT_TIME_ERROR(SC_BAD_REQUEST, 4044, "약속시간이 현재시간 이후여야 합니다.")
+    ;
 
     MateErrorResponseCode(int code, int status, String message) {
         this.code = code;
@@ -44,7 +47,4 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
         return this.message;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

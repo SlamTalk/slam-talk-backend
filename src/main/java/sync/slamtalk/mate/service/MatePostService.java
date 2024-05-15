@@ -11,6 +11,7 @@ import sync.slamtalk.mate.dto.*;
 import sync.slamtalk.mate.dto.request.MatePostReq;
 import sync.slamtalk.mate.dto.response.*;
 import sync.slamtalk.mate.entity.*;
+import sync.slamtalk.mate.error.MateErrorResponseCode;
 import sync.slamtalk.mate.event.CompleteMateEvent;
 import sync.slamtalk.mate.event.MatePostPostDeletionEvent;
 import sync.slamtalk.mate.mapper.EntityToDtoMapper;
@@ -49,6 +50,9 @@ public class MatePostService {
      * 4. 저장된 게시글의 아이디를 반환한다.
      */
     public long registerMatePost(@Valid MatePostReq matePostReq, long userId){
+        // 예약 시간 체크
+        checkAppointmentTime(matePostReq);
+
         User user = userRepository.findById(userId).orElseThrow(()->new BaseException(NOT_FOUND_USER));
         MatePost matePost = matePostReq.toEntity();
         matePost.connectParent(user);
@@ -142,6 +146,10 @@ public class MatePostService {
      * 지금은 dto로 넘어오는 존재하는 필드와 값만 수정하거나 업데이트 하도록 구현되어 있다.
      */
     public boolean updateMatePost(long matePostId, MatePostReq matePostReq, long userId){
+
+        // 약속 시간 검증
+        checkAppointmentTime(matePostReq);
+
         MatePost post = matePostRepository.findById(matePostId).orElseThrow(()->new BaseException(MATE_POST_NOT_FOUND));
 
         if(Boolean.TRUE.equals(post.getIsDeleted())){
@@ -311,5 +319,26 @@ public class MatePostService {
                 allByWriter.stream().map(MatePostKeyInformation::ofMyPost).toList(),
                 allByApplications.stream().map(m -> MatePostKeyInformation.ofParticipantPost(m, userId)).toList()
         );
+    }
+
+    /**
+     * 예약 날짜와 시간을 검사하여 유효성을 확인하는 메소드.
+     *
+     * @param matePostReq 예약 요청 정보를 담고 있는 MatePostReq 객체. 예약 날짜와 시작 시간 정보를 포함합니다.
+     * @return 유효성 검사를 통과하면 true를 반환합니다. 이 메소드에서는 유효성 검사에 실패하면 예외를 발생시키므로,
+     *         유효성 검사를 통과한 경우에만 true를 반환하는 것으로 처리되어 있습니다.
+     * @throws BaseException 예약 날짜 또는 시간이 현재 날짜 및 시간보다 이전인 경우 예외를 발생시킵니다.
+     *         예약 날짜가 현재 날짜보다 이전인 경우 APPOINTMENT_DATE_ERROR 예외가,
+     *         예약 날짜는 같지만 예약 시작 시간이 현재 시간보다 이전 또는 같은 경우 APPOINTMENT_TIME_ERROR 예외가 발생합니다.
+     */
+    private boolean checkAppointmentTime(MatePostReq matePostReq){
+        // 현재 날짜가 예약 날짜보다 뒤인 경우
+        if(LocalDate.now().isAfter(matePostReq.getScheduledDate())) throw new BaseException(APPOINTMENT_DATE_ERROR);
+
+        // 현재 날짜가 예약 날짜와 같고, 현재 시간이 예약 시작 시간보다 같거나 늦은 경우
+        if(LocalDate.now().isEqual(matePostReq.getScheduledDate())
+                && !LocalTime.now().isBefore(matePostReq.getStartTime())) throw new BaseException(APPOINTMENT_TIME_ERROR);
+
+        return true;
     }
 }
