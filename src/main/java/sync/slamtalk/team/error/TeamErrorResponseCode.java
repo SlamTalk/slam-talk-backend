@@ -18,7 +18,8 @@ public enum TeamErrorResponseCode implements ResponseCodeDetails {
     OPPONENT_NOT_DECLARED(SC_BAD_REQUEST, 4012, "상대팀이 선언되지 않은 글입니다."),
     NOT_ALLOWED_REQUEST(SC_BAD_REQUEST, 4013, "요청이 허용되지 않습니다."),
     APPOINTMENT_DATE_ERROR(SC_BAD_REQUEST, 4043, "약속날짜는 현재날짜와 같거나 그 이후여야 합니다."),
-    APPOINTMENT_TIME_ERROR(SC_BAD_REQUEST, 4044, "약속시간이 현재시간 이후여야 합니다.")
+    APPOINTMENT_TIME_ERROR(SC_BAD_REQUEST, 4044, "약속시간이 현재시간 이후여야 합니다."),
+    START_TIME_END_TIME_ERROR (SC_BAD_REQUEST, 4044, "약속 시작 시간이 종료 시간 이전이어야 합니다.")
     ;
 
     TeamErrorResponseCode(int code, int status, String message) {

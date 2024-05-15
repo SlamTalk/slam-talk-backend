@@ -19,7 +19,8 @@ public enum MateErrorResponseCode implements ResponseCodeDetails {
     NO_ACCEPTED_PARTICIPANT(SC_BAD_REQUEST, 4009, "수락된 참여자가 없습니다."),
     MATE_POST_ALREADY_DELETED(SC_BAD_REQUEST, 4010, "이미 삭제된 글입니다."),
     APPOINTMENT_DATE_ERROR(SC_BAD_REQUEST, 4043, "약속날짜는 현재날짜와 같거나 그 이후여야 합니다."),
-    APPOINTMENT_TIME_ERROR(SC_BAD_REQUEST, 4044, "약속시간이 현재시간 이후여야 합니다.")
+    APPOINTMENT_TIME_ERROR(SC_BAD_REQUEST, 4044, "약속시간이 현재시간 이후여야 합니다."),
+    START_TIME_END_TIME_ERROR (SC_BAD_REQUEST, 4044, "약속 시작 시간이 종료 시간 이전이어야 합니다.")
     ;
 
     MateErrorResponseCode(int code, int status, String message) {
