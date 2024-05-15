@@ -331,7 +331,7 @@ public class MatePostService {
      *         예약 날짜가 현재 날짜보다 이전인 경우 APPOINTMENT_DATE_ERROR 예외가,
      *         예약 날짜는 같지만 예약 시작 시간이 현재 시간보다 이전 또는 같은 경우 APPOINTMENT_TIME_ERROR 예외가 발생합니다.
      */
-    private boolean checkAppointmentTime(MatePostReq matePostReq){
+    private void checkAppointmentTime(MatePostReq matePostReq){
         // 현재 날짜가 예약 날짜보다 뒤인 경우
         if(LocalDate.now().isAfter(matePostReq.getScheduledDate())) throw new BaseException(APPOINTMENT_DATE_ERROR);
 
@@ -339,6 +339,5 @@ public class MatePostService {
         if(LocalDate.now().isEqual(matePostReq.getScheduledDate())
                 && !LocalTime.now().isBefore(matePostReq.getStartTime())) throw new BaseException(APPOINTMENT_TIME_ERROR);
 
-        return true;
     }
 }
