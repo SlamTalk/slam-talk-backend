@@ -397,7 +397,7 @@ public class TeamMatchingService {
     /**
      * 예약 날짜와 시간을 검사하여 유효성을 확인하는 메소드.
      *
-     * @param matePostReq 예약 요청 정보를 담고 있는 MatePostReq 객체. 예약 날짜와 시작 시간 정보를 포함합니다.
+     * @param fromTeamFormDTO 예약 요청 정보를 담고 있는 FromTeamFormDTO 객체. 예약 날짜와 시작 시간 정보를 포함합니다.
      * @return 유효성 검사를 통과하면 true를 반환합니다. 이 메소드에서는 유효성 검사에 실패하면 예외를 발생시키므로,
      *         유효성 검사를 통과한 경우에만 true를 반환하는 것으로 처리되어 있습니다.
      * @throws BaseException 예약 날짜 또는 시간이 현재 날짜 및 시간보다 이전인 경우 예외를 발생시킵니다.
