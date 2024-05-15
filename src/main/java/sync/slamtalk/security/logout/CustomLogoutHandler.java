@@ -29,12 +29,6 @@ public class CustomLogoutHandler implements LogoutHandler {
     ) {
         log.debug("CustomLogoutHandler 동작");
 
-        if (authentication != null && authentication.getPrincipal() != null) {
-            User user = (User) authentication.getPrincipal();
-            // 로그아웃 로직
-            user.updateRefreshToken(null);
-        }
-
         CookieUtil.deleteCookie(request, response, refreshAuthorizationCookieName, domain);
         SecurityContextHolder.clearContext();
     }
