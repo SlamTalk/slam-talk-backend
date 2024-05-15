@@ -412,6 +412,8 @@ public class TeamMatchingService {
         if(LocalDate.now().isEqual(fromTeamFormDTO.getScheduledDate())
                 && !LocalTime.now().isBefore(fromTeamFormDTO.getStartTime())) throw new BaseException(TeamErrorResponseCode.APPOINTMENT_TIME_ERROR);
 
+        if(fromTeamFormDTO.getStartTime().isBefore(fromTeamFormDTO.getEndTime())) throw new BaseException(TeamErrorResponseCode.START_TIME_END_TIME_ERROR);
+
         return true;
     }
 }
