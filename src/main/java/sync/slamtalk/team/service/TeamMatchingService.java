@@ -16,12 +16,15 @@ import sync.slamtalk.team.dto.response.MyTeamMatchingListRes;
 import sync.slamtalk.team.dto.response.TeamMatchingKeyInformation;
 import sync.slamtalk.team.entity.TeamApplicant;
 import sync.slamtalk.team.entity.TeamMatching;
+import sync.slamtalk.team.error.TeamErrorResponseCode;
 import sync.slamtalk.team.event.*;
 import sync.slamtalk.team.repository.TeamApplicantRepository;
 import sync.slamtalk.team.repository.TeamMatchingRepository;
 import sync.slamtalk.user.UserRepository;
 import sync.slamtalk.user.entity.User;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,9 @@ public class TeamMatchingService {
      * 2. FromTeamFormDTO를 TeamMatching 객체로 변환하여 저장한다.
      */
     public long registerTeamMatching(FromTeamFormDTO dto, long userId) {
+        // 약속 시간 검증
+        checkAppointmentTime(dto);
+
         User user = userRepository.findById(userId).orElseThrow(() -> new BaseException(NOT_FOUND_USER));
         log.debug("[TeamMatchingService] user : {}", user.getTeamMatchings());
         TeamMatching teamMatchingEntity = new TeamMatching();
@@ -85,6 +91,9 @@ public class TeamMatchingService {
      * 4. 글을 수정한다.
      */
     public void updateTeamMatching(Long teamMatchingId, FromTeamFormDTO fromTeamFormDTO, Long userId) {
+        // 약속 시간 검증
+        checkAppointmentTime(fromTeamFormDTO);
+
         TeamMatching teamMatchingEntity = teamMatchingRepository.findById(teamMatchingId).orElseThrow(() -> new BaseException(TEAM_POST_NOT_FOUND));
         if (Boolean.TRUE.equals(teamMatchingEntity.getIsDeleted())) {
             throw new BaseException(TEAM_POST_ALREADY_DELETED);
@@ -383,5 +392,26 @@ public class TeamMatchingService {
                 allByWriter.stream().map(TeamMatchingKeyInformation::ofMyPost).toList(),
                 allByApplications.stream().map(t -> TeamMatchingKeyInformation.ofParticipantPost(t, userId)).toList()
         );
+    }
+
+    /**
+     * 예약 날짜와 시간을 검사하여 유효성을 확인하는 메소드.
+     *
+     * @param fromTeamFormDTO 예약 요청 정보를 담고 있는 FromTeamFormDTO 객체. 예약 날짜와 시작 시간 정보를 포함합니다.
+     * @return 유효성 검사를 통과하면 true를 반환합니다. 이 메소드에서는 유효성 검사에 실패하면 예외를 발생시키므로,
+     *         유효성 검사를 통과한 경우에만 true를 반환하는 것으로 처리되어 있습니다.
+     * @throws BaseException 예약 날짜 또는 시간이 현재 날짜 및 시간보다 이전인 경우 예외를 발생시킵니다.
+     *         예약 날짜가 현재 날짜보다 이전인 경우 APPOINTMENT_DATE_ERROR 예외가,
+     *         예약 날짜는 같지만 예약 시작 시간이 현재 시간보다 이전 또는 같은 경우 APPOINTMENT_TIME_ERROR 예외가 발생합니다.
+     */
+    private boolean checkAppointmentTime(FromTeamFormDTO fromTeamFormDTO){
+        // 현재 날짜가 예약 날짜보다 뒤인 경우
+        if(LocalDate.now().isAfter(fromTeamFormDTO.getScheduledDate())) throw new BaseException(TeamErrorResponseCode.APPOINTMENT_DATE_ERROR);
+
+        // 현재 날짜가 예약 날짜와 같고, 현재 시간이 예약 시작 시간보다 같거나 늦은 경우
+        if(LocalDate.now().isEqual(fromTeamFormDTO.getScheduledDate())
+                && !LocalTime.now().isBefore(fromTeamFormDTO.getStartTime())) throw new BaseException(TeamErrorResponseCode.APPOINTMENT_TIME_ERROR);
+
+        return true;
     }
 }
