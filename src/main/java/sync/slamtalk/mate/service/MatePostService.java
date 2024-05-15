@@ -339,6 +339,6 @@ public class MatePostService {
         if(LocalDate.now().isEqual(matePostReq.getScheduledDate())
                 && !LocalTime.now().isBefore(matePostReq.getStartTime())) throw new BaseException(APPOINTMENT_TIME_ERROR);
 
-        if(matePostReq.getStartTime().isBefore(matePostReq.getEndTime())) throw new BaseException(START_TIME_END_TIME_ERROR);
+        if(matePostReq.getStartTime().isAfter(matePostReq.getEndTime())) throw new BaseException(START_TIME_END_TIME_ERROR);
     }
 }
