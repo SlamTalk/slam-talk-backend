@@ -13,7 +13,7 @@ public enum Fee implements EnumType{
 
     public static Fee fromString(String value) {
         for (Fee fee : values()) {
-            if (fee.type.equals(value)) {
+            if (fee.name().equals(value)) {
                 return fee;
             }
         }

@@ -13,7 +13,7 @@ public enum OpeningHours implements EnumType{
 
     public static OpeningHours fromString(String value) {
         for (OpeningHours openingHours : values()) {
-            if (openingHours.type.equals(value)) {
+            if (openingHours.name().equals(value)) {
                 return openingHours;
             }
         }
