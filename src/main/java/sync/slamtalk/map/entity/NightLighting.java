@@ -13,7 +13,7 @@ public enum NightLighting implements EnumType{
 
     public static NightLighting fromString(String value) {
         for (NightLighting nightLighting : values()) {
-            if (nightLighting.type.equals(value)) {
+            if (nightLighting.name().equals(value)) {
                 return nightLighting;
             }
         }

@@ -13,7 +13,7 @@ public enum ParkingAvailable implements EnumType{
 
     public static ParkingAvailable fromString(String value) {
         for (ParkingAvailable parkingAvailable : values()) {
-            if (parkingAvailable.type.equals(value)) {
+            if (parkingAvailable.name().equals(value)) {
                 return parkingAvailable;
             }
         }
