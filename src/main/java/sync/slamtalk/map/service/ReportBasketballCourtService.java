@@ -87,7 +87,7 @@
                     .orElseThrow(() -> new BaseException(BasketballCourtErrorResponse.USER_NOT_FOUND));
 
             // 사용자 검증
-            if (!court.getInformerId().equals(user.getId())) {
+            if (!court.getInformerId().equals(user.getId()) && !user.getRole().name().equals("ADMIN")) {
                 throw new BaseException(BasketballCourtErrorResponse.UNAUTHORIZED_USER);
             }
 
